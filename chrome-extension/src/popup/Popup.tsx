@@ -1,37 +1,46 @@
-import PopupLayout from "./PopupLayout";
-import PopupHeader from "./PopupHeader";
-import PopupFooter from "./PopupFooter";
+import { useState } from "react";
 
-import ModelSelector from "../components/ModelSelector";
-import PromptInput from "../components/PromptInput";
-import AskButton from "../components/AskButton";
-import RecentChats from "../components/RecentChats";
-import SettingsButton from "../components/SettingsButton";
+function Popup() {
 
-const Popup = () => {
+    const [response, setResponse] = useState("");
+
+    const sendMessage = () => {
+
+        chrome.runtime.sendMessage(
+            {
+                type: "ASK_AI",
+                prompt: "Hello AI"
+            },
+            (res) => {
+
+                console.log(res);
+
+                setResponse(res.response);
+
+            }
+        );
+
+    };
+
     return (
-        <PopupLayout>
 
-            <PopupHeader />
+        <div className="p-5">
 
-            <div className="p-5">
+            <button
+                onClick={sendMessage}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+            >
+                Send Message
+            </button>
 
-                <ModelSelector />
+            <p className="mt-5">
+                {response}
+            </p>
 
-                <PromptInput />
+        </div>
 
-                <AskButton />
-
-                <RecentChats />
-
-                <SettingsButton />
-
-            </div>
-
-            <PopupFooter />
-
-        </PopupLayout>
     );
-};
+
+}
 
 export default Popup;
