@@ -1,0 +1,453 @@
+I think this is the most important milestone in Chapter 2 because it introduces runtime messaging, which is the backbone of your Chrome extension. Every future feature—AI chat, GitHub integration, MCP, PDF chat, and OCR—will use this communication pattern.
+
+For this milestone, we'll not connect to the backend yet. Instead, we'll verify that the communication between the popup and the background service worker works correctly.
+
+Milestone 4 – Background Service Worker
+Objective
+
+Build the Background Service Worker that:
+
+Receives messages from the popup
+Logs the request
+Processes the request (mock)
+Returns a response
+Verifies runtime messaging
+
+At the end of this milestone, the flow will be:
+
+Popup
+   │
+   │ sendMessage()
+   ▼
+Background Service Worker
+   │
+   │ Process Request
+   ▼
+Return Mock Response
+   │
+   ▼
+Popup Updates UI
+Step 1 – Background Architecture
+
+Chrome extensions consist of several isolated environments.
+
+                Chrome Extension
+
+        ┌──────────────────────────┐
+        │                          │
+        │        Popup UI          │
+        │        (React)           │
+        └────────────┬─────────────┘
+                     │
+                     │ Runtime Messaging
+                     ▼
+        ┌──────────────────────────┐
+        │ Background ServiceWorker │
+        └────────────┬─────────────┘
+                     │
+                     │ (Future)
+                     ▼
+             Node.js Backend API
+
+The popup cannot stay alive once it is closed.
+
+The Background Service Worker is responsible for:
+
+API Communication
+Authentication
+Notifications
+Context Menu
+Long Running Tasks
+Message Routing
+Step 2 – Folder Structure
+
+Create:
+
+src/
+
+background/
+
+    background.ts
+
+types/
+
+    messages.ts
+Step 3 – Create Message Types
+
+Create
+
+src/types/messages.ts
+export interface ChatRequest {
+  type: "ASK_AI";
+  prompt: string;
+}
+
+export interface ChatResponse {
+  success: boolean;
+  response: string;
+}
+
+Why?
+
+Instead of sending random objects,
+
+{
+   hello:123,
+   abc:"xyz"
+}
+
+we define a contract.
+
+This is much safer.
+
+Step 4 – Create background.ts
+
+Create
+
+src/background/background.ts
+console.log("✅ DevPilot Background Worker Started");
+
+Now register the listener.
+
+chrome.runtime.onMessage.addListener(
+  (message, sender, sendResponse) => {
+
+    console.log("Message Received");
+
+    console.log(message);
+
+    sendResponse({
+      success: true,
+      response: "Hello from Background Worker"
+    });
+
+    return true;
+  }
+);
+Step 5 – Understanding the Code
+onMessage
+chrome.runtime.onMessage.addListener(...)
+
+Registers an event listener.
+
+Every time any extension component sends a message,
+
+the background receives it.
+
+message
+
+Contains
+
+{
+   type:"ASK_AI",
+   prompt:"Explain Kubernetes"
+}
+sender
+
+Information about
+
+Popup
+Content Script
+Side Panel
+sendResponse()
+
+Used to send data back.
+
+Example
+
+sendResponse({
+    success:true,
+    response:"Hello"
+})
+return true
+
+Always return
+
+true
+
+when responding asynchronously.
+
+Even though we're responding immediately, it's a good habit because later we'll call APIs.
+
+Step 6 – Update Manifest
+
+Open
+
+manifest.json
+
+Add:
+
+{
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}
+
+If you're using TypeScript, Vite will generate background.js during the build.
+
+Step 7 – Popup UI
+
+Open
+
+Popup.tsx
+
+For now, we'll keep it simple.
+
+import { useState } from "react";
+
+function Popup() {
+
+  const [response, setResponse] = useState("");
+
+  const sendMessage = () => {
+
+    chrome.runtime.sendMessage(
+      {
+        type: "ASK_AI",
+        prompt: "Hello AI"
+      },
+      (res) => {
+
+        console.log(res);
+
+        setResponse(res.response);
+
+      }
+    );
+
+  };
+
+  return (
+
+    <div className="p-5">
+
+      <button
+        onClick={sendMessage}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Send Message
+      </button>
+
+      <p className="mt-5">
+        {response}
+      </p>
+
+    </div>
+
+  );
+
+}
+
+export default Popup;
+Step 8 – Message Flow
+
+When the button is clicked
+
+User
+
+↓
+
+Popup
+
+↓
+
+chrome.runtime.sendMessage()
+
+↓
+
+Background Worker
+
+↓
+
+Message Received
+
+↓
+
+Mock Response
+
+↓
+
+Popup
+
+↓
+
+Update UI
+Step 9 – Console Logs
+
+Add logging.
+
+chrome.runtime.onMessage.addListener(
+(message,sender,sendResponse)=>{
+
+console.log("==========");
+
+console.log("Type:",message.type);
+
+console.log("Prompt:",message.prompt);
+
+console.log("Sender:",sender);
+
+console.log("==========");
+
+sendResponse({
+
+success:true,
+
+response:"Hello from Background Worker"
+
+});
+
+return true;
+
+});
+
+Now you can watch messages.
+
+Step 10 – Build
+
+Run
+
+npm run build
+
+Expected
+
+dist/
+
+background.js
+
+popup.html
+
+assets/
+
+manifest.json
+Step 11 – Load Extension
+
+Chrome
+
+chrome://extensions
+
+Enable
+
+Developer Mode
+
+Click
+
+Load Unpacked
+
+Select
+
+dist/
+Step 12 – Inspect Background Worker
+
+Open
+
+chrome://extensions
+
+Find
+
+DevPilot AI
+
+Click
+
+Service Worker
+
+↓
+
+Inspect
+
+Console
+
+Should display
+
+DevPilot Background Worker Started
+Step 13 – Test
+
+Click
+
+Extension Icon
+
+Click
+
+Send Message
+
+Popup displays
+
+Hello from Background Worker
+
+Background Console
+
+Message Received
+
+Type: ASK_AI
+
+Prompt: Hello AI
+Step 14 – Verify Communication
+Popup
+      │
+      │ sendMessage()
+      ▼
+Background
+      │
+      │ Mock Processing
+      ▼
+Hello from Background Worker
+      │
+      ▼
+Popup Updates UI
+
+If you see the message in the popup, your runtime messaging is working correctly.
+
+Common Errors
+Error 1
+chrome is not defined
+
+Cause:
+
+Running the React app using npm run dev in the browser instead of loading it as a Chrome extension.
+
+Solution:
+
+Build the project and load the generated dist/ folder as an unpacked extension.
+
+Error 2
+Could not establish connection
+
+Cause:
+
+The background service worker isn't registered or has crashed.
+
+Check:
+
+manifest.json
+Service Worker console
+Build output
+Error 3
+Receiving end does not exist
+
+Cause:
+
+The extension wasn't reloaded after rebuilding.
+
+Solution:
+
+Run npm run build
+Go to chrome://extensions
+Click Reload on your extension
+Git Commit
+git add .
+
+git commit -m "feat(extension): implement background service worker and runtime messaging"
+
+git push origin develop
+What we'll do in Milestone 5
+
+Once this milestone is complete, we'll move to Content Scripts, where we'll:
+
+Inject a floating 🤖 Ask DevPilot AI button into every webpage
+Read selected text using window.getSelection()
+Send selected text to the Background Service Worker
+Display a small in-page UI
+Prepare the flow for connecting to the backend and AI in later chapters
+
+By the end of Milestone 5, your extension will be able to interact directly with web pages, which is the foundation for features like Explain Code, Summarize Page, Translate Selection, and Ask DevPilot AI.
