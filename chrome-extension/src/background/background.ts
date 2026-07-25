@@ -22,3 +22,13 @@ chrome.runtime.onMessage.addListener(
         return true;
     }
 );
+
+console.log("✅ Background Worker Started");
+
+chrome.runtime.onMessage.addListener((message) => {
+
+    console.log("Message Received");
+
+    console.log(message);
+
+});
