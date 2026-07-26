@@ -6,6 +6,10 @@ export const STORAGE_KEYS = {
 
     PROMPT: "prompt",
 
-    RECENT_CHATS: "recentChats"
+    RECENT_CHATS: "recentChats",
+
+    TEMPERATURE: "temperature",
+
+    BACKEND_URL: "backend_url"
 
 } as const;
