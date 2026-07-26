@@ -1,17 +1,11 @@
-import express from "express";
+import app from "./app";
+import { logger } from "./utils/logger";
 
-const app = express();
-
-const PORT = 3000;
-
-app.get("/", (_req, res) => {
-
-    res.send("🚀 DevPilot Backend Running");
-
-});
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
 
-    console.log(`Server started on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    logger("Server Started");
 
 });
