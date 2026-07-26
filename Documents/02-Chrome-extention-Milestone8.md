@@ -857,3 +857,986 @@ In this milestone, we implemented Chrome's Storage API to persist user preferenc
 The DevPilot AI extension can now remember user preferences such as theme, AI model, prompts, and recent chats even after Chrome is restarted, providing a much better user experience.
 
 The next milestone will build on this foundation by implementing Runtime Messaging so the Popup, Background Service Worker, Content Script, and Side Panel can communicate seamlessly.
+
+
+## Updated ##
+
+# Chapter 2 – Milestone 8: Chrome Storage
+
+# 🎥 YouTube Episode 2.8
+
+## Project
+**AI-powered Full Stack Developer Assistant**
+
+---
+
+# Objective
+
+In this milestone we will learn how to use the **Chrome Storage API** to persist extension data.
+
+Unlike React state, data stored in Chrome Storage remains available even after:
+
+- Closing the Popup
+- Restarting Chrome
+- Reloading the Extension
+
+By the end of this milestone our extension will remember:
+
+- Theme
+- AI Model
+- Prompt
+- Recent Chats
+
+---
+
+# Learning Objectives
+
+In this milestone you will learn
+
+- chrome.storage.local
+- chrome.storage.sync
+- Async Storage API
+- Custom React Hook
+- Service Layer Architecture
+- Constants
+- Best Practices
+
+---
+
+# Storage Architecture
+
+```
+
+Popup
+
+↓
+
+useStorage Hook
+
+↓
+
+Storage Service
+
+↓
+
+Chrome Storage API
+
+↓
+
+chrome.storage.local
+or
+chrome.storage.sync
+
+```
+
+---
+
+# Folder Structure
+
+```
+
+src/
+
+├── constants/
+│     storage.constants.ts
+│
+├── services/
+│     storage.service.ts
+│
+├── hooks/
+│     useStorage.ts
+│
+├── popup/
+│     Popup.tsx
+│
+├── background/
+│     background.ts
+
+```
+
+---
+
+# Step 1 – Why Chrome Storage?
+
+Normally,
+
+```
+const [theme, setTheme] = useState("dark");
+```
+
+works only while the popup is open.
+
+After closing the popup,
+
+everything is lost.
+
+Chrome Storage allows data to persist permanently.
+
+---
+
+# Step 2 – Local vs Sync Storage
+
+Chrome provides two storage mechanisms.
+
+## chrome.storage.local
+
+Stores data only on the current computer.
+
+Perfect for
+
+- Chat History
+- Cached AI Responses
+- Temporary Data
+
+---
+
+## chrome.storage.sync
+
+Synchronizes data across Chrome browsers when the user is signed in.
+
+Perfect for
+
+- Theme
+- Preferred AI Model
+- Language
+- User Preferences
+
+---
+
+# Step 3 – Create Storage Constants
+
+Create
+
+```
+src/constants/storage.constants.ts
+```
+
+```ts
+export const STORAGE_KEYS = {
+
+    THEME: "theme",
+
+    MODEL: "model",
+
+    PROMPT: "prompt",
+
+    RECENT_CHATS: "recentChats"
+
+};
+```
+
+### Why?
+
+Avoid writing
+
+```ts
+"theme"
+
+"Theme"
+
+"THEME"
+
+"themes"
+```
+
+Hardcoded strings often lead to bugs.
+
+Using constants makes your code safer.
+
+---
+
+# Step 4 – Create Storage Service
+
+Create
+
+```
+src/services/storage.service.ts
+```
+
+```ts
+import { STORAGE_KEYS } from "../constants/storage.constants";
+
+export async function saveData(key: string, value: unknown) {
+
+    await chrome.storage.local.set({
+
+        [key]: value
+
+    });
+
+}
+
+export async function getData(key: string) {
+
+    const result = await chrome.storage.local.get(key);
+
+    return result[key];
+
+}
+
+export async function removeData(key: string) {
+
+    await chrome.storage.local.remove(key);
+
+}
+
+export async function clearStorage() {
+
+    await chrome.storage.local.clear();
+
+}
+```
+
+---
+
+# Why Service Layer?
+
+Instead of writing
+
+```ts
+chrome.storage.local.set(...)
+```
+
+inside every component,
+
+we centralize storage logic in one file.
+
+Benefits:
+
+- Cleaner Code
+- Reusable
+- Easy Testing
+- Easy Maintenance
+
+---
+
+# Step 5 – Save Theme
+
+Example
+
+```ts
+await saveData(
+
+    STORAGE_KEYS.THEME,
+
+    "dark"
+
+);
+```
+
+This stores
+
+```
+theme
+
+↓
+
+dark
+```
+
+---
+
+# Step 6 – Save AI Model
+
+```ts
+await saveData(
+
+    STORAGE_KEYS.MODEL,
+
+    "llama3"
+
+);
+```
+
+---
+
+# Step 7 – Save Prompt
+
+```ts
+await saveData(
+
+    STORAGE_KEYS.PROMPT,
+
+    "Explain Docker"
+
+);
+```
+
+---
+
+# Step 8 – Save Recent Chats
+
+```ts
+await saveData(
+
+    STORAGE_KEYS.RECENT_CHATS,
+
+    [
+
+        "Explain Docker",
+
+        "Explain Kubernetes"
+
+    ]
+
+);
+```
+
+---
+
+# Step 9 – Read Data
+
+```ts
+const theme = await getData(
+
+    STORAGE_KEYS.THEME
+
+);
+
+console.log(theme);
+```
+
+Console
+
+```
+dark
+```
+
+---
+
+# Step 10 – Create useStorage Hook
+
+Create
+
+```
+src/hooks/useStorage.ts
+```
+
+```ts
+import { useEffect, useState } from "react";
+import { getData } from "../services/storage.service";
+
+export default function useStorage<T>(key: string) {
+
+    const [value, setValue] = useState<T | null>(null);
+
+    useEffect(() => {
+
+        async function loadData() {
+
+            const result = await getData(key);
+
+            setValue(result as T);
+
+        }
+
+        loadData();
+
+    }, [key]);
+
+    return value;
+
+}
+```
+
+---
+
+# Why Create a Hook?
+
+Instead of repeating:
+
+```ts
+useEffect(...)
+
+await getData(...)
+```
+
+inside every component,
+
+we reuse a custom hook.
+
+Benefits
+
+- Cleaner Components
+- Reusable
+- Easy to Maintain
+
+---
+
+# Step 11 – Save Theme from Popup
+
+Example
+
+```tsx
+<button
+
+onClick={()=>
+
+saveData(
+
+STORAGE_KEYS.THEME,
+
+"dark"
+
+)
+
+}
+
+>
+
+Dark Mode
+
+</button>
+```
+
+When the button is clicked,
+
+the value is saved into Chrome Storage.
+
+---
+
+# Step 12 – Read Theme Using Hook
+
+Import the hook.
+
+```tsx
+import useStorage from "../hooks/useStorage";
+
+import { STORAGE_KEYS } from "../constants/storage.constants";
+```
+
+Use it.
+
+```tsx
+const theme = useStorage<string>(
+
+    STORAGE_KEYS.THEME
+
+);
+```
+
+Display it.
+
+```tsx
+<p>
+
+Theme : {theme}
+
+</p>
+```
+
+Popup Output
+
+```
+Theme : dark
+```
+
+---
+
+# Step 13 – Use Storage in Popup
+
+Example
+
+```tsx
+import { useState } from "react";
+import useStorage from "../hooks/useStorage";
+import { STORAGE_KEYS } from "../constants/storage.constants";
+
+function Popup() {
+
+    const theme = useStorage<string>(STORAGE_KEYS.THEME);
+
+    const [response, setResponse] = useState("");
+
+    const sendMessage = () => {
+
+        chrome.runtime.sendMessage(
+
+            {
+
+                type: "ASK_AI",
+
+                prompt: "Hello AI"
+
+            },
+
+            (res) => {
+
+                if (chrome.runtime.lastError) {
+
+                    console.error(chrome.runtime.lastError.message);
+
+                    return;
+
+                }
+
+                setResponse(res.response);
+
+            }
+
+        );
+
+    };
+
+    return (
+
+        <div className="p-5">
+
+            <button
+
+                onClick={sendMessage}
+
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+
+            >
+
+                Send Message
+
+            </button>
+
+            <p className="mt-4">
+
+                Theme : {theme ?? "Not Set"}
+
+            </p>
+
+            <p className="mt-2">
+
+                {response}
+
+            </p>
+
+        </div>
+
+    );
+
+}
+
+export default Popup;
+```
+
+Expected Output
+
+```
+Theme : dark
+
+Hello from Background Worker
+```
+
+---
+
+# Step 14 – Save Theme from Popup
+
+Example
+
+```tsx
+<button
+
+onClick={async()=>{
+
+await saveData(
+
+STORAGE_KEYS.THEME,
+
+"dark"
+
+);
+
+}}
+
+>
+
+Dark Mode
+
+</button>
+```
+
+Now clicking the button saves the theme.
+
+---
+
+# Step 15 – Use chrome.storage.sync
+
+Instead of
+
+```ts
+chrome.storage.local.set({
+
+    theme: "dark"
+
+});
+```
+
+Use
+
+```ts
+await chrome.storage.sync.set({
+
+    theme: "dark"
+
+});
+```
+
+Use **Sync Storage** for:
+
+- Theme
+- Language
+- Preferred AI Model
+- User Preferences
+
+Use **Local Storage** for:
+
+- Recent Chats
+- AI Responses
+- Cached Data
+
+---
+
+# Step 16 – Listen for Storage Changes
+
+Inside
+
+```
+background.ts
+```
+
+```ts
+chrome.storage.onChanged.addListener(
+
+    (changes, area) => {
+
+        console.log("Storage Area:", area);
+
+        console.log(changes);
+
+        if (changes.theme) {
+
+            console.log(
+
+                "Old Theme:",
+
+                changes.theme.oldValue
+
+            );
+
+            console.log(
+
+                "New Theme:",
+
+                changes.theme.newValue
+
+            );
+
+        }
+
+    }
+
+);
+```
+
+Example Console
+
+```
+Storage Area : local
+
+Old Theme
+
+↓
+
+light
+
+New Theme
+
+↓
+
+dark
+```
+
+Useful for
+
+- Theme Switching
+- Real-Time Updates
+- Multiple Extension Pages
+
+---
+
+# Step 17 – Verify Storage
+
+Open
+
+```
+chrome://extensions
+```
+
+↓
+
+Inspect Popup
+
+↓
+
+Application
+
+↓
+
+Storage
+
+↓
+
+Extension Storage
+
+Verify
+
+```
+theme
+
+↓
+
+dark
+
+model
+
+↓
+
+llama3
+
+prompt
+
+↓
+
+Explain Docker
+
+recentChats
+
+↓
+
+Array
+```
+
+---
+
+# Step 18 – Restart Chrome
+
+Restart Chrome.
+
+Open Popup again.
+
+Verify
+
+```
+Theme
+
+↓
+
+dark
+
+Model
+
+↓
+
+llama3
+
+Prompt
+
+↓
+
+Explain Docker
+```
+
+Data should still exist.
+
+---
+
+# Step 19 – Common Issues
+
+## Data Not Saving
+
+Check
+
+```
+"permissions": [
+
+"storage"
+
+]
+```
+
+Reload the extension.
+
+---
+
+## Data Always Undefined
+
+Storage APIs are asynchronous.
+
+Wrong
+
+```ts
+const data = getData(key);
+```
+
+Correct
+
+```ts
+const data = await getData(key);
+```
+
+---
+
+## Sync Storage Not Working
+
+Use
+
+```ts
+chrome.storage.sync
+```
+
+instead of
+
+```ts
+chrome.storage.local
+```
+
+---
+
+## Changes Not Visible
+
+Run
+
+```bash
+npm run build
+```
+
+Reload the extension.
+
+```
+chrome://extensions
+```
+
+↓
+
+Reload
+
+---
+
+# Best Practices
+
+✅ Use constants for storage keys
+
+✅ Create a Storage Service
+
+✅ Use Custom Hooks
+
+✅ Use async/await
+
+✅ Avoid hardcoded strings
+
+✅ Store only required data
+
+✅ Use `chrome.storage.sync` for preferences
+
+✅ Use `chrome.storage.local` for chat history
+
+---
+
+# Folder Structure After Milestone 8
+
+```
+chrome-extension/
+
+src/
+
+├── popup/
+│
+├── background/
+│      background.ts
+│
+├── content/
+│      content.ts
+│
+├── sidepanel/
+│
+├── constants/
+│      storage.constants.ts
+│
+├── services/
+│      storage.service.ts
+│
+├── hooks/
+│      useStorage.ts
+│
+├── types/
+│      storage.types.ts
+│
+├── utils/
+│
+└── assets/
+```
+
+---
+
+# Deliverables
+
+By the end of this milestone you have implemented:
+
+- ✅ Chrome Storage Local
+- ✅ Chrome Storage Sync
+- ✅ Storage Service
+- ✅ Custom React Hook
+- ✅ Popup Integration
+- ✅ Storage Change Listener
+- ✅ Persistent Theme
+- ✅ Persistent AI Model
+- ✅ Persistent Prompt
+- ✅ Best Practices for Chrome Storage
+
+---
+
+# Git Commands
+
+```bash
+git add .
+
+git commit -m "feat(extension): implement chrome storage"
+
+git push origin develop
+```
+
+---
+
+# What We Learned
+
+In this milestone we learned how to persist data inside a Chrome Extension using the Chrome Storage API. We organized storage logic into a reusable service, created constants to avoid hardcoded keys, built a custom React hook for cleaner components, and integrated storage into the popup UI. We also listened for storage changes in the background service worker and verified that user preferences remain available even after restarting Chrome. This architecture prepares the extension for future milestones where AI settings, authentication, and user preferences will be stored reliably.
+
+---
+
+# Next Milestone
+
+## 🎥 Milestone 9 – Runtime Messaging
+
+Architecture
+
+```
+Popup
+
+↓
+
+Background Worker
+
+↓
+
+Content Script
+
+↓
+
+Popup
+```
+
+Topics
+
+- chrome.runtime.sendMessage()
+- chrome.runtime.onMessage()
+- Message Types
+- Async Responses
+- Communication Between Extension Components
+
+This will connect all parts of the extension before integrating the backend in Chapter 3.
