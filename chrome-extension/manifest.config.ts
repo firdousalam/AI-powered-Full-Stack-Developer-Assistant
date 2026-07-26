@@ -7,11 +7,10 @@ export default defineManifest({
 
     version: "1.0.0",
 
-    description:
-        "AI Full Stack Developer Assistant",
+    description: "AI Full Stack Developer Assistant",
 
     action: {
-        default_popup: "src/popup/index.html"
+        default_popup: "src/popup/index.html",
     },
 
     permissions: [
@@ -19,23 +18,27 @@ export default defineManifest({
         "activeTab",
         "contextMenus",
         "notifications",
-        "sidePanel"
+        "sidePanel",
     ],
+    side_panel: {
+        default_path: "sidepanel.html",
+    },
 
     host_permissions: [
+        "<all_urls>",
         "http://localhost:3000/*",
-        "http://localhost:11434/*"
+        "http://localhost:11434/*",
     ],
 
     background: {
         service_worker: "src/background/background.ts",
-        type: "module"
+        type: "module",
     },
 
     content_scripts: [
         {
             matches: ["<all_urls>"],
-            js: ["src/content/content.ts"]
-        }
-    ]
+            js: ["src/content/content.ts"],
+        },
+    ],
 });
