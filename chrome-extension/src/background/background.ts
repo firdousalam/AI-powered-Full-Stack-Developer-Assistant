@@ -112,14 +112,30 @@ console.log("✅ Background Worker Started");
 
 // });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+// chrome.contextMenus.onClicked.addListener((info, tab) => {
 
-    console.log("================================");
-    console.log("Context Menu Clicked");
-    console.log("Menu ID:", info.menuItemId);
-    console.log("Selected Text:", info.selectionText);
-    console.log(info);
-    console.log("================================");
-    console.log("tab", tab)
+//     console.log("================================");
+//     console.log("Context Menu Clicked");
+//     console.log("Menu ID:", info.menuItemId);
+//     console.log("Selected Text:", info.selectionText);
+//     console.log(info);
+//     console.log("================================");
+//     console.log("tab", tab)
 
-});
+// });
+
+chrome.storage.onChanged.addListener(
+
+    (changes) => {
+
+        if (changes.theme) {
+
+            console.log(
+
+                changes.theme.newValue
+
+            );
+
+        }
+
+    });
