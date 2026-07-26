@@ -1035,3 +1035,399 @@ Topics include:
 - User Preferences
 
 By the end of the next milestone, your extension will remember user settings even after restarting Chrome.
+
+
+
+# Latest Redo ##
+
+
+Milestone 7 – Side Panel (Restart)
+Goal
+
+By the end of this milestone you'll have:
+
+Chrome
+
+↓
+
+Extension
+
+↓
+
+Open Side Panel
+
+↓
+
+DevPilot AI Sidebar
+
+↓
+
+History
+Bookmarks
+Favorites
+Prompt Library
+
+No backend yet.
+
+Step 1 – Verify Current Project
+
+Run
+
+npm run build
+
+Then check
+
+dist/
+
+At this point you should have something like
+
+dist/
+
+assets/
+
+popup.html
+
+sidepanel.html
+
+If this works, continue.
+
+If build fails, don't proceed.
+
+Step 2 – Create Side Panel Folder
+can we repeat and check the sidepanel steps  My current manifest.config.ts 
+import { defineConfig } from "vite";
+
+import react from "@vitejs/plugin-react";
+
+import tailwindcss from "@tailwindcss/vite";
+
+import { crx } from "@crxjs/vite-plugin";
+
+import manifest from "./manifest.config.ts";
+
+export default defineConfig({
+
+  plugins: [
+
+    react(),
+
+    tailwindcss(),
+
+    crx({ manifest })
+
+  ]
+
+});
+
+and now it is working fine so i need to run that step
+
+That's great! 🎉 Since you've switched to CRXJS, you're now using the recommended architecture for React + Vite Chrome extensions. Do not go back to the manual Vite + Rollup configuration. We'll continue from your current working setup.
+
+From now on, your architecture is:
+
+React
+      ↓
+Vite
+      ↓
+CRXJS Plugin
+      ↓
+Chrome Extension (Manifest V3)
+
+This means:
+
+✅ No manual copying of manifest.json
+✅ No custom Rollup entries for background/content scripts
+✅ CRXJS bundles everything automatically
+✅ npm run build generates a valid extension
+Milestone 7 – Side Panel
+Goal
+
+Build the Side Panel UI.
+
+No backend.
+
+No API.
+
+No AI.
+
+Expected UI:
+
++------------------------------------------------+
+
+ DevPilot AI
+
+-----------------------------------------------
+
+ History
+
+ Bookmarks
+
+ Favorites
+
+ Prompt Library
+
+-----------------------------------------------
+
+ Chat Area
+
+-----------------------------------------------
+
+ Footer
+
++------------------------------------------------+
+Step 1 – Verify Manifest
+
+Your manifest.config.ts should contain the Side Panel configuration.
+
+side_panel: {
+  default_path: "sidepanel.html",
+},
+
+Also verify these permissions:
+
+permissions: [
+  "storage",
+  "activeTab",
+  "contextMenus",
+  "notifications",
+  "sidePanel",
+],
+
+This enables the Chrome Side Panel API.
+
+Step 2 – Create Folder Structure
+
+Inside src, create:
+
+src/
+│
+├── sidepanel/
+│   ├── SidePanel.tsx
+│   ├── SidePanelLayout.tsx
+│   ├── SidePanelHeader.tsx
+│   ├── SidePanelSidebar.tsx
+│   ├── SidePanelContent.tsx
+│   ├── SidePanelFooter.tsx
+│   ├── index.html
+│   └── main.tsx
+
+After this step your project should look like:
+
+src/
+
+popup/
+
+background/
+
+content/
+
+sidepanel/
+Step 3 – Create index.html
+
+Create:
+
+src/sidepanel/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DevPilot Side Panel</title>
+</head>
+
+<body>
+
+<div id="root"></div>
+
+<script type="module" src="./main.tsx"></script>
+
+</body>
+</html>
+Step 4 – Create main.tsx
+src/sidepanel/main.tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+
+import "../index.css";
+
+import SidePanel from "./SidePanel";
+
+ReactDOM.createRoot(
+  document.getElementById("root")!
+).render(
+  <React.StrictMode>
+    <SidePanel />
+  </React.StrictMode>
+);
+Step 5 – Create SidePanel.tsx
+src/sidepanel/SidePanel.tsx
+import SidePanelLayout from "./SidePanelLayout";
+
+export default function SidePanel() {
+  return <SidePanelLayout />;
+}
+Step 6 – Create SidePanelLayout.tsx
+src/sidepanel/SidePanelLayout.tsx
+import SidePanelHeader from "./SidePanelHeader";
+import SidePanelSidebar from "./SidePanelSidebar";
+import SidePanelContent from "./SidePanelContent";
+import SidePanelFooter from "./SidePanelFooter";
+
+export default function SidePanelLayout() {
+  return (
+    <div className="flex h-screen">
+
+      <SidePanelSidebar />
+
+      <div className="flex flex-1 flex-col">
+
+        <SidePanelHeader />
+
+        <SidePanelContent />
+
+        <SidePanelFooter />
+
+      </div>
+
+    </div>
+  );
+}
+
+Expected layout:
+
++--------------------------------------+
+
+Sidebar | Header
+
+        |----------------------------
+
+        | Content
+
+        |
+
+        |
+
+        | Footer
+
++--------------------------------------+
+Step 7 – Create Header
+src/sidepanel/SidePanelHeader.tsx
+export default function SidePanelHeader() {
+  return (
+    <header className="border-b p-4">
+      <h1 className="text-xl font-bold">
+        🤖 DevPilot AI
+      </h1>
+    </header>
+  );
+}
+Step 8 – Create Sidebar
+src/sidepanel/SidePanelSidebar.tsx
+export default function SidePanelSidebar() {
+  return (
+    <aside className="w-64 border-r p-4">
+
+      <h2 className="mb-4 font-bold">
+        Navigation
+      </h2>
+
+      <ul className="space-y-3">
+
+        <li>📜 History</li>
+
+        <li>⭐ Favorites</li>
+
+        <li>🔖 Bookmarks</li>
+
+        <li>📚 Prompt Library</li>
+
+      </ul>
+
+    </aside>
+  );
+}
+Step 9 – Create Content
+src/sidepanel/SidePanelContent.tsx
+export default function SidePanelContent() {
+  return (
+    <main className="flex-1 p-6">
+
+      <h2 className="mb-4 text-2xl font-bold">
+        Chat Window
+      </h2>
+
+      <div className="rounded-lg border p-4">
+
+        AI conversation will appear here.
+
+      </div>
+
+    </main>
+  );
+}
+Step 10 – Create Footer
+src/sidepanel/SidePanelFooter.tsx
+export default function SidePanelFooter() {
+  return (
+    <footer className="border-t p-4 text-center text-sm">
+      DevPilot AI © 2026
+    </footer>
+  );
+}
+Step 11 – Build
+
+Run:
+
+npm run build
+
+Expected:
+
+✓ Build completed successfully
+Step 12 – Reload the Extension
+Open:
+chrome://extensions
+Enable Developer mode.
+Click Reload on the DevPilot AI extension.
+Step 13 – Open the Side Panel
+
+There are a few ways to open it:
+
+Method 1 (Recommended)
+Click your DevPilot AI extension icon.
+Click the pin icon if it's not pinned.
+Right-click the extension icon.
+Choose Open Side Panel (or Open in Side Panel, depending on your Chrome version).
+Method 2
+
+If your Chrome toolbar shows the Side Panel icon (a rectangle with a vertical bar), click it and select DevPilot AI.
+
+Step 14 – Verify
+
+You should see:
+
++---------------------------------------------+
+
+Navigation
+
+📜 History
+
+⭐ Favorites
+
+🔖 Bookmarks
+
+📚 Prompt Library
+
+----------------------------------------------
+
+🤖 DevPilot AI
+
+----------------------------------------------
+
+Chat Window
+
+AI conversation will appear here.
+
+----------------------------------------------
+
+DevPilot AI © 2026
+
++---------------------------------------------+
