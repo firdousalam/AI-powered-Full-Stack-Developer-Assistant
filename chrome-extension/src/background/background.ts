@@ -30,7 +30,87 @@ chrome.runtime.onInstalled.addListener(() => {
 //     }
 // );
 
+// chrome.runtime.onMessage.addListener(
 
+//     (message, sender, sendResponse) => {
+
+//         console.log("Message Received from sender ", sender);
+
+//         console.log(message);
+
+//         sendResponse({
+
+//             success: true,
+
+//             response: "Hello from Background Worker"
+
+//         });
+
+//         return true;
+
+//     }
+
+// );
+
+chrome.runtime.onMessage.addListener(
+
+
+    (message, sender, sendResponse) => {
+        console.log("sender", sender)
+        console.log("message", message)
+
+
+        switch (message.type) {
+
+            case "ASK_AI":
+
+                sendResponse({
+
+                    response: "Mock AI Response"
+
+                });
+
+                break;
+
+            case "PING":
+
+                sendResponse({
+
+                    response: "PONG"
+
+                });
+
+                break;
+
+        }
+
+        return true;
+
+    });
+
+// chrome.runtime.sendMessage(
+
+//     onmessage,
+
+//     (response) => {
+
+//         if (chrome.runtime.lastError) {
+
+//             console.error(
+
+//                 chrome.runtime.lastError.message
+
+//             );
+
+//             return;
+
+//         }
+
+//         console.log(response);
+
+//     }
+
+// );
 
 chrome.contextMenus.onClicked.addListener((info) => {
 

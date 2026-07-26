@@ -34,6 +34,7 @@ button.addEventListener("click", () => {
 
     const text = getSelectedText();
 
+
     if (!text) {
 
         alert("Please select some text.");
@@ -42,6 +43,17 @@ button.addEventListener("click", () => {
 
     }
 
+    /*
+    const selectedText=window.getSelection()?.toString();
+    
+    chrome.runtime.sendMessage({
+    
+    type:"SELECTED_TEXT",
+    
+    text:selectedText
+    
+    });
+    */
     chrome.runtime.sendMessage({
 
         type: "SELECTED_TEXT",
