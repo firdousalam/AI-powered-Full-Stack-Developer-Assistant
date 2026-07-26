@@ -1,610 +1,631 @@
-# Chapter 3 - Backend Development
+# Chapter 3 – Node.js Backend API
 
-> **Build DevPilot AI Backend using Node.js, Express, MongoDB, JWT & WebSocket**
+## 🎯 Chapter Objective
 
----
+In this chapter, we will build the backend API for the **DevPilot AI Chrome Extension**. The backend will act as the communication layer between the Chrome Extension and AI providers such as **Ollama**, **OpenAI**, **Gemini**, and **Claude**.
 
-# 📖 Chapter Overview
+Unlike Chapter 2, where we focused on building the Chrome Extension foundation, this chapter focuses on creating a scalable, production-ready backend using **Node.js**, **Express**, and **TypeScript**.
 
-In this chapter, we will build the backend API for **DevPilot AI**.
-
-The backend acts as the brain of the application. It connects the Chrome Extension with AI models, MongoDB, MCP servers, Vector Database, and external services.
-
-By the end of this chapter, you will have a production-ready backend architecture following industry best practices.
+By the end of this chapter, the Chrome Extension will communicate with a backend server instead of returning mock responses.
 
 ---
 
-# 🎯 Learning Objectives
+# 🏗 Chapter 3 Breakdown
 
-After completing this chapter, you will be able to:
-
-- Design scalable backend architecture
-- Build REST APIs using Express
-- Connect MongoDB
-- Implement JWT Authentication
-- Build reusable services
-- Create API documentation with Swagger
-- Implement WebSocket for streaming AI responses
-- Add centralized logging
-- Handle errors globally
-- Validate API requests
-- Organize enterprise-level folder structure
+Just like Chapter 2, Chapter 3 is divided into **10 milestones**. Each milestone ends with a working feature and a Git commit.
 
 ---
 
-# 🏗 Backend Architecture
+# Milestone 1 – Backend Project Setup
 
-```text
-                   Chrome Extension
+## 🎥 Episode 3.1
 
-                         │
+## Goal
 
-                    REST / WebSocket
-
-                         │
-
-                         ▼
-
-                  Express API Server
-
-                         │
-
- ┌───────────────────────┼────────────────────────┐
-
- ▼                       ▼                        ▼
-
-Authentication      AI Controller         Chat Controller
-
- ▼                       ▼                        ▼
-
-JWT Service        AI Router Service     Chat Service
-
-                         │
-
- ┌───────────────────────┼────────────────────────┐
-
- ▼                       ▼                        ▼
-
-MongoDB           Ollama Service          MCP Gateway
-
-                         │
-
- ┌───────────────────────┼────────────────────────┐
-
- ▼                       ▼                        ▼
-
-Vector DB         GitHub MCP         Docker MCP
-
-                         │
-
-                         ▼
-
-                  Kubernetes MCP
-```
+Create the Node.js backend project and verify that it runs successfully.
 
 ---
 
-# 🛠 Technology Stack
+## Topics
 
-| Layer | Technology |
-|---------|------------|
-| Runtime | Node.js 22+ |
-| Framework | Express.js |
-| Language | TypeScript |
-| Database | MongoDB |
-| ODM | Mongoose |
-| Authentication | JWT |
-| Password Hashing | bcrypt |
-| API Documentation | Swagger |
-| Validation | express-validator |
-| File Upload | Multer |
-| Logging | Winston + Morgan |
-| WebSocket | Socket.IO |
-| Environment | dotenv |
+- Create Node.js project
+- Configure TypeScript
+- Install Express
+- Setup npm scripts
+- Start development server
 
 ---
 
-# 📁 Backend Folder Structure
+## Deliverable
 
 ```text
 backend/
 
-├── src/
-│
-├── config/
-│   ├── database.ts
-│   ├── swagger.ts
-│   ├── logger.ts
-│   └── environment.ts
-│
-├── controllers/
-│   ├── auth.controller.ts
-│   ├── chat.controller.ts
-│   ├── ai.controller.ts
-│   ├── user.controller.ts
-│   └── upload.controller.ts
-│
-├── services/
-│   ├── auth.service.ts
-│   ├── chat.service.ts
-│   ├── ai.service.ts
-│   ├── ollama.service.ts
-│   ├── embedding.service.ts
-│   └── rag.service.ts
-│
-├── repositories/
-│   ├── user.repository.ts
-│   ├── chat.repository.ts
-│   └── history.repository.ts
-│
-├── models/
-│   ├── User.ts
-│   ├── Chat.ts
-│   └── Prompt.ts
-│
-├── routes/
-│   ├── auth.routes.ts
-│   ├── chat.routes.ts
-│   ├── ai.routes.ts
-│   └── upload.routes.ts
-│
-├── middleware/
-│   ├── auth.middleware.ts
-│   ├── error.middleware.ts
-│   ├── logger.middleware.ts
-│   ├── validation.middleware.ts
-│   └── upload.middleware.ts
-│
-├── websocket/
-│   └── socket.ts
-│
-├── utils/
-│
-├── types/
-│
+├── package.json
+├── tsconfig.json
+└── src/
+    └── server.ts
+```
+
+---
+
+## Expected Result
+
+```text
+http://localhost:3000
+
+↓
+
+Server Running
+```
+
+---
+
+## Git Commit
+
+```bash
+git add .
+
+git commit -m "feat(backend): initialize Node.js backend"
+```
+
+---
+
+# Milestone 2 – Express Architecture
+
+## 🎥 Episode 3.2
+
+## Goal
+
+Create a scalable Express application architecture following enterprise standards.
+
+---
+
+## Topics
+
+- app.ts
+- server.ts
+- Folder Structure
+- Routes
+- Controllers
+- Services
+- Environment Variables
+
+---
+
+## Deliverable
+
+```text
+backend/
+
+src/
+
 ├── app.ts
-└── server.ts
-
-package.json
-.env
-Dockerfile
-README.md
+├── server.ts
+├── routes/
+├── controllers/
+├── services/
+├── config/
+└── utils/
 ```
 
 ---
 
-# 📦 Required Packages
+## Expected Result
 
-## Runtime Dependencies
+A clean and scalable Express application architecture.
+
+---
+
+## Git Commit
 
 ```bash
-npm install express mongoose dotenv cors helmet compression jsonwebtoken bcrypt multer socket.io swagger-ui-express swagger-jsdoc express-validator axios uuid
-```
-
-## Development Dependencies
-
-```bash
-npm install -D typescript ts-node nodemon @types/node @types/express @types/jsonwebtoken @types/bcrypt @types/multer @types/cors @types/uuid eslint prettier
+git commit -m "feat(backend): create express architecture"
 ```
 
 ---
 
-# 🔐 Authentication
+# Milestone 3 – Health API
 
-Authentication will use JWT.
+## 🎥 Episode 3.3
 
-Workflow
+## Goal
 
-```text
-User Login
+Create a Health Check endpoint that verifies whether the backend is running.
 
-↓
+---
 
-Validate Credentials
+## Endpoint
 
-↓
-
-Generate JWT
-
-↓
-
-Return Token
-
-↓
-
-Chrome Extension Stores Token
-
-↓
-
-Authenticated Requests
+```http
+GET /health
 ```
 
 ---
 
-# 🗄 MongoDB Collections
-
-```text
-users
-
-chat_history
-
-prompt_library
-
-bookmarks
-
-favorites
-
-settings
-
-uploaded_files
-
-embeddings
-
-audit_logs
-```
-
----
-
-# 📡 REST API Design
-
-## Authentication APIs
-
-| Method | Endpoint |
-|---------|----------|
-| POST | /api/auth/register |
-| POST | /api/auth/login |
-| POST | /api/auth/refresh |
-| POST | /api/auth/logout |
-
----
-
-## Chat APIs
-
-| Method | Endpoint |
-|---------|----------|
-| POST | /api/chat |
-| GET | /api/chat/history |
-| DELETE | /api/chat/:id |
-
----
-
-## AI APIs
-
-| Method | Endpoint |
-|---------|----------|
-| GET | /api/models |
-| POST | /api/ai/chat |
-| POST | /api/ai/stream |
-
----
-
-## User APIs
-
-| Method | Endpoint |
-|---------|----------|
-| GET | /api/user/profile |
-| PUT | /api/user/profile |
-| PUT | /api/user/settings |
-
----
-
-## Upload APIs
-
-| Method | Endpoint |
-|---------|----------|
-| POST | /api/upload/file |
-| POST | /api/upload/image |
-| POST | /api/upload/pdf |
-
----
-
-# 🔄 Request Flow
-
-```text
-Chrome Extension
-
-↓
-
-Express Route
-
-↓
-
-Controller
-
-↓
-
-Service
-
-↓
-
-Repository
-
-↓
-
-MongoDB
-
-↓
-
-Service
-
-↓
-
-Controller
-
-↓
-
-Response
-```
-
----
-
-# 🔌 WebSocket Architecture
-
-Streaming AI responses will use Socket.IO.
-
-```text
-Chrome Extension
-
-↓
-
-WebSocket
-
-↓
-
-Express Server
-
-↓
-
-AI Router
-
-↓
-
-Ollama
-
-↓
-
-Streaming Response
-
-↓
-
-Chrome Extension
-```
-
----
-
-# 📚 Swagger API Documentation
-
-Swagger URL
-
-```text
-http://localhost:3000/api-docs
-```
-
-Documentation includes:
-
-- Authentication
-- AI APIs
-- Chat APIs
-- Upload APIs
-- User APIs
-
----
-
-# 📋 Logging Strategy
-
-Two loggers will be used.
-
-## Morgan
-
-Logs incoming HTTP requests.
-
-Example
-
-```text
-POST /api/chat 200 250ms
-```
-
----
-
-## Winston
-
-Logs:
-
-- Errors
-- Warnings
-- Information
-- AI Requests
-- Database Events
-
----
-
-# ⚠ Global Error Handling
-
-A centralized middleware will handle:
-
-- Validation Errors
-- JWT Errors
-- MongoDB Errors
-- AI Errors
-- File Upload Errors
-- Internal Server Errors
-
-Example Response
+## Response
 
 ```json
 {
-  "success": false,
-  "message": "Invalid Token",
-  "status": 401
+  "status": "OK",
+  "version": "1.0.0",
+  "uptime": 123
 }
 ```
 
 ---
 
-# ✅ Request Validation
+## Purpose
 
-Validation examples:
-
-- Email
-- Password
-- Prompt Length
-- File Size
-- Image Type
-- PDF Size
-
-Benefits:
-
-- Security
-- Better API Responses
-- Prevent Invalid Requests
+The Chrome Extension will use this endpoint to verify that the backend is online before sending AI requests.
 
 ---
 
-# 🌍 Environment Variables
+## Expected Result
 
-Example
+```text
+Browser
 
-```env
-PORT=3000
+↓
 
-NODE_ENV=development
+GET /health
 
-MONGO_URI=mongodb://localhost:27017/devpilot
+↓
 
-JWT_SECRET=your-secret-key
-
-JWT_EXPIRES_IN=7d
-
-OLLAMA_URL=http://localhost:11434
-
-CHROMADB_URL=http://localhost:8000
+{
+   status : OK
+}
 ```
 
 ---
 
-# 🔒 Security Best Practices
+## Git Commit
 
-Implement:
+```bash
+git commit -m "feat(backend): implement health api"
+```
 
-- Helmet
+---
+
+# Milestone 4 – AI Route
+
+## 🎥 Episode 3.4
+
+## Goal
+
+Create the first AI endpoint.
+
+---
+
+## Endpoint
+
+```http
+POST /api/v1/ai/chat
+```
+
+---
+
+## Initial Response
+
+Return mock data only.
+
+```json
+{
+  "success": true,
+  "response": "Hello from DevPilot Backend"
+}
+```
+
+---
+
+## Expected Flow
+
+```text
+Chrome Extension
+
+↓
+
+Backend API
+
+↓
+
+Mock Response
+
+↓
+
+Chrome Extension
+```
+
+---
+
+## Git Commit
+
+```bash
+git commit -m "feat(backend): create ai chat route"
+```
+
+---
+
+# Milestone 5 – Validation
+
+## 🎥 Episode 3.5
+
+## Goal
+
+Validate incoming API requests using **Zod**.
+
+---
+
+## Example Request
+
+```json
+{
+  "prompt": "Explain Docker",
+  "model": "llama3"
+}
+```
+
+---
+
+## Topics
+
+- Install Zod
+- Create validation schema
+- Validate request body
+- Handle invalid requests
+- Return validation errors
+
+---
+
+## Expected Result
+
+Only valid requests should be processed.
+
+---
+
+## Git Commit
+
+```bash
+git commit -m "feat(backend): add request validation"
+```
+
+---
+
+# Milestone 6 – Middleware
+
+## 🎥 Episode 3.6
+
+## Goal
+
+Implement common Express middleware used in production applications.
+
+---
+
+## Middleware
+
 - CORS
-- Rate Limiting
-- JWT Authentication
-- Password Hashing
-- Input Validation
-- Secure Headers
-- Environment Variables
+- Helmet
+- Morgan
+- Error Handler
+- Request Logger
+- Request ID Generator
 
 ---
 
-# 🧪 Testing
+## Architecture
 
-Verify:
+```text
+Request
 
-- Server starts
-- MongoDB connects
-- JWT authentication works
-- Swagger loads
-- WebSocket connects
-- CRUD APIs function correctly
+↓
 
-Useful tools:
+Logger
 
-- Postman
-- Bruno
-- Thunder Client
+↓
 
----
+CORS
 
-# 🐞 Common Issues
+↓
 
-## MongoDB Connection Failed
+Helmet
 
-Possible Causes:
+↓
 
-- MongoDB service not running
-- Incorrect connection string
-- Firewall
+Routes
 
----
+↓
 
-## JWT Invalid
+Controller
 
-Possible Causes:
+↓
 
-- Incorrect secret
-- Expired token
-- Missing Authorization header
-
----
-
-## Port Already in Use
-
-Solution:
-
-```bash
-netstat -ano | findstr :3000
-```
-
-Kill the process or change the port.
-
----
-
-## CORS Error
-
-Possible Causes:
-
-- Backend URL not allowed
-- Incorrect frontend origin
-
----
-
-# 📁 Deliverables
-
-By the end of this chapter, you will have:
-
-- ✅ Express Backend
-- ✅ MongoDB Integration
-- ✅ JWT Authentication
-- ✅ REST APIs
-- ✅ Swagger Documentation
-- ✅ WebSocket Support
-- ✅ Global Error Handling
-- ✅ Logging
-- ✅ Validation
-- ✅ Enterprise Folder Structure
-
----
-
-# 📌 Git Commit
-
-```bash
-git add .
-
-git commit -m "feat: create backend architecture with Express and MongoDB"
-
-git push origin develop
+Error Handler
 ```
 
 ---
 
-# 📖 Summary
+## Expected Result
 
-In this chapter, we built the backend foundation for DevPilot AI. We designed a scalable architecture using Node.js, Express, MongoDB, JWT, WebSocket, and Swagger. We organized the application into controllers, services, repositories, and middleware while adding logging, validation, and centralized error handling. This backend will power the Chrome Extension and provide APIs for AI services, document processing, authentication, and future integrations.
+Every request is logged and secured.
 
 ---
 
-# ⏭ Next Chapter
+## Git Commit
 
-## Chapter 4 – Ollama Integration & AI Router
+```bash
+git commit -m "feat(backend): implement middleware"
+```
 
-In the next chapter, we will:
+---
 
-- Install Ollama
-- Download lightweight models for a 16 GB RAM machine
-- Integrate Ollama with Node.js
-- Build an AI Router
-- Support multiple AI models
-- Stream AI responses
-- Optimize prompts and memory usage
-- Prepare the backend for RAG and MCP integration
+# Milestone 7 – Service Layer
+
+## 🎥 Episode 3.7
+
+## Goal
+
+Separate business logic from controllers.
+
+---
+
+## Architecture
+
+```text
+Controller
+
+↓
+
+AI Service
+
+↓
+
+Provider
+```
+
+---
+
+## Benefits
+
+- Clean Controllers
+- Reusable Business Logic
+- Easy Unit Testing
+- Better Maintainability
+
+---
+
+## Git Commit
+
+```bash
+git commit -m "feat(backend): implement service layer"
+```
+
+---
+
+# Milestone 8 – AI Provider Pattern
+
+## 🎥 Episode 3.8
+
+## Goal
+
+Create a provider architecture for multiple AI providers.
+
+---
+
+## Provider Structure
+
+```text
+Provider
+
+├── Ollama
+
+├── OpenAI
+
+├── Gemini
+
+└── Claude
+```
+
+---
+
+## Topics
+
+- Provider Interface
+- Provider Factory
+- Mock Provider Responses
+- Extensible Design
+
+---
+
+## Expected Result
+
+Each provider returns mock responses while maintaining a common interface.
+
+---
+
+## Git Commit
+
+```bash
+git commit -m "feat(backend): implement provider architecture"
+```
+
+---
+
+# Milestone 9 – Connect Chrome Extension
+
+## 🎥 Episode 3.9
+
+## Goal
+
+Replace runtime mock responses with backend API communication.
+
+---
+
+## Endpoint
+
+```http
+POST http://localhost:3000/api/v1/ai/chat
+```
+
+---
+
+## Runtime Flow
+
+```text
+Popup
+
+↓
+
+Background Worker
+
+↓
+
+Backend
+
+↓
+
+Background Worker
+
+↓
+
+Popup
+```
+
+---
+
+## Expected Result
+
+The popup receives responses from the backend instead of returning mock runtime data.
+
+---
+
+## Git Commit
+
+```bash
+git commit -m "feat(extension): connect backend api"
+```
+
+---
+
+# Milestone 10 – Production Ready
+
+## 🎥 Episode 3.10
+
+## Goal
+
+Prepare the backend for production deployment.
+
+---
+
+## Add
+
+- Environment Configuration
+- Centralized Error Handling
+- Logging
+- API Versioning
+- Project Cleanup
+- Build Verification
+
+---
+
+## Final Architecture
+
+```text
+Chrome Extension
+
+        │
+
+        ▼
+
+Node.js Backend
+
+        │
+
+        ▼
+
+AI Service
+
+        │
+
+        ▼
+
+Provider Layer
+
+   ┌──────────────┴──────────────┐
+
+   ▼                             ▼
+
+Ollama                       OpenAI
+```
+
+---
+
+## Expected Result
+
+A production-ready backend architecture ready for AI integration.
+
+---
+
+## Git Commit
+
+```bash
+git commit -m "feat(backend): complete backend foundation"
+```
+
+---
+
+# 📁 Repository Structure
+
+As the project evolves into a complete full-stack application, the repository structure should look like this:
+
+```text
+AI-powered-Full-Stack-Developer-Assistant/
+
+├── chrome-extension/      ✅ Completed (Chapter 2)
+│
+├── backend/               🚀 Chapter 3
+│
+├── docs/
+│
+├── screenshots/
+│
+├── README.md
+│
+└── docker-compose.yml     (Added in a later chapter)
+```
+
+---
+
+# 🎯 Chapter Summary
+
+By the end of Chapter 3, you will have built a scalable backend foundation that includes:
+
+- ✅ Node.js + Express + TypeScript setup
+- ✅ Enterprise project architecture
+- ✅ Health Check API
+- ✅ AI Chat API
+- ✅ Request Validation using Zod
+- ✅ Production Middleware
+- ✅ Service Layer Architecture
+- ✅ AI Provider Pattern
+- ✅ Chrome Extension Integration
+- ✅ Production-ready Backend
+
+---
+
+# 🚀 What's Next?
+
+After completing Chapter 3, your Chrome Extension will communicate with a real backend instead of mock responses.
+
+This backend will then be extended in future chapters to integrate:
+
+- Ollama
+- OpenAI
+- Gemini
+- Claude
+- GitHub APIs
+- LangChain
+- Docker
+- Kubernetes
+- CI/CD Pipelines
+
+At this point, the project transitions from a standalone Chrome Extension into a complete **AI-Powered Full-Stack Developer Assistant** platform.
