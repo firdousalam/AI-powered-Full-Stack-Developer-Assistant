@@ -1,5 +1,6 @@
 /// <reference types="chrome"/>
 import { createContextMenus, MENU_IDS } from '../context-menu/contextMenu';
+import { chatWithAI } from '../services/api.service'
 console.log("✅ Background Worker Started");
 
 // chrome.runtime.onInstalled.addListener(() => {
@@ -52,41 +53,42 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // );
 
-chrome.runtime.onMessage.addListener(
+// chrome.runtime.onMessage.addListener(
 
 
-    (message, sender, sendResponse) => {
-        console.log("sender", sender)
-        console.log("message", message)
+//     async (message, sender, sendResponse) => {
+//         console.log("sender", sender)
+//         console.log("message", message)
 
 
-        switch (message.type) {
+//         switch (message.type) {
 
-            case "ASK_AI":
+//             case "ASK_AI":
 
-                sendResponse({
+//                 const result =
+//                     await chatWithAI(
+//                         message.prompt,
+//                         "llama3"
+//                     );
+//                 sendResponse(result);
 
-                    response: "Mock AI Response"
+//                 break;
 
-                });
+//             case "PING":
 
-                break;
+//                 sendResponse({
 
-            case "PING":
+//                     response: "PONG"
 
-                sendResponse({
+//                 });
 
-                    response: "PONG"
+//                 break;
 
-                });
+//         }
 
-                break;
+//         return true;
 
-        }
-
-        return true;
-
-    });
+//     });
 
 // chrome.runtime.sendMessage(
 
@@ -112,75 +114,101 @@ chrome.runtime.onMessage.addListener(
 
 // );
 
-chrome.contextMenus.onClicked.addListener((info) => {
+chrome.runtime.onMessage.addListener(
+    (message, sender, sendResponse) => {
 
-    const request = {
+        console.log("Sender:", sender);
+        console.log("Message:", message);
 
-        action: info.menuItemId,
+        console.log(MENU_IDS)
+        async function process() {
+            console.log(MENU_IDS)
+            switch (message.type) {
 
-        text: info.selectionText
+                case MENU_IDS.ASK_AI:
 
-    };
+                    const resultA = await chatWithAI(
+                        message.prompt,
+                        "llama3"
+                    );
+                    console.log(resultA)
+                    sendResponse(resultA);
 
+                    break;
 
-    switch (info.menuItemId) {
+                case MENU_IDS.SUMMARIZE:
 
-        case MENU_IDS.ASK_AI:
+                    const resultS = await chatWithAI(
+                        message.prompt,
+                        "llama3"
+                    );
+                    console.log(resultS)
+                    sendResponse(resultS);
 
-            console.log("Ask AI");
+                    break;
 
+                case MENU_IDS.TRANSLATE:
 
-            console.log(request);
+                    const resultT = await chatWithAI(
+                        message.prompt,
+                        "llama3"
+                    );
+                    console.log(resultT)
+                    sendResponse(resultT);
 
-            break;
+                    break;
 
-        case MENU_IDS.EXPLAIN:
+                case MENU_IDS.REVIEW_CODE:
 
-            console.log("Explain");
+                    const resultR = await chatWithAI(
+                        message.prompt,
+                        "llama3"
+                    );
+                    console.log(resultR)
+                    sendResponse(resultR);
 
+                    break;
+                case MENU_IDS.EXPLAIN:
 
-            console.log(request);
+                    const resultE = await chatWithAI(
+                        message.prompt,
+                        "llama3"
+                    );
+                    console.log(resultE)
+                    sendResponse(resultE);
 
-            chrome.notifications.create({
+                    break;
 
-                type: "basic",
+                case MENU_IDS.SELECTED_TEXT:
 
-                iconUrl: "icons/icon.png",
+                    const result = await chatWithAI(
+                        message.prompt,
+                        "llama3"
+                    );
+                    console.log(result)
+                    sendResponse(result);
 
-                title: "DevPilot AI",
+                    break;
 
-                message: "Request received"
+                default:
 
-            });
+                    const resultD = await chatWithAI(
+                        message.prompt,
+                        "llama3"
+                    );
+                    console.log(resultD)
+                    sendResponse(resultD);
 
-            break;
+                    break;
+            }
+        }
 
-        case MENU_IDS.SUMMARIZE:
+        process();
 
-            console.log("Summarize");
-            console.log(request);
-
-            break;
-
-        case MENU_IDS.TRANSLATE:
-
-            console.log("Translate");
-
-            console.log(request);
-
-            break;
-
-        case MENU_IDS.REVIEW_CODE:
-
-            console.log("Review Code");
-
-            console.log(request);
-
-            break;
-
+        // VERY IMPORTANT
+        return true;
     }
-
-});
+);
 
 console.log("✅ Background Worker Started");
 
@@ -219,3 +247,7 @@ chrome.storage.onChanged.addListener(
         }
 
     });
+
+
+
+
