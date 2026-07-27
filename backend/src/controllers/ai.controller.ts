@@ -1,33 +1,107 @@
 import { Request, Response } from "express";
-import AIService from "../services/ai.service";
 
-export const chat = async (
+import ollamaService from "../services/ollama.service";
+
+export async function chat(
 
     req: Request,
 
     res: Response
 
-) => {
+) {
 
-    const {
+    try {
 
-        prompt,
+        const {
 
-        model
+            prompt,
 
-    } = req.body;
+            model
 
-    console.log(prompt);
+        } = req.body;
 
-    console.log(model);
+        const response = await ollamaService.chat(
 
-    const result = await AIService.chat(
-        prompt,
-        model
-    );
+            prompt,
 
-    res.json(result);
+            model
 
-};
+        );
 
+        res.json({
 
+            success: true,
+
+            response
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "AI request failed"
+
+        });
+
+    }
+
+}
+
+export async function generate(
+
+    req: Request,
+
+    res: Response
+
+) {
+
+    try {
+
+        const {
+
+            prompt,
+
+            model
+
+        } = req.body;
+
+        const response = await ollamaService.chat(
+
+            prompt,
+
+            model
+
+        );
+
+        res.json({
+
+            success: true,
+
+            response
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "AI request failed"
+
+        });
+
+    }
+
+}
