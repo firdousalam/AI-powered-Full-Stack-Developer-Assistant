@@ -13,7 +13,7 @@ export function errorMiddleware(
 
         success: false,
 
-        message: err.message
+        message: "Internal Server Error"
 
     });
 
