@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { chat } from "../controllers/ai.controller";
+import { chat, generate } from "../controllers/ai.controller"
 
 import { validate } from "../middlewares/validate.middleware";
 
@@ -17,5 +17,15 @@ router.post(
     chat
 
 );
+
+router.post(
+
+    "/generate",
+
+
+    generate
+
+);
+
 
 export default router;
