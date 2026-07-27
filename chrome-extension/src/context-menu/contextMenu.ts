@@ -1,14 +1,16 @@
 export const MENU_IDS = {
 
-    ASK_AI: "ask-ai",
+    ASK_AI: "ASK_AI",
 
-    EXPLAIN: "explain",
+    EXPLAIN: "EXPLAIN",
 
-    SUMMARIZE: "summarize",
+    SUMMARIZE: "SUMMARIZE",
 
-    TRANSLATE: "translate",
+    TRANSLATE: "TRANSLATE",
 
-    REVIEW_CODE: "review-code"
+    REVIEW_CODE: "REVIEW_CODE",
+
+    SELECTED_TEXT: "SELECTED_TEXT"
 
 };
 
