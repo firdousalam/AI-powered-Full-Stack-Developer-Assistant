@@ -3,13 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const app = (0, express_1.default)();
-const PORT = 3000;
-app.get("/", (_req, res) => {
-    res.send("🚀 DevPilot Backend Running");
-});
-app.listen(PORT, () => {
-    console.log(`Server started on http://localhost:${PORT}`);
+const app_1 = __importDefault(require("./app"));
+const logger_1 = require("./utils/logger");
+const PORT = process.env.PORT || 3000;
+app_1.default.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    (0, logger_1.logger)("Server Started");
 });
 //# sourceMappingURL=server.js.map

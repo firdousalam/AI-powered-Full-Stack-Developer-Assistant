@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
+import AIService from "../services/ai.service";
 
-export const chat = (
+export const chat = async (
 
     req: Request,
 
@@ -20,12 +21,13 @@ export const chat = (
 
     console.log(model);
 
-    res.json({
+    const result = await AIService.chat(
+        prompt,
+        model
+    );
 
-        success: true,
-
-        response: "Hello from DevPilot Backend"
-
-    });
+    res.json(result);
 
 };
+
+
