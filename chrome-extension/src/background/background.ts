@@ -1,6 +1,7 @@
 /// <reference types="chrome"/>
 import { createContextMenus, MENU_IDS } from '../context-menu/contextMenu';
 import { chatWithAI } from '../services/api.service'
+import { streamChat } from '../services/api.stream';
 console.log("✅ Background Worker Started");
 
 // chrome.runtime.onInstalled.addListener(() => {
@@ -123,17 +124,32 @@ chrome.runtime.onMessage.addListener(
         console.log(MENU_IDS)
         async function process() {
             console.log(MENU_IDS)
+            async function processStream() {
+                try {
+                    await streamChat(message.prompt, "llama3.2:3b", (token) => {
+                        chrome.runtime.sendMessage({ type: "AI_STREAM", token });
+                    });
+                    chrome.runtime.sendMessage({ type: "AI_STREAM_END" });
+                } catch (error) {
+                    console.error(error);
+                    chrome.runtime.sendMessage({ type: "AI_STREAM_ERROR", error: "Streaming Failed" });
+                }
+            }
+
             switch (message.type) {
 
                 case MENU_IDS.ASK_AI:
 
-                    const resultA = await chatWithAI(
-                        message.prompt,
-                        "llama3"
-                    );
-                    console.log(resultA)
-                    sendResponse(resultA);
+                    // const resultA = await chatWithAI(
+                    //     message.prompt,
+                    //     "llama3"
+                    // );
+                    // console.log(resultA)
+                    // sendResponse(resultA);
 
+                    // break;
+
+                    processStream();
                     break;
 
                 case MENU_IDS.SUMMARIZE:
@@ -247,7 +263,5 @@ chrome.storage.onChanged.addListener(
         }
 
     });
-
-
 
 
