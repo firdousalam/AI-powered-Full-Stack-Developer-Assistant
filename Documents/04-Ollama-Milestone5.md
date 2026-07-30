@@ -624,6 +624,766 @@ git push origin develop
 
 In this milestone, we transformed the DevPilot AI backend from a traditional request-response API into a real-time AI streaming service. Using Ollama's streaming capabilities and Server-Sent Events, the backend now delivers AI-generated content token by token, providing a significantly more responsive user experience. This architecture lays the foundation for conversational AI, live code generation, and future features such as Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), and multi-agent workflows.
 
+# Milestone 4.5 – Streaming AI Responses (Steps 2–6)
+
+## 🎥 Episode 4.5
+
+---
+
+# Step 2 – Create Streaming Method
+
+## Goal
+
+Create a new method inside the Ollama service that communicates with Ollama using **streaming mode**.
+
+Instead of waiting for the complete AI response, Ollama will return a stream of tokens.
+
+---
+
+## File
+
+```text
+src/services/ollama.service.ts
+```
+
+---
+
+## Current Method
+
+Currently, we already have something similar to:
+
+```ts
+async chat(prompt: string, model: string) {
+
+    const response = await axios.post(
+
+        `${this.baseUrl}/api/chat`,
+
+        {
+
+            model,
+
+            messages: [
+
+                {
+
+                    role: "user",
+
+                    content: prompt
+
+                }
+
+            ]
+
+        }
+
+    );
+
+    return response.data.message.content;
+
+}
+```
+
+This waits until Ollama finishes generating the entire response.
+
+---
+
+## Create a New Method
+
+Add a second method called **streamChat()**.
+
+```ts
+import axios from "axios";
+
+class OllamaService {
+
+    private baseUrl = "http://localhost:11434";
+
+    async streamChat(
+
+        prompt: string,
+
+        model: string
+
+    ) {
+
+        const response = await axios({
+
+            method: "POST",
+
+            url: `${this.baseUrl}/api/chat`,
+
+            responseType: "stream",
+
+            data: {
+
+                model,
+
+                stream: true,
+
+                messages: [
+
+                    {
+
+                        role: "user",
+
+                        content: prompt
+
+                    }
+
+                ]
+
+            }
+
+        });
+
+        return response.data;
+
+    }
+
+}
+
+export default new OllamaService();
+```
+
+---
+
+## What Changed?
+
+### Enable Streaming
+
+```ts
+stream: true
+```
+
+This tells Ollama:
+
+> Don't wait until the entire answer is finished.
+
+Instead, generate one token at a time.
+
+---
+
+### Response Type
+
+```ts
+responseType: "stream"
+```
+
+Normally Axios returns JSON.
+
+With streaming enabled it returns a **Readable Stream**.
+
+---
+
+### Return Stream
+
+Instead of returning text:
+
+```ts
+return response.data.message.content;
+```
+
+Return the stream:
+
+```ts
+return response.data;
+```
+
+---
+
+# Flow
+
+```text
+Controller
+
+↓
+
+Ollama Service
+
+↓
+
+POST /api/chat
+
+↓
+
+Readable Stream
+
+↓
+
+Controller
+```
+
+---
+
+# Step 3 – Update AI Service
+
+## Current Flow
+
+```text
+Controller
+
+↓
+
+Ollama Service
+```
+
+---
+
+## New Flow
+
+```text
+Controller
+
+↓
+
+AI Service
+
+↓
+
+AI Router
+
+↓
+
+Ollama Service
+```
+
+---
+
+## Why?
+
+The AI Service should decide:
+
+* Which model to use
+* Whether to stream
+* Which provider to call
+
+The controller should not know these details.
+
+---
+
+## Update AI Service
+
+File
+
+```text
+src/services/ai.service.ts
+```
+
+```ts
+import aiRouter from "./ai-router.service";
+import ollamaService from "./ollama.service";
+
+class AIService {
+
+    async streamChat(
+
+        prompt: string
+
+    ) {
+
+        const route = aiRouter.selectModel(prompt);
+
+        console.log("Selected Model:", route.model);
+
+        return ollamaService.streamChat(
+
+            prompt,
+
+            route.model
+
+        );
+
+    }
+
+}
+
+export default new AIService();
+```
+
+---
+
+# Flow
+
+```text
+Prompt
+
+↓
+
+AI Router
+
+↓
+
+Model Selected
+
+↓
+
+Ollama Streaming
+
+↓
+
+Readable Stream
+```
+
+---
+
+# Step 4 – Create Streaming Controller
+
+## Goal
+
+The controller should receive the stream from the service and immediately send it to the client.
+
+---
+
+## File
+
+```text
+src/controllers/ai.controller.ts
+```
+
+---
+
+## Add New Controller
+
+```ts
+import { Request, Response } from "express";
+
+import aiService from "../services/ai.service";
+
+export async function streamChat(
+
+    req: Request,
+
+    res: Response
+
+) {
+
+    try {
+
+        const {
+
+            prompt
+
+        } = req.body;
+
+        const stream = await aiService.streamChat(
+
+            prompt
+
+        );
+
+        stream.pipe(res);
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Streaming Failed"
+
+        });
+
+    }
+
+}
+```
+
+---
+
+## Why stream.pipe(res)?
+
+Instead of this:
+
+```text
+Wait
+
+↓
+
+Receive Entire Response
+
+↓
+
+Send Response
+```
+
+We do:
+
+```text
+Receive Token
+
+↓
+
+Send Token
+
+↓
+
+Receive Token
+
+↓
+
+Send Token
+
+↓
+
+Finish
+```
+
+---
+
+# Step 5 – Configure SSE Headers
+
+Before sending any data, configure the HTTP response.
+
+---
+
+## Update Controller
+
+```ts
+res.setHeader(
+
+    "Content-Type",
+
+    "text/event-stream"
+
+);
+
+res.setHeader(
+
+    "Cache-Control",
+
+    "no-cache"
+
+);
+
+res.setHeader(
+
+    "Connection",
+
+    "keep-alive"
+
+);
+```
+
+---
+
+## Final Controller
+
+```ts
+export async function streamChat(
+
+    req: Request,
+
+    res: Response
+
+) {
+
+    try {
+
+        res.setHeader(
+
+            "Content-Type",
+
+            "text/event-stream"
+
+        );
+
+        res.setHeader(
+
+            "Cache-Control",
+
+            "no-cache"
+
+        );
+
+        res.setHeader(
+
+            "Connection",
+
+            "keep-alive"
+
+        );
+
+        const stream = await aiService.streamChat(
+
+            req.body.prompt
+
+        );
+
+        stream.pipe(res);
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Streaming Failed"
+
+        });
+
+    }
+
+}
+```
+
+---
+
+## Why These Headers?
+
+### Content-Type
+
+```text
+text/event-stream
+```
+
+Tells the browser that streaming data will follow.
+
+---
+
+### Cache-Control
+
+```text
+no-cache
+```
+
+Prevents proxies and browsers from buffering the stream.
+
+---
+
+### Connection
+
+```text
+keep-alive
+```
+
+Keeps the HTTP connection open while the AI generates tokens.
+
+---
+
+# Step 6 – Update AI Routes
+
+## File
+
+```text
+src/routes/ai.routes.ts
+```
+
+---
+
+## Current Routes
+
+```ts
+router.post(
+
+    "/chat",
+
+    validate(chatSchema),
+
+    chat
+
+);
+
+router.post(
+
+    "/generate",
+
+    generate
+
+);
+```
+
+---
+
+## Add Streaming Route
+
+```ts
+import {
+
+    chat,
+
+    generate,
+
+    streamChat
+
+} from "../controllers/ai.controller";
+```
+
+Then add:
+
+```ts
+router.post(
+
+    "/chat/stream",
+
+    validate(chatSchema),
+
+    streamChat
+
+);
+```
+
+---
+
+## Final Routes
+
+```ts
+router.post(
+
+    "/chat",
+
+    validate(chatSchema),
+
+    chat
+
+);
+
+router.post(
+
+    "/generate",
+
+    generate
+
+);
+
+router.post(
+
+    "/chat/stream",
+
+    validate(chatSchema),
+
+    streamChat
+
+);
+```
+
+---
+
+# Available Endpoints
+
+| Method | Endpoint                 | Purpose                      |
+| ------ | ------------------------ | ---------------------------- |
+| POST   | `/api/v1/ai/chat`        | Normal AI response           |
+| POST   | `/api/v1/ai/generate`    | Text generation              |
+| POST   | `/api/v1/ai/chat/stream` | Real-time streaming response |
+
+---
+
+# Request Example
+
+```http
+POST /api/v1/ai/chat/stream
+```
+
+```json
+{
+    "prompt": "Explain Docker",
+    "model": "llama3.2:3b"
+}
+```
+
+---
+
+# Request Flow
+
+```text
+Chrome Extension
+
+↓
+
+POST /chat/stream
+
+↓
+
+AI Controller
+
+↓
+
+AI Service
+
+↓
+
+AI Router
+
+↓
+
+Selected Model
+
+↓
+
+Ollama
+
+↓
+
+Streaming Tokens
+
+↓
+
+Controller
+
+↓
+
+Browser
+```
+
+---
+
+# Testing
+
+Run the backend:
+
+```bash
+npm run dev
+```
+
+Test with Postman:
+
+```http
+POST http://localhost:3000/api/v1/ai/chat/stream
+```
+
+Expected behavior:
+
+* HTTP connection remains open.
+* Ollama starts sending data immediately.
+* Tokens arrive continuously until generation completes.
+* The connection closes automatically after the final token.
+
+---
+
+# Best Practices
+
+* Keep controllers lightweight.
+* Place routing logic in `AI Router`.
+* Keep Ollama-specific code inside `ollama.service.ts`.
+* Always return streams instead of buffering large responses.
+* Use SSE headers for browser compatibility.
+* Log selected models during development.
+* Handle stream errors gracefully.
+* Prepare this architecture for WebSocket support in future milestones.
+
+---
+
+# Deliverables
+
+By completing Steps 2–6, you will have:
+
+* ✅ Ollama Streaming Service
+* ✅ Streaming AI Service
+* ✅ Streaming Controller
+* ✅ SSE Configuration
+* ✅ Streaming API Endpoint
+* ✅ Production-ready streaming architecture
+
+
 ---
 
 # Next Milestone
