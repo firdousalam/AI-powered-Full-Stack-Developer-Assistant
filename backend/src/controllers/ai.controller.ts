@@ -104,3 +104,64 @@ export async function generate(
     }
 
 }
+
+
+export async function streamChat(
+
+    req: Request,
+
+    res: Response
+
+) {
+
+    try {
+
+        res.setHeader(
+
+            "Content-Type",
+
+            "text/event-stream"
+
+        );
+
+        res.setHeader(
+
+            "Cache-Control",
+
+            "no-cache"
+
+        );
+
+        res.setHeader(
+
+            "Connection",
+
+            "keep-alive"
+
+        );
+        console.log("getting data from stream")
+        const stream = await aiService.streamChat(
+
+            req.body.prompt
+
+        );
+
+        stream.pipe(res);
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Streaming Failed"
+
+        });
+
+    }
+
+}

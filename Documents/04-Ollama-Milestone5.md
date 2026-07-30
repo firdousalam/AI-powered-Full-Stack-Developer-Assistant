@@ -1357,6 +1357,12 @@ Expected behavior:
 * Tokens arrive continuously until generation completes.
 * The connection closes automatically after the final token.
 
+
+curl.exe http://localhost:11434/api/chat `
+-H "Content-Type: application/json" `
+-d "{\"model\":\"llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"Explain Docker\"}],\"stream\":true}"
+
+curl.exe http://localhost:11434/api/chat -H "Content-Type: application/json" -d "{\"model\":\"llama3.2:3b\",\"messages\":[{\"role\":\"user\",\"content\":\"Explain Docker\"}],\"stream\":true}"
 ---
 
 # Best Practices

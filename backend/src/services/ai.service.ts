@@ -28,6 +28,26 @@ class AIService {
 
     }
 
+    async streamChat(
+
+        prompt: string
+
+    ) {
+
+        const route = aiRouter.selectModel(prompt);
+
+        console.log("Selected Model for stream:", route.model);
+
+        return ollamaService.streamChat(
+
+            prompt,
+
+            route.model
+
+        );
+
+    }
+
 }
 
 export default new AIService();

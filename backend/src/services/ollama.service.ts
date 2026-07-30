@@ -65,6 +65,51 @@ class OllamaService {
         return response.data;
 
     }
+
+    async streamChat(
+
+        prompt: string,
+
+        model: string
+
+    ) {
+
+        const response = await axios({
+
+            method: "POST",
+
+            url: `${this.baseUrl}/api/chat`,
+
+            responseType: "stream",
+
+            data: {
+
+                model,
+
+                stream: true,
+
+                messages: [
+
+                    {
+
+                        role: "user",
+
+                        content: prompt
+
+                    }
+
+                ]
+
+            }
+
+        });
+
+        return response.data;
+
+    }
 }
 
+
+
 export default new OllamaService();
+
