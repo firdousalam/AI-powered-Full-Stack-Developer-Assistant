@@ -1,68 +1,182 @@
 
+
+import memoryService from "./memory.service";
+import promptService from "./prompt.service";
 import aiRouter from "./ai-router.service";
 import ollamaService from "./ollama.service";
-import promptService from "./prompt.service";
 
 class AIService {
 
-    async chat(userPrompt: string) {
+    async chat(
 
-        // Build professional prompt
+        sessionId: string,
+
+        prompt: string
+
+    ) {
+
+        // Load previous conversation
+
+        // const history =
+
+        //     memoryService.getMessages(
+
+        //         sessionId
+
+        //     );
+
+        const history =
+
+            memoryService.getRecentMessages(
+
+                sessionId
+
+            );
+
+        console.log(
+
+            "Conversation Messages:",
+
+            history.length
+
+        );
+
+        // Save user message
+
+        memoryService.addMessage(
+
+            sessionId,
+
+            "user",
+
+            prompt
+
+        );
+
+        // Build formatted prompt
+
         const formattedPrompt =
-            promptService.buildPrompt(userPrompt);
 
-        // Select best model
+            promptService.buildPrompt(
+
+                prompt
+
+            );
+
+        // Select model
+
         const route =
-            aiRouter.selectModel(userPrompt);
 
-        console.log("=================================");
-        console.log("Original Prompt:");
-        console.log(userPrompt);
+            aiRouter.selectModel(
 
-        console.log("---------------------------------");
+                prompt
 
-        console.log("Formatted Prompt:");
-        console.log(formattedPrompt);
+            );
 
-        console.log("---------------------------------");
+        console.log(
 
-        console.log("Selected Model:");
-        console.log(route.model);
-
-        console.log("=================================");
-
-        return await ollamaService.chat(
-
-            formattedPrompt,
+            "Selected Model:",
 
             route.model
 
         );
 
+        // Generate response
+
+        const response =
+
+            await ollamaService.chat(
+
+                formattedPrompt,
+
+                route.model
+
+            );
+
+        // Save assistant response
+
+        memoryService.addMessage(
+
+            sessionId,
+
+            "assistant",
+
+            response
+
+        );
+
+        return {
+
+            success: true,
+
+            response
+
+        };
+
     }
 
     async streamChat(
-
         prompt: string
 
     ) {
+        // Load previous conversation
+
+        // const history =
+
+        //     memoryService.getMessages(
+
+        //         sessionId
+
+        //     );
+
+        // console.log(
+
+        //     "Conversation Messages:",
+
+        //     history.length
+
+        // );
+
+        // // Save user message
+
+        // memoryService.addMessage(
+
+        //     sessionId,
+
+        //     "user",
+
+        //     prompt
+
+        // );
+
+        // Build formatted prompt
+
         const formattedPrompt =
-            promptService.buildPrompt(prompt);
 
-        const route = aiRouter.selectModel(prompt);
+            promptService.buildPrompt(
 
-        console.log("Selected Model for stream:", route.model);
+                prompt
 
+            );
 
-        console.log("Formatted Prompt:");
-        console.log(formattedPrompt);
+        // Select model
 
-        console.log("---------------------------------");
+        const route =
 
-        console.log("Selected Model:");
-        console.log(route.model);
+            aiRouter.selectModel(
 
-        console.log("=================================");
+                prompt
+
+            );
+
+        console.log(
+
+            "Selected Model:",
+
+            route.model
+
+        );
+
         return ollamaService.streamChat(
 
             formattedPrompt,
@@ -70,6 +184,18 @@ class AIService {
             route.model
 
         );
+        // Save assistant response
+
+        // memoryService.addMessage(
+
+        //     sessionId,
+
+        //     "assistant",
+
+        //     response
+
+        // );
+
 
     }
 

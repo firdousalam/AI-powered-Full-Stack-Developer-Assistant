@@ -17,20 +17,25 @@ export async function chat(
 
         const {
 
-            prompt,
+            sessionId,
 
-            model
+            prompt
 
         } = req.body;
+        console.log(req.body);
 
-        const result = await aiService.chat(
+        const result =
 
-            req.body.prompt
+            await aiService.chat(
 
-        );
+                sessionId,
+
+                prompt
+
+            );
+
         console.log("======================");
         console.log("Prompt :", prompt);
-        console.log("Model  :", model);
         console.log("======================");
 
         res.json(result);
