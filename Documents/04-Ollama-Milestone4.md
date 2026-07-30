@@ -1,376 +1,368 @@
-# Milestone 4.4 – AI Router | Intelligent Model Selection
+Part 1 – Project Structure
 
-> 🎥 **Episode 4.4**  
-> **Chapter 4 – Ollama Integration & AI Router**
+By the end of this milestone, your backend will look like this:
 
----
-
-# 📖 Milestone Overview
-
-In the previous milestone, we successfully connected our Node.js backend to **Ollama** and generated responses from local AI models.
-
-Currently, every request uses a single model, regardless of the task.
-
-This approach works, but it is not efficient.
-
-For example:
-
-- Asking a coding question should use a coding model.
-- Asking an architecture question should use a reasoning model.
-- General conversation should use a lightweight chat model.
-
-In this milestone, we will build an **AI Router** that automatically selects the best AI model based on the user's request.
-
-This is the same design pattern used by many modern AI platforms that support multiple models.
-
----
-
-# 🎯 Learning Objectives
-
-After completing this milestone, you will be able to:
-
-- Understand the AI Router concept
-- Classify user requests
-- Select AI models dynamically
-- Build a reusable routing service
-- Separate routing logic from business logic
-- Improve AI performance and efficiency
-- Prepare the backend for multiple AI providers
-
----
-
-# 🤖 What is an AI Router?
-
-An AI Router is responsible for deciding **which AI model should answer a user's request**.
-
-Instead of always using the same model, the router analyzes the request and chooses the most appropriate model.
-
-For example:
-
-```text
-User Prompt
-
-↓
-
-AI Router
-
-↓
-
-Best AI Model
-
-↓
-
-AI Response
-```
-
----
-
-# ❓ Why Do We Need an AI Router?
-
-Different AI models are optimized for different tasks.
-
-Using a single model for everything can result in:
-
-- Slower responses
-- Higher memory usage
-- Lower quality answers
-- Poor coding performance
-- Inefficient hardware utilization
-
-An AI Router solves these problems by selecting the right model for each request.
-
----
-
-# 🏗 Architecture
-
-```text
-Chrome Extension
-
-        │
-
-        ▼
-
-Node.js Backend
-
-        │
-
-        ▼
-
-AI Controller
-
-        │
-
-        ▼
-
-AI Service
-
-        │
-
-        ▼
-
-AI Router
-
-        │
-
- ┌──────┼───────────────┐
-
- ▼      ▼               ▼
-
-Chat   Coding      Reasoning
-
- ▼      ▼               ▼
-
-Llama  Qwen      DeepSeek
-
-        │
-
-        ▼
-
-Ollama
-
-        │
-
-        ▼
-
-AI Response
-```
-
----
-
-# 📁 Project Structure
-
-```text
 backend/
 
 src/
 
-├── services/
-│
-│   ├── ai-router.service.ts
-│   ├── ollama.service.ts
-│   ├── ai.service.ts
-│
-├── providers/
+├── config/
+│   └── model.config.ts
 │
 ├── controllers/
+│   └── ai.controller.ts
 │
 ├── routes/
+│   └── ai.routes.ts
 │
-└── prompts/
-```
+├── services/
+│   ├── ai.service.ts
+│   ├── ai-router.service.ts
+│   └── ollama.service.ts
+│
+├── types/
+│   └── ai.types.ts
+│
+└── utils/
+Step 1 — Create Model Configuration
 
----
+Never hardcode model names throughout the application.
 
-# 🧠 AI Router Responsibilities
+Create
 
-The AI Router should:
+src/config/model.config.ts
+export const MODELS = {
 
-- Inspect the user's prompt
-- Detect the task type
-- Select the best AI model
-- Forward the request to Ollama
-- Return the generated response
+    CHAT: "llama3.2:3b",
 
-The router should **never** generate AI responses itself. It only decides which model to use.
+    CODING: "qwen2.5-coder:7b",
 
----
+    REASONING: "deepseek-r1:7b",
 
-# 🛠 Supported Models
+    EMBEDDING: "nomic-embed-text"
 
-For a 16 GB RAM development machine, we recommend the following models:
+} as const;
+Why?
 
-| Task | Recommended Model |
-|------|-------------------|
-| General Chat | llama3.2:3b |
-| Coding | qwen2.5-coder:7b |
-| Architecture | deepseek-r1:7b |
-| Documentation | llama3.2:3b |
-| Resume Review | llama3.2:3b |
-| Embeddings | nomic-embed-text |
+Instead of
 
----
+"llama3.2:3b"
 
-# 🧩 Model Selection Strategy
+everywhere,
 
-The router uses simple keyword-based intent detection in this milestone.
+you now use
 
-Later chapters will improve this using AI-based classification.
+MODELS.CHAT
 
-Example:
+Later, if you switch to
 
-| User Prompt | Selected Model |
-|-------------|----------------|
-| Explain JavaScript | qwen2.5-coder |
-| Review Dockerfile | qwen2.5-coder |
-| Explain Kubernetes | deepseek-r1 |
-| Explain React Hooks | qwen2.5-coder |
-| Resume Review | llama3.2 |
-| Generate README | llama3.2 |
-| General Chat | llama3.2 |
+llama3.3
 
----
+you only change one file.
 
-# 🔄 Request Flow
+Step 2 — Create AI Types
 
-```text
-User Prompt
+Create
 
-↓
+src/types/ai.types.ts
+export interface AIRouteResult {
 
-AI Controller
+    model: string;
 
-↓
+    reason: string;
 
-AI Service
+}
 
-↓
+We'll use this interface throughout the project.
 
-AI Router
+Step 3 — Create AI Router Service
 
-↓
+Create
 
-Select Model
-
-↓
-
-Ollama Service
-
-↓
-
-Ollama
-
-↓
-
-Generated Response
-
-↓
-
-Chrome Extension
-```
-
----
-
-# 🔹 Step 1 – Create AI Router Service
-
-Create:
-
-```text
 src/services/ai-router.service.ts
-```
 
-This service will contain all routing logic.
+Basic structure:
 
-Responsibilities:
+import { MODELS } from "../config/model.config";
+import { AIRouteResult } from "../types/ai.types";
 
-- Detect request type
-- Select model
-- Return model name
+class AIRouterService {
 
----
+    public selectModel(prompt: string): AIRouteResult {
 
-# 🔹 Step 2 – Create Model Configuration
+        return {
 
-Instead of hardcoding model names throughout the application, define them in one place.
+            model: MODELS.CHAT,
 
-Example:
+            reason: "Default Model"
 
-```text
-General Chat
+        };
 
-↓
+    }
 
-llama3.2:3b
+}
 
-Coding
+export default new AIRouterService();
 
-↓
+Right now every request returns
+
+llama3.2
+
+Later we'll make it intelligent.
+
+Step 4 — Create Keyword Lists
+
+Instead of dozens of if statements, keep keywords organized.
+
+const codingKeywords = [
+
+    "javascript",
+
+    "typescript",
+
+    "react",
+
+    "node",
+
+    "express",
+
+    "docker",
+
+    "kubernetes",
+
+    "mongodb",
+
+    "sql",
+
+    "api",
+
+    "css",
+
+    "html"
+
+];
+
+Reasoning keywords:
+
+const reasoningKeywords = [
+
+    "architecture",
+
+    "design",
+
+    "microservices",
+
+    "distributed",
+
+    "system design",
+
+    "high availability",
+
+    "load balancing",
+
+    "scalability"
+
+];
+Step 5 — Normalize the Prompt
+
+Always compare lowercase text.
+
+const input = prompt.toLowerCase();
+
+Now
+
+React
+
+and
+
+react
+
+are treated the same.
+
+Step 6 — Detect Coding Requests
+if (
+
+    codingKeywords.some(
+
+        keyword => input.includes(keyword)
+
+    )
+
+) {
+
+    return {
+
+        model: MODELS.CODING,
+
+        reason: "Coding Request"
+
+    };
+
+}
+
+Example
+
+Prompt
+
+Explain Express Middleware
+
+Selected model
 
 qwen2.5-coder:7b
+Step 7 — Detect Reasoning Requests
+if (
 
-Reasoning
+    reasoningKeywords.some(
+
+        keyword => input.includes(keyword)
+
+    )
+
+) {
+
+    return {
+
+        model: MODELS.REASONING,
+
+        reason: "Reasoning Request"
+
+    };
+
+}
+
+Example
+
+Design Uber Architecture
 
 ↓
 
-deepseek-r1:7b
-```
+deepseek-r1
+Step 8 — Default Model
 
-This makes future model changes simple.
+If nothing matches
 
----
+return {
 
-# 🔹 Step 3 – Detect Coding Requests
+    model: MODELS.CHAT,
 
-Examples:
+    reason: "General Chat"
 
-- JavaScript
-- TypeScript
-- React
-- Node.js
-- Docker
-- Kubernetes
-- SQL
-- Express
-- API
-- CSS
+};
 
-If the prompt contains these keywords,
+Now every request always gets a model.
 
-select:
+Final AI Router
 
-```text
-qwen2.5-coder:7b
-```
+Your completed router looks like this:
 
----
+import { MODELS } from "../config/model.config";
+import { AIRouteResult } from "../types/ai.types";
 
-# 🔹 Step 4 – Detect Reasoning Requests
+class AIRouterService {
 
-Examples:
+    private codingKeywords = [
 
-- Design
-- Architecture
-- System Design
-- Microservices
-- Scalability
-- Distributed Systems
+        "javascript",
+        "typescript",
+        "react",
+        "node",
+        "express",
+        "docker",
+        "kubernetes",
+        "mongodb",
+        "sql",
+        "css",
+        "html",
+        "api"
 
-Select:
+    ];
 
-```text
-deepseek-r1:7b
-```
+    private reasoningKeywords = [
 
----
+        "architecture",
+        "design",
+        "microservices",
+        "distributed",
+        "system design",
+        "high availability",
+        "load balancing",
+        "scalability"
 
-# 🔹 Step 5 – General Chat
+    ];
 
-If no special keywords are detected,
+    public selectModel(
 
-use:
+        prompt: string
 
-```text
-llama3.2:3b
-```
+    ): AIRouteResult {
 
-This becomes the default model.
+        const input = prompt.toLowerCase();
 
----
+        if (
 
-# 🔹 Step 6 – Integrate AI Router
+            this.codingKeywords.some(
 
-Current flow:
+                keyword => input.includes(keyword)
 
-```text
+            )
+
+        ) {
+
+            return {
+
+                model: MODELS.CODING,
+
+                reason: "Coding Request"
+
+            };
+
+        }
+
+        if (
+
+            this.reasoningKeywords.some(
+
+                keyword => input.includes(keyword)
+
+            )
+
+        ) {
+
+            return {
+
+                model: MODELS.REASONING,
+
+                reason: "Reasoning Request"
+
+            };
+
+        }
+
+        return {
+
+            model: MODELS.CHAT,
+
+            reason: "General Chat"
+
+        };
+
+    }
+
+}
+
+export default new AIRouterService();
+Step 9 — Update AI Service
+
+Current
+
 Controller
 
 ↓
 
 Ollama Service
-```
 
-New flow:
+New
 
-```text
 Controller
 
 ↓
@@ -384,203 +376,124 @@ AI Router
 ↓
 
 Ollama Service
-```
 
-This keeps the application modular and easier to maintain.
+Example
 
----
+import aiRouter from "./ai-router.service";
+import ollamaService from "./ollama.service";
 
-# 🔹 Step 7 – Test Different Prompts
+class AIService {
 
-## General Chat
+    async chat(prompt: string) {
 
-```text
-Who invented Java?
-```
+        const route = aiRouter.selectModel(prompt);
 
-Expected Model
+        console.log("Selected Model:", route.model);
+        console.log("Reason:", route.reason);
 
-```text
-llama3.2:3b
-```
+        return ollamaService.chat(
 
----
+            prompt,
 
-## Coding
+            route.model
 
-```text
-Explain Express Middleware
-```
+        );
 
-Expected Model
+    }
 
-```text
-qwen2.5-coder:7b
-```
+}
 
----
+export default new AIService();
+Step 10 — Controller
 
-## Docker
+The controller no longer knows anything about models.
 
-```text
-Explain Docker Compose
-```
+const result = await aiService.chat(
 
-Expected Model
+    req.body.prompt
 
-```text
-qwen2.5-coder:7b
-```
+);
 
----
+res.json(result);
 
-## Kubernetes
+Notice there is no:
 
-```text
-Explain Kubernetes Ingress
-```
+if(prompt.includes("docker"))
 
-Expected Model
+inside the controller.
 
-```text
-deepseek-r1:7b
-```
+That's the router's responsibility.
 
----
+Step 11 — Logging
 
-## Architecture
+Very useful during development.
 
-```text
-Design an E-commerce Microservices Architecture
-```
+console.log("======================");
+console.log("Prompt :", prompt);
+console.log("Model  :", route.model);
+console.log("Reason :", route.reason);
+console.log("======================");
 
-Expected Model
+Console
 
-```text
-deepseek-r1:7b
-```
+======================
 
----
+Prompt : Explain Docker Compose
 
-# 🔹 Step 8 – Log Selected Model
+Model : qwen2.5-coder:7b
 
-During development, log the selected model.
+Reason : Coding Request
 
-Example:
+======================
+Step 12 — Test
 
-```text
-Prompt:
+Try these prompts:
 
-Explain Docker
+Prompt	Selected Model
+Who invented Java?	llama3.2:3b
+Explain Docker	qwen2.5-coder:7b
+Explain React Hooks	qwen2.5-coder:7b
+Design Netflix Architecture	deepseek-r1:7b
+Explain Microservices	deepseek-r1:7b
+Tell me a joke	llama3.2:3b
+Architecture After Milestone 4.4
+Chrome Extension
+        │
+        ▼
+AI Controller
+        │
+        ▼
+AI Service
+        │
+        ▼
+AI Router
+        │
+   ┌────┼──────────────┐
+   ▼    ▼              ▼
+Chat Coding      Reasoning
+   │      │             │
+   └──────┴─────────────┘
+           │
+           ▼
+     Ollama Service
+           │
+           ▼
+      Ollama API
+           │
+           ▼
+      AI Response
 
-↓
 
-Selected Model:
 
-qwen2.5-coder:7b
-```
 
-This helps verify that routing is working correctly.
+This completes Milestone 4.4 with a clean, extensible architecture.
 
----
+Next, we'll implement Milestone 4.5 – Streaming AI Responses, where we'll add:
 
-# 🔹 Step 9 – Error Handling
+streamChat() to the Ollama service
+Server-Sent Events (SSE) endpoint
+Streaming controller
+Live token-by-token responses in the Chrome Extension
+Proper cleanup and error handling
 
-If no model is selected,
-
-fallback to:
-
-```text
-llama3.2:3b
-```
-
-Never allow routing to fail because of an unknown request.
-
----
-
-# 🔹 Step 10 – Future Improvements
-
-Our first AI Router uses simple keyword matching.
-
-In future chapters, we will enhance it with:
-
-- AI-based intent detection
-- Prompt classification
-- Cost-aware routing
-- Response quality scoring
-- Multi-provider routing
-- Fallback providers
-- Load balancing
-- Conversation memory
-
----
-
-# 🧪 Testing Checklist
-
-Verify the following:
-
-- ✅ General chat selects Llama
-- ✅ Coding prompts select Qwen
-- ✅ Architecture prompts select DeepSeek
-- ✅ Unknown prompts use the default model
-- ✅ Router logs the selected model
-- ✅ AI responses are generated successfully
-
----
-
-# 💡 Best Practices
-
-- Keep routing logic separate from controllers
-- Avoid hardcoded model names across the project
-- Use configuration files for model mappings
-- Always define a default model
-- Keep routing deterministic and easy to test
-- Log selected models during development
-- Make the router easily extensible for future AI providers
-
----
-
-# 📁 Deliverables
-
-By the end of this milestone, you will have:
-
-- ✅ AI Router Service
-- ✅ Intelligent Model Selection
-- ✅ Keyword-based Intent Detection
-- ✅ Configurable Model Mapping
-- ✅ Automatic Model Routing
-- ✅ Cleaner AI Architecture
-- ✅ Foundation for Multi-Provider Support
-
----
-
-# 📌 Git Commit
-
-```bash
-git add .
-
-git commit -m "feat(ai): implement intelligent ai router"
-
-git push origin develop
-```
-
----
-
-# 📖 Milestone Summary
-
-In this milestone, we built an **AI Router** that intelligently selects the most appropriate local AI model based on the user's request. Instead of sending every prompt to the same model, the router analyzes the request, detects its intent, and routes it to the best model for coding, reasoning, or general conversation. This design improves response quality, reduces unnecessary resource usage, and prepares the backend for future support of multiple AI providers such as Ollama, OpenAI, Gemini, and Claude.
-
----
-
-# ⏭ Next Milestone
-
-## Milestone 4.5 – Streaming AI Responses
-
-In the next milestone, you will:
-
-- Enable streaming responses from Ollama
-- Understand token-by-token generation
-- Implement Server-Sent Events (SSE)
-- Stream responses to the Chrome Extension
-- Improve perceived performance
-- Prepare the backend for real-time AI conversations
+This will turn DevPilot AI into a ChatGPT-like real-time experience.
