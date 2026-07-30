@@ -1,20 +1,30 @@
-import { ProviderFactory } from "../providers/ProviderFactory";
+
+import aiRouter from "./ai-router.service";
+import ollamaService from "./ollama.service";
 
 class AIService {
 
-    async chat(
+    async chat(prompt: string) {
 
-        prompt: string,
+        const route = aiRouter.selectModel(prompt);
 
-        model: string
+        console.log("Selected Model:", route.model);
+        console.log("Reason:", route.reason);
 
-    ) {
+        console.log("======================");
+        console.log("Prompt :", prompt);
+        console.log("Model  :", route.model);
+        console.log("Reason :", route.reason);
+        console.log("======================");
 
-        const provider =
 
-            ProviderFactory.create(model);
+        return ollamaService.chat(
 
-        return await provider.chat(prompt);
+            prompt,
+
+            route.model
+
+        );
 
     }
 

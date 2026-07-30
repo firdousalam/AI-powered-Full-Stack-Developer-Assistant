@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 
 import ollamaService from "../services/ollama.service";
+import aiService from "../services/ai.service";
+
+
 
 export async function chat(
 
@@ -20,21 +23,17 @@ export async function chat(
 
         } = req.body;
 
-        const response = await ollamaService.chat(
+        const result = await aiService.chat(
 
-            prompt,
-
-            model
+            req.body.prompt
 
         );
+        console.log("======================");
+        console.log("Prompt :", prompt);
+        console.log("Model  :", model);
+        console.log("======================");
 
-        res.json({
-
-            success: true,
-
-            response
-
-        });
+        res.json(result);
 
     }
 

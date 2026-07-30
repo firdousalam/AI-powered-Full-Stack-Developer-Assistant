@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 
 import { chat, generate } from "../controllers/ai.controller"
@@ -29,3 +30,5 @@ router.post(
 
 
 export default router;
+
+
