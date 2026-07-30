@@ -1,26 +1,39 @@
 
 import aiRouter from "./ai-router.service";
 import ollamaService from "./ollama.service";
+import promptService from "./prompt.service";
 
 class AIService {
 
-    async chat(prompt: string) {
+    async chat(userPrompt: string) {
 
-        const route = aiRouter.selectModel(prompt);
+        // Build professional prompt
+        const formattedPrompt =
+            promptService.buildPrompt(userPrompt);
 
-        console.log("Selected Model:", route.model);
-        console.log("Reason:", route.reason);
+        // Select best model
+        const route =
+            aiRouter.selectModel(userPrompt);
 
-        console.log("======================");
-        console.log("Prompt :", prompt);
-        console.log("Model  :", route.model);
-        console.log("Reason :", route.reason);
-        console.log("======================");
+        console.log("=================================");
+        console.log("Original Prompt:");
+        console.log(userPrompt);
 
+        console.log("---------------------------------");
 
-        return ollamaService.chat(
+        console.log("Formatted Prompt:");
+        console.log(formattedPrompt);
 
-            prompt,
+        console.log("---------------------------------");
+
+        console.log("Selected Model:");
+        console.log(route.model);
+
+        console.log("=================================");
+
+        return await ollamaService.chat(
+
+            formattedPrompt,
 
             route.model
 
@@ -33,14 +46,26 @@ class AIService {
         prompt: string
 
     ) {
+        const formattedPrompt =
+            promptService.buildPrompt(prompt);
 
         const route = aiRouter.selectModel(prompt);
 
         console.log("Selected Model for stream:", route.model);
 
+
+        console.log("Formatted Prompt:");
+        console.log(formattedPrompt);
+
+        console.log("---------------------------------");
+
+        console.log("Selected Model:");
+        console.log(route.model);
+
+        console.log("=================================");
         return ollamaService.streamChat(
 
-            prompt,
+            formattedPrompt,
 
             route.model
 
