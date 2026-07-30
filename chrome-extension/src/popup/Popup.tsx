@@ -1,31 +1,70 @@
-import { useState } from "react";
-
-import { useStorage } from "../hooks/useStorage";
-
-import { STORAGE_KEYS } from "../types/storage.types";
-import { saveData } from "../services/storage.service";
+import { useEffect, useState } from "react";
 
 function Popup() {
 
-    const theme = useStorage(STORAGE_KEYS.THEME) as string;
+    const [prompt, setPrompt] = useState("");
 
     const [response, setResponse] = useState("");
 
-    const sendMessage = () => {
+    const [loading, setLoading] = useState(false);
 
-        chrome.runtime.sendMessage(
-            {
-                type: "ASK_AI",
-                prompt: "Hello AI"
-            },
-            (res) => {
+    const [error, setError] = useState("");
 
-                console.log(res);
+    useEffect(() => {
 
-                setResponse(res.response);
+        const listener = (message: any) => {
+
+            switch (message.type) {
+
+                case "AI_STREAM":
+
+                    setResponse(prev => prev + message.token);
+
+                    break;
+
+                case "AI_STREAM_END":
+
+                    setLoading(false);
+
+                    break;
+
+                case "AI_STREAM_ERROR":
+
+                    setLoading(false);
+
+                    setError(message.error);
+
+                    break;
 
             }
-        );
+
+        };
+
+        chrome.runtime.onMessage.addListener(listener);
+
+        return () => {
+
+            chrome.runtime.onMessage.removeListener(listener);
+
+        };
+
+    }, []);
+
+    const sendMessage = () => {
+
+        setResponse("");
+
+        setError("");
+
+        setLoading(true);
+
+        chrome.runtime.sendMessage({
+
+            type: "ASK_AI",
+
+            prompt
+
+        });
 
     };
 
@@ -33,73 +72,51 @@ function Popup() {
 
         <div className="p-5">
 
-            <p className="mb-5">
+            <textarea
 
-                Theme :
-                <strong>
-                    {" "}
-                    {theme || "Not Set"}
-                </strong>
+                rows={5}
 
-            </p>
+                className="border w-full p-2"
+
+                value={prompt}
+
+                onChange={(e) => setPrompt(e.target.value)}
+
+                placeholder="Ask anything..."
+
+            />
 
             <button
+
+                disabled={loading}
 
                 onClick={sendMessage}
 
-                className="bg-blue-600 text-white px-4 py-2 rounded"
+                className="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
 
             >
 
-                Send Message
+                {loading ? "Thinking..." : "Ask AI"}
 
             </button>
 
-            <p className="mt-5">
+            {
+
+                error &&
+
+                <p className="text-red-600 mt-3">
+
+                    {error}
+
+                </p>
+
+            }
+
+            <div className="mt-5 whitespace-pre-wrap">
 
                 {response}
 
-            </p>
-
-            <button
-
-                onClick={async () => {
-
-                    await saveData(
-
-                        STORAGE_KEYS.THEME,
-
-                        "dark"
-
-                    );
-
-                }}
-
-            >
-
-                Save Dark Theme
-
-            </button>
-
-            <button
-
-                onClick={async () => {
-                    console.log(STORAGE_KEYS.THEME, "light")
-                    await saveData(
-
-                        STORAGE_KEYS.THEME,
-
-                        "light"
-
-                    )
-
-                }}
-
-            >
-
-                Light Mode
-
-            </button>
+            </div>
 
         </div>
 
