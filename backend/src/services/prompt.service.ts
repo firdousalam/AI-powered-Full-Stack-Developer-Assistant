@@ -7,6 +7,7 @@ import { codeReviewPrompt } from "../prompts/code-review.prompt";
 class PromptService {
 
     buildPrompt(userPrompt: string): string {
+        console.log("vhfhgfhf");
 
         const prompt = userPrompt.toLowerCase();
 

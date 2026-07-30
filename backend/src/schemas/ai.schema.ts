@@ -8,7 +8,6 @@
 
 // });
 
-import { z } from "zod";
 
 // export const chatSchema = z.object({
 
@@ -25,15 +24,20 @@ import { z } from "zod";
 //         .min(1, "Model is required")
 
 // });
+import { z } from "zod";
 
-export const chatSchema = z.object({
+export const chatSchema =
 
-    prompt: z.string().min(1, "Prompt is required"),
+    z.object({
 
-    model: z.string().min(1, "Model is required"),
+        sessionId:
 
-    temperature: z.number().optional(),
+            z.string(),
 
-    maxTokens: z.number().optional()
+        prompt:
 
-});
+            z.string()
+
+                .min(1)
+
+    });
