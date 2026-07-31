@@ -30,10 +30,6 @@ export const chatSchema =
 
     z.object({
 
-        sessionId:
-
-            z.string(),
-
         prompt:
 
             z.string()

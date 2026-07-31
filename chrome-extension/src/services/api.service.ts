@@ -1,10 +1,18 @@
+const API_URL = "http://localhost:3000/api/v1/ai";
+
+/**
+ * ==========================================
+ * Normal Chat API
+ * ==========================================
+ */
 export async function chatWithAI(
     prompt: string,
-    model: string
+    model = "llama3.2:3b"
 ) {
     try {
+
         const response = await fetch(
-            "http://localhost:3000/api/v1/ai/chat",
+            `${API_URL}/chat`,
             {
                 method: "POST",
                 headers: {
@@ -17,116 +25,76 @@ export async function chatWithAI(
             }
         );
 
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error("Backend request failed");
+        }
 
-        return data;
+        return await response.json();
 
     } catch (error) {
 
-        console.error("Backend Error:", error);
+        console.error("Chat API Error:", error);
 
         return {
             success: false,
-            response: "Backend unavailable"
+            response: "Unable to connect to backend."
         };
+
     }
 }
 
+/**
+ * ==========================================
+ * Streaming Chat API
+ * ==========================================
+ */
 export async function streamChat(
-
     prompt: string,
-
     model: string,
-
     onToken: (token: string) => void
-
 ) {
 
     const response = await fetch(
-
-        "http://localhost:3000/api/v1/ai/chat/stream",
-
+        `${API_URL}/chat/stream`,
         {
-
             method: "POST",
-
             headers: {
-
                 "Content-Type": "application/json"
-
             },
-
             body: JSON.stringify({
-
                 prompt,
-
                 model
-
             })
-
         }
-
     );
 
-    if (!response.ok)
+    if (!response.ok) {
+        throw new Error("Streaming request failed");
+    }
 
-        throw new Error("Streaming Failed");
-
-    if (!response.body)
-
-        throw new Error("ReadableStream Missing");
+    if (!response.body) {
+        throw new Error("ReadableStream missing");
+    }
 
     const reader = response.body.getReader();
 
     const decoder = new TextDecoder();
-
-
-    let buffer = "";
 
     while (true) {
 
         const { done, value } = await reader.read();
 
         if (done) {
-
             break;
-
         }
 
-        buffer += decoder.decode(value, {
-
+        const token = decoder.decode(value, {
             stream: true
-
         });
 
-        const lines = buffer.split("\n");
+        console.log("TOKEN =>", token);
 
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-
-            if (!line.trim()) {
-
-                continue;
-
-            }
-
-            try {
-
-                const json = JSON.parse(line);
-
-                if (json.message?.content) {
-
-                    onToken(json.message.content);
-
-                }
-
-            } catch {
-
-                // incomplete JSON, wait for next chunk
-            }
-
-        }
+        onToken(token);
 
     }
 
