@@ -1,258 +1,536 @@
-# Chapter 5 - Model Context Protocol (MCP)
+# 📘 Chapter 5 – Model Context Protocol (MCP)
 
-> **Integrate Model Context Protocol (MCP) into DevPilot AI to securely connect AI models with developer tools, local resources, and external services.**
-
----
-
-# 📖 Chapter Overview
-
-Until now, our AI assistant can answer questions using local LLMs running on Ollama.
-
-However, an AI model cannot directly:
-
-- Read your local files
-- Access Git repositories
-- Execute Docker commands
-- Inspect Kubernetes clusters
-- Analyze Jenkins pipelines
-- Read PDFs
-- Query databases
-
-This is where **Model Context Protocol (MCP)** comes in.
-
-MCP acts as a secure bridge between AI models and external tools.
-
-By the end of this chapter, DevPilot AI will be able to communicate with multiple MCP servers and securely use tools to answer user requests.
+> **Build AI Agents with MCP, Tool Calling & External Developer Tools**
 
 ---
 
-# 🎯 Learning Objectives
+# 🎯 Chapter Goal
 
-After completing this chapter, you will be able to:
+In this chapter, we will transform **DevPilot AI** from a chatbot into a real **AI Agent**.
 
-- Understand Model Context Protocol (MCP)
-- Build an MCP Gateway
-- Connect multiple MCP Servers
-- Invoke tools dynamically
-- Secure tool execution
-- Connect Ollama with MCP
-- Design scalable MCP architecture
-- Prepare the application for RAG integration
+Until now, the AI could only answer questions using its internal knowledge.
+
+After completing this chapter, it will be able to:
+
+- 📂 Read local files
+- 📊 Analyze complete software projects
+- 📥 Clone Git repositories
+- 🐙 Read and analyze GitHub repositories
+- 🐳 Inspect Docker containers
+- ☸️ Monitor Kubernetes clusters
+- 🛠 Execute developer tools
+- 🔍 Discover available tools automatically
+- 🔐 Execute tools securely
+
+This is exactly how modern AI assistants such as **Cursor**, **Claude Desktop**, **GitHub Copilot Agent**, and **Windsurf** interact with external developer tools.
 
 ---
 
-# 🤖 What is MCP?
+# 🎥 Chapter Roadmap
 
-Model Context Protocol (MCP) is an open protocol that allows AI models to communicate with external applications through standardized tools.
+| Episode | Milestone | Goal |
+|----------|-----------|------|
+| **5.1** | Introduction to MCP | Understand MCP concepts and architecture |
+| **5.2** | MCP Gateway | Build an MCP Gateway and Tool Registry |
+| **5.3** | MCP Client | Connect the backend to MCP servers |
+| **5.4** | Tool Discovery | Discover available tools dynamically |
+| **5.5** | Filesystem MCP | Read, search and analyze local files |
+| **5.6** | GitHub MCP | Analyze repositories, commits, issues and pull requests |
+| **5.7** | Docker MCP | Inspect containers, images, logs and networks |
+| **5.8** | Kubernetes MCP | Query pods, deployments, services and namespaces |
+| **5.9** | Git MCP | Branches, commits, history, diff and blame |
+| **5.10** | Multi-Tool AI Agent | Intelligent tool routing and production-ready architecture |
 
-Instead of giving an LLM direct access to your computer, MCP provides a secure and structured interface.
+---
 
-Think of MCP as:
+# 📂 Milestone 5.1 – Introduction to MCP
+
+## 🎥 Episode 5.1
+
+## Goal
+
+Learn what **Model Context Protocol (MCP)** is, why it exists, and how AI assistants communicate with external developer tools.
+
+---
+
+## Topics Covered
+
+- What is MCP?
+- Why LLMs need external tools
+- MCP Components
+- MCP Client vs MCP Server
+- Transport Layer
+- JSON-RPC Communication
+- Tool Execution Flow
+- Security Model
+
+---
+
+## Architecture
 
 ```text
-LLM
+Chrome Extension
 
-↓
+        │
+
+        ▼
+
+Node.js Backend
+
+        │
+
+        ▼
 
 MCP Client
 
-↓
+        │
+
+        ▼
 
 MCP Server
 
-↓
+        │
 
-Tool
+ ┌──────┼──────────┬──────────┐
+ ▼      ▼          ▼          ▼
 
-↓
-
-Result
-
-↓
-
-LLM
+Filesystem GitHub Docker Kubernetes
 ```
 
 ---
 
-# 🚀 Why Use MCP?
+## Deliverables
 
-Without MCP:
-
-```text
-User
-
-↓
-
-LLM
-
-↓
-
-Answer (Limited Knowledge)
-```
-
-The AI only knows:
-
-- Training Data
-- Prompt
-- Conversation History
-
-It cannot interact with your local environment.
+- ✅ Understanding MCP
+- ✅ MCP Terminology
+- ✅ Overall Architecture
 
 ---
 
-With MCP:
+# 📂 Milestone 5.2 – MCP Gateway
 
-```text
-User
+## 🎥 Episode 5.2
 
-↓
+## Goal
 
-LLM
-
-↓
-
-MCP
-
-↓
-
-Developer Tools
-
-↓
-
-Real-Time Data
-
-↓
-
-LLM
-
-↓
-
-Answer
-```
-
-Now the AI can:
-
-- Read source code
-- Search repositories
-- Execute Docker commands
-- Inspect Kubernetes clusters
-- Analyze Jenkins pipelines
-- Search PDFs
-- Read Markdown
-- Access databases
+Build an **MCP Gateway** responsible for managing multiple MCP servers.
 
 ---
 
-# 🏗 MCP Architecture
+## Topics Covered
+
+- Gateway Pattern
+- Server Registry
+- Dynamic Registration
+- Health Checking
+- Connection Lifecycle
+- Configuration Management
+
+---
+
+## Build
 
 ```text
-                  Chrome Extension
+src/mcp/
 
-                         │
+├── gateway.ts
+├── registry.ts
+├── types.ts
+└── config.ts
+```
 
-                         ▼
+---
 
-                  Node.js Backend
+## Deliverables
 
-                         │
+- ✅ MCP Gateway
+- ✅ Server Registry
+- ✅ Health Monitoring
 
-                  AI Router Service
+---
 
-                         │
+# 📂 Milestone 5.3 – MCP Client
 
-                  MCP Gateway
+## 🎥 Episode 5.3
 
-                         │
+## Goal
 
-      ┌──────────────────┼───────────────────┐
+Build a reusable MCP Client capable of communicating with any MCP Server.
 
-      ▼                  ▼                   ▼
+---
 
-Filesystem MCP      GitHub MCP        Docker MCP
+## Topics Covered
 
-      ▼                  ▼                   ▼
+- MCP Client
+- JSON-RPC Protocol
+- Request / Response Lifecycle
+- Asynchronous Communication
+- Error Handling
+- Request Timeouts
 
- Local Files       Git Repository      Containers
+---
 
-                         │
+## Build Flow
 
-      ┌──────────────────┼───────────────────┐
+```text
+MCP Client
 
-      ▼                  ▼                   ▼
-
- Kubernetes MCP      Jenkins MCP      PDF MCP
+      │
 
       ▼
 
-   Local Cluster
+Connect()
 
-                         │
+      │
 
-                         ▼
+      ▼
 
-                     Ollama
+Discover Tools()
+
+      │
+
+      ▼
+
+Execute Tool()
 ```
 
 ---
 
-# 📦 MCP Components
+## Deliverables
 
-## MCP Client
+- ✅ Generic MCP Client
+- ✅ JSON-RPC Implementation
+- ✅ Connection Manager
 
-Responsible for:
+---
 
-- Sending requests
-- Discovering tools
-- Receiving responses
+# 📂 Milestone 5.4 – Tool Discovery
 
-In our project:
+## 🎥 Episode 5.4
+
+## Goal
+
+Automatically discover tools exposed by connected MCP servers.
+
+---
+
+## Topics Covered
+
+- Tool Discovery
+- Tool Metadata
+- Tool Parameters
+- Validation
+- Dynamic Loading
+- Tool Registry
+
+---
+
+## Build Flow
 
 ```text
-Node.js Backend
+Filesystem Server
+
+        │
+
+        ▼
+
+list_tools
+
+        │
+
+        ▼
+
+Backend
+
+        │
+
+        ▼
+
+Tool Registry
 ```
 
-acts as the MCP Client.
+---
+
+## Deliverables
+
+- ✅ Tool Discovery
+- ✅ Dynamic Tool Registry
+- ✅ Tool Metadata
 
 ---
 
-## MCP Server
+# 📂 Milestone 5.5 – Filesystem MCP
 
-Responsible for:
+## 🎥 Episode 5.5
 
-- Registering tools
-- Executing tools
-- Returning structured responses
+## Goal
 
-Examples:
-
-- Filesystem MCP
-- Docker MCP
-- GitHub MCP
+Allow DevPilot AI to analyze and interact with local files.
 
 ---
 
-## Tool
+## Topics Covered
 
-A Tool is simply a function.
+- Read File
+- Write File
+- Search Files
+- Delete Files
+- Directory Listing
+- Project Analysis
 
-Examples:
+---
+
+## Architecture
 
 ```text
-readFile()
+AI
 
-searchRepository()
+↓
 
-listContainers()
+Filesystem MCP
 
-kubectlGetPods()
+↓
 
-gitStatus()
+Project Folder
 ```
 
 ---
 
-# 📂 Project Structure
+## Deliverables
+
+- ✅ Local File Analysis
+- ✅ Project Structure Analysis
+- ✅ Source Code Reading
+
+---
+
+# 📂 Milestone 5.6 – GitHub MCP
+
+## 🎥 Episode 5.6
+
+## Goal
+
+Connect DevPilot AI to GitHub repositories.
+
+---
+
+## Topics Covered
+
+- Repository Analysis
+- Pull Requests
+- Issues
+- Branches
+- Commits
+- Contributors
+
+---
+
+## Architecture
+
+```text
+AI
+
+↓
+
+GitHub MCP
+
+↓
+
+GitHub API
+```
+
+---
+
+## Deliverables
+
+- ✅ Repository Analysis
+- ✅ Pull Request Review
+- ✅ Commit History
+- ✅ Issue Summary
+
+---
+
+# 📂 Milestone 5.7 – Docker MCP
+
+## 🎥 Episode 5.7
+
+## Goal
+
+Allow DevPilot AI to inspect Docker resources.
+
+---
+
+## Topics Covered
+
+- Containers
+- Images
+- Networks
+- Volumes
+- Logs
+- Docker Compose
+
+---
+
+## Deliverables
+
+- ✅ List Containers
+- ✅ Inspect Images
+- ✅ View Container Logs
+- ✅ Docker Health Analysis
+
+---
+
+# 📂 Milestone 5.8 – Kubernetes MCP
+
+## 🎥 Episode 5.8
+
+## Goal
+
+Allow DevPilot AI to inspect Kubernetes clusters.
+
+---
+
+## Topics Covered
+
+- Pods
+- Services
+- Deployments
+- ReplicaSets
+- Namespaces
+- Logs
+- Events
+
+---
+
+## Deliverables
+
+- ✅ Cluster Inspection
+- ✅ Pod Logs
+- ✅ Deployment Analysis
+- ✅ Kubernetes Health Monitoring
+
+---
+
+# 📂 Milestone 5.9 – Git MCP
+
+## 🎥 Episode 5.9
+
+## Goal
+
+Integrate Git operations into DevPilot AI.
+
+---
+
+## Topics Covered
+
+- Git Status
+- Branches
+- Commits
+- Diff
+- Blame
+- History
+- Stash
+
+---
+
+## Deliverables
+
+- ✅ Repository Analysis
+- ✅ Commit Review
+- ✅ Branch Information
+- ✅ Diff Explanation
+
+---
+
+# 📂 Milestone 5.10 – Multi-Tool AI Agent
+
+## 🎥 Episode 5.10
+
+## Goal
+
+Build a production-ready AI Agent capable of intelligently selecting and executing multiple developer tools.
+
+---
+
+## Topics Covered
+
+- Tool Selection
+- AI Decision Making
+- Multi-Tool Workflow
+- Parallel Execution
+- Fallback Strategy
+- Permissions
+- Logging
+- Security
+
+---
+
+## Architecture
+
+```text
+User Prompt
+
+        │
+
+        ▼
+
+Prompt Service
+
+        │
+
+        ▼
+
+AI Router
+
+        │
+
+        ▼
+
+MCP Gateway
+
+        │
+
+        ▼
+
+Tool Discovery
+
+        │
+
+ ┌──────┼──────────┬──────────┬─────────┐
+ ▼      ▼          ▼          ▼         ▼
+
+Filesystem GitHub Docker Git Kubernetes
+
+        │
+
+        ▼
+
+Result Aggregation
+
+        │
+
+        ▼
+
+LLM
+
+        │
+
+        ▼
+
+Final Response
+```
+
+---
+
+## Deliverables
+
+- ✅ Multi-Tool AI Agent
+- ✅ Automatic Tool Selection
+- ✅ Production-ready Agent Architecture
+
+---
+
+# 📁 Expected Project Structure
 
 ```text
 backend/
@@ -260,524 +538,77 @@ backend/
 src/
 
 ├── mcp/
-│
-├── gateway/
-│   └── mcp.gateway.ts
-│
-├── clients/
-│   └── mcp.client.ts
-│
-├── servers/
-│   ├── filesystem/
-│   ├── github/
-│   ├── docker/
-│   ├── kubernetes/
-│   ├── jenkins/
-│   └── pdf/
-│
-├── tools/
+│   ├── gateway/
+│   ├── client/
+│   ├── registry/
+│   ├── servers/
+│   ├── tools/
+│   ├── transport/
+│   ├── types/
+│   └── config/
 │
 ├── services/
+│
+├── controllers/
+│
+├── prompts/
+│
+├── memory/
 │
 └── routes/
 ```
 
 ---
 
-# 🔄 MCP Workflow
+# 🎯 Chapter Deliverables
 
-```text
-User
-
-↓
-
-Chrome Extension
-
-↓
-
-Backend
-
-↓
-
-AI Router
-
-↓
-
-MCP Gateway
-
-↓
-
-Filesystem MCP
-
-↓
-
-Read File
-
-↓
-
-Result
-
-↓
-
-LLM
-
-↓
-
-Final Answer
-```
-
----
-
-# 🔌 MCP Gateway
-
-The MCP Gateway is the central component responsible for managing all MCP servers.
-
-Responsibilities:
-
-- Tool Discovery
-- Tool Selection
-- Authentication
-- Error Handling
-- Logging
-- Tool Execution
-- Response Formatting
-
----
-
-# 🗂 Supported MCP Servers
-
-## 1. Filesystem MCP
-
-Purpose:
-
-Read local project files.
-
-Supported Operations:
-
-- Read File
-- List Directory
-- Search Files
-- Search Text
-
-Example:
-
-```text
-Explain auth.service.ts
-```
-
----
-
-## 2. GitHub MCP
-
-Purpose:
-
-Access Git repositories.
-
-Operations:
-
-- List Repositories
-- Read README
-- Search Files
-- Pull Requests
-- Issues
-
-Example:
-
-```text
-Summarize this repository.
-```
-
----
-
-## 3. Docker MCP
-
-Purpose:
-
-Interact with Docker.
-
-Operations:
-
-- List Containers
-- Images
-- Logs
-- Docker Compose
-
-Example:
-
-```text
-Show all running containers.
-```
-
----
-
-## 4. Kubernetes MCP
-
-Purpose:
-
-Manage Kubernetes.
-
-Operations:
-
-- Pods
-- Deployments
-- Services
-- Ingress
-- Logs
-- Events
-
-Example:
-
-```text
-Explain why my pod is crashing.
-```
-
----
-
-## 5. Jenkins MCP
-
-Purpose:
-
-Interact with Jenkins.
-
-Operations:
-
-- Pipelines
-- Builds
-- Console Logs
-- Build Status
-
-Example:
-
-```text
-Why did my pipeline fail?
-```
-
----
-
-## 6. PDF MCP
-
-Purpose:
-
-Read PDF documents.
-
-Operations:
-
-- Extract Text
-- Search
-- Summarize
-
-Example:
-
-```text
-Explain Chapter 4.
-```
-
----
-
-# 🧠 AI + MCP Flow
-
-```text
-User Question
-
-↓
-
-Intent Detection
-
-↓
-
-Need Tool?
-
-↓
-
-Yes
-
-↓
-
-MCP Gateway
-
-↓
-
-Execute Tool
-
-↓
-
-Tool Result
-
-↓
-
-LLM
-
-↓
-
-Answer
-```
-
----
-
-# 🎯 Tool Selection
-
-Examples:
-
-| User Prompt | Tool |
-|-------------|------|
-| Explain Dockerfile | Filesystem MCP |
-| Show Git commits | GitHub MCP |
-| List Docker containers | Docker MCP |
-| Explain Kubernetes YAML | Filesystem MCP |
-| Why is Jenkins failing? | Jenkins MCP |
-| Explain this PDF | PDF MCP |
-
----
-
-# 🔐 Security
-
-Security is critical.
-
-Never allow unrestricted execution.
-
-Allowed:
-
-- Read Files
-- List Files
-- Search Files
-- Read Logs
-- Git Operations
-
-Restricted:
-
-- Delete Files
-- Format Disk
-- Execute Unknown Scripts
-- Remove Containers
-- Delete Kubernetes Resources
-
----
-
-# 🧾 Tool Registration
-
-Each MCP Server registers its available tools.
-
-Example:
-
-```text
-Filesystem MCP
-
-├── read_file
-
-├── search_files
-
-├── list_directory
-
-└── file_metadata
-```
-
----
-
-# ⚡ Dynamic Tool Discovery
-
-Instead of hardcoding tools:
-
-```text
-Backend
-
-↓
-
-Discover Tools
-
-↓
-
-Cache Tool List
-
-↓
-
-Execute Selected Tool
-```
-
-Benefits:
-
-- Easily add new MCP servers
-- No backend code changes
-- Better scalability
-
----
-
-# 📡 Request Lifecycle
-
-```text
-Chrome Extension
-
-↓
-
-REST API
-
-↓
-
-Authentication
-
-↓
-
-AI Router
-
-↓
-
-MCP Gateway
-
-↓
-
-Tool Execution
-
-↓
-
-Result
-
-↓
-
-Prompt Builder
-
-↓
-
-Ollama
-
-↓
-
-Response
-
-↓
-
-Chrome Extension
-```
-
----
-
-# 🧪 Testing
-
-Verify:
-
-- MCP Gateway starts
-- Filesystem MCP connects
-- Docker MCP works
-- GitHub MCP works
-- Kubernetes MCP connects
-- Tool discovery succeeds
-- Tool execution succeeds
-- AI receives tool responses
-
----
-
-# 🐞 Common Issues
-
-## MCP Server Offline
-
-Solution:
-
-Start the server.
-
----
-
-## Tool Not Found
-
-Solution:
-
-Refresh tool discovery.
-
----
-
-## Permission Denied
-
-Solution:
-
-Verify filesystem permissions.
-
----
-
-## Docker Connection Failed
-
-Solution:
-
-Verify Docker Desktop is running.
-
----
-
-## Kubernetes Connection Failed
-
-Solution:
-
-Check kubeconfig.
-
-```bash
-kubectl config current-context
-```
-
----
-
-# 🚀 Future MCP Servers
-
-As DevPilot AI grows, we can add more servers.
-
-Examples:
-
-- Jira MCP
-- Confluence MCP
-- PostgreSQL MCP
-- MySQL MCP
-- Redis MCP
-- AWS MCP
-- Azure MCP
-- GCP MCP
-- Slack MCP
-- Gmail MCP
-- Notion MCP
-
-No changes to the AI Router will be required because the MCP Gateway supports dynamic tool discovery.
-
----
-
-# 📁 Deliverables
-
-By the end of this chapter, you will have:
+By the end of **Chapter 5**, you will have built:
 
 - ✅ MCP Gateway
 - ✅ MCP Client
+- ✅ Tool Discovery
+- ✅ Tool Registry
 - ✅ Filesystem MCP
 - ✅ GitHub MCP
 - ✅ Docker MCP
 - ✅ Kubernetes MCP
-- ✅ Jenkins MCP
-- ✅ Dynamic Tool Discovery
-- ✅ Secure Tool Execution
-- ✅ AI + MCP Integration
+- ✅ Git MCP
+- ✅ Multi-Tool AI Agent
+- ✅ Production-ready Agent Architecture
 
 ---
 
-# 📌 Git Commit
+# 🚀 What's Next?
 
-```bash
-git add .
+After completing **Chapter 5**, we will continue with:
 
-git commit -m "feat: integrate Model Context Protocol (MCP) gateway"
+## 📘 Chapter 6 – Retrieval-Augmented Generation (RAG)
 
-git push origin develop
-```
+Build an enterprise knowledge retrieval system using:
 
----
-
-# 📖 Summary
-
-In this chapter, we introduced the Model Context Protocol (MCP) and integrated it into the DevPilot AI architecture. We built an MCP Gateway to connect the AI Router with multiple MCP servers, enabling the AI to securely access local files, GitHub repositories, Docker, Kubernetes, Jenkins, and PDF documents. This architecture provides a standardized and extensible way for the AI to interact with external tools while maintaining security and scalability.
+- Vector Databases
+- Embeddings
+- Semantic Search
+- Document Indexing
+- Knowledge Retrieval
 
 ---
 
-# ⏭ Next Chapter
+## 📘 Chapter 7 – Multi-Agent AI System
 
-## Chapter 6 – Embeddings, ChromaDB & Retrieval-Augmented Generation (RAG)
+Build specialized AI agents for:
 
-In the next chapter, we will build the intelligence layer of DevPilot AI by:
+- Coding
+- DevOps
+- Documentation
+- Architecture
+- Testing
+- Code Review
 
-- Understanding Embeddings
-- Installing ChromaDB
-- Generating Vector Embeddings
-- Building the RAG Pipeline
-- Implementing Semantic Search
-- Indexing Source Code and Documents
-- Chatting with PDFs and Codebases
-- Preparing the platform for enterprise-scale AI search
+These agents will collaborate through orchestration to solve complex software engineering tasks.
+
+---
+
+# 📖 Chapter Summary
+
+In this chapter, we will transform DevPilot AI into a true **AI Developer Agent** by integrating the **Model Context Protocol (MCP)**. We will build an MCP Gateway, connect multiple MCP servers, discover available tools dynamically, and enable the AI to interact with developer environments including the filesystem, GitHub, Docker, Kubernetes, and Git repositories. By the end of this chapter, DevPilot AI will be capable of intelligently selecting and executing external tools, laying the foundation for advanced Retrieval-Augmented Generation (RAG), Multi-Agent systems, and production-ready AI development workflows.
