@@ -405,11 +405,11 @@ class AIService {
         const formattedPrompt =
 
             promptService.buildPrompt(prompt);
-
+        console.log("formattedPrompt", formattedPrompt)
         const route =
 
             aiRouter.selectModel(prompt);
-
+        console.log("route", route)
         const provider =
 
             ProviderFactory.create(
@@ -417,7 +417,7 @@ class AIService {
                 AI_CONFIG.provider
 
             );
-
+        console.log("provider", provider)
         return provider.streamChat(
 
             formattedPrompt,

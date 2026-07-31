@@ -1,5 +1,21 @@
 import { useEffect, useState } from "react";
 
+import {
+    ASK_AI_STREAM,
+    AI_STREAM,
+    AI_STREAM_END,
+    AI_STREAM_ERROR
+} from "../constants/message.types";
+
+/**
+ * Runtime message received from Background Service Worker
+ */
+interface RuntimeMessage {
+    type: string;
+    token?: string;
+    error?: string;
+}
+
 function Popup() {
 
     const [prompt, setPrompt] = useState("");
@@ -10,34 +26,49 @@ function Popup() {
 
     const [error, setError] = useState("");
 
+    /**
+     * ============================================
+     * Listen for Background Messages
+     * ============================================
+     */
     useEffect(() => {
 
-        const listener = (message: any) => {
+        const listener = (
+            message: RuntimeMessage,
+            sender: chrome.runtime.MessageSender
+        ) => {
+
+            console.log("Popup Received:", message);
+            console.log("Sender:", sender);
 
             switch (message.type) {
 
-                case "AI_STREAM":
+                case AI_STREAM:
 
-                    setResponse(prev => prev + message.token);
+                    if (message.token) {
+                        setResponse(prev => prev + message.token);
+                    }
 
                     break;
 
-                case "AI_STREAM_END":
+                case AI_STREAM_END:
+
+                    console.log("Streaming Finished");
 
                     setLoading(false);
 
                     break;
 
-                case "AI_STREAM_ERROR":
+                case AI_STREAM_ERROR:
+
+                    console.error(message.error);
 
                     setLoading(false);
 
-                    setError(message.error);
+                    setError(message.error ?? "Unknown Error");
 
                     break;
-
             }
-
         };
 
         chrome.runtime.onMessage.addListener(listener);
@@ -50,7 +81,19 @@ function Popup() {
 
     }, []);
 
-    const sendMessage = () => {
+    /**
+     * ============================================
+     * Send Prompt
+     * ============================================
+     */
+    const sendPrompt = () => {
+
+        if (!prompt.trim()) {
+
+            setError("Please enter a prompt.");
+
+            return;
+        }
 
         setResponse("");
 
@@ -58,70 +101,113 @@ function Popup() {
 
         setLoading(true);
 
-        chrome.runtime.sendMessage({
+        chrome.runtime.sendMessage(
+            {
+                type: ASK_AI_STREAM,
+                prompt,
+                model: "llama3.2:3b"
+            },
+            () => {
 
-            type: "ASK_AI",
+                if (chrome.runtime.lastError) {
 
-            prompt
+                    console.error(
+                        chrome.runtime.lastError.message
+                    );
 
-        });
+                    setLoading(false);
 
+                    setError(chrome.runtime.lastError.message ?? "Unknown Error");
+                }
+            }
+        );
     };
 
+    /**
+     * ============================================
+     * UI
+     * ============================================
+     */
     return (
 
-        <div className="p-5">
+        <div
+            style={{
+                width: 420,
+                padding: 20,
+                fontFamily: "Arial"
+            }}
+        >
+
+            <h2>🚀 DevPilot AI</h2>
 
             <textarea
-
-                rows={5}
-
-                className="border w-full p-2"
-
-                value={prompt}
-
-                onChange={(e) => setPrompt(e.target.value)}
-
+                rows={6}
+                style={{
+                    width: "100%",
+                    padding: 10,
+                    resize: "vertical"
+                }}
                 placeholder="Ask anything..."
-
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
             />
 
             <button
-
+                onClick={sendPrompt}
                 disabled={loading}
-
-                onClick={sendMessage}
-
-                className="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
-
+                style={{
+                    width: "100%",
+                    marginTop: 15,
+                    padding: 10,
+                    cursor: loading ? "not-allowed" : "pointer"
+                }}
             >
-
                 {loading ? "Thinking..." : "Ask AI"}
-
             </button>
 
-            {
+            {loading && (
 
-                error &&
-
-                <p className="text-red-600 mt-3">
-
-                    {error}
-
+                <p
+                    style={{
+                        marginTop: 15,
+                        color: "#1976d2"
+                    }}
+                >
+                    🤖 AI is typing...
                 </p>
 
-            }
+            )}
 
-            <div className="mt-5 whitespace-pre-wrap">
+            {error && (
 
+                <p
+                    style={{
+                        color: "red",
+                        marginTop: 15
+                    }}
+                >
+                    {error}
+                </p>
+
+            )}
+
+            <div
+                style={{
+                    marginTop: 20,
+                    minHeight: 180,
+                    border: "1px solid #ddd",
+                    borderRadius: 6,
+                    padding: 12,
+                    whiteSpace: "pre-wrap",
+                    overflowY: "auto"
+                }}
+            >
                 {response}
-
             </div>
 
         </div>
 
     );
-
 }
 
 export default Popup;
