@@ -1,6 +1,6 @@
 
 
-import memoryService from "./memory.service";
+/*import memoryService from "./memory.service";
 import promptService from "./prompt.service";
 import aiRouter from "./ai-router.service";
 import ollamaService from "./ollama.service";
@@ -198,6 +198,238 @@ class AIService {
 
 
     }
+
+}
+
+export default new AIService();
+
+*/
+
+import aiRouter from "./ai-router.service";
+import promptService from "./prompt.service";
+
+import { AI_CONFIG } from "../config/ai.config";
+
+import {
+
+    ProviderFactory
+
+} from "../providers/provider.factory";
+import providerStrategy from "../providers/provider.strategy";
+// const providerType =
+
+//     providerStrategy.selectProvider(
+
+//         prompt
+
+//     );
+
+// const provider =
+
+//     ProviderFactory.create(
+
+//         providerType
+
+//     );
+
+class AIService {
+
+    async chat(
+
+        prompt: string
+
+    ) {
+
+        const formattedPrompt =
+
+            promptService.buildPrompt(prompt);
+
+        const route =
+
+            aiRouter.selectModel(prompt);
+
+        try {
+
+            const provider =
+
+                ProviderFactory.create(
+
+                    AI_CONFIG.provider
+
+                );
+
+            return await provider.chat(
+
+                formattedPrompt,
+
+                route.model
+
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+
+                "Primary provider failed:",
+
+                error
+
+            );
+
+            if (
+
+                AI_CONFIG.enableFallback
+
+            ) {
+
+                console.log(
+
+                    "Switching to fallback provider..."
+
+                );
+
+                const fallbackProvider =
+
+                    ProviderFactory.create(
+
+                        AI_CONFIG.fallbackProvider
+
+                    );
+
+                return fallbackProvider.chat(
+
+                    formattedPrompt,
+
+                    route.model
+
+                );
+
+            }
+
+            throw error;
+
+        }
+
+    }
+
+    async generate(
+
+        prompt: string
+
+    ) {
+
+        const formattedPrompt =
+
+            promptService.buildPrompt(prompt);
+
+        const route =
+
+            aiRouter.selectModel(prompt);
+
+        try {
+
+            const provider =
+
+                ProviderFactory.create(
+
+                    AI_CONFIG.provider
+
+                );
+
+            return await provider.chat(
+
+                formattedPrompt,
+
+                route.model
+
+            );
+
+        }
+
+        catch (error) {
+
+            console.error(
+
+                "Primary provider failed:",
+
+                error
+
+            );
+
+            if (
+
+                AI_CONFIG.enableFallback
+
+            ) {
+
+                console.log(
+
+                    "Switching to fallback provider..."
+
+                );
+
+                const fallbackProvider =
+
+                    ProviderFactory.create(
+
+                        AI_CONFIG.fallbackProvider
+
+                    );
+
+                return fallbackProvider.chat(
+
+                    formattedPrompt,
+
+                    route.model
+
+                );
+
+            }
+
+            throw error;
+
+        }
+
+    }
+
+    async streamChat(
+
+        prompt: string,
+
+        onToken: (token: string) => void
+
+    ) {
+
+        const formattedPrompt =
+
+            promptService.buildPrompt(prompt);
+
+        const route =
+
+            aiRouter.selectModel(prompt);
+
+        const provider =
+
+            ProviderFactory.create(
+
+                AI_CONFIG.provider
+
+            );
+
+        return provider.streamChat(
+
+            formattedPrompt,
+
+            route.model,
+
+            onToken
+
+        );
+
+    }
+
 
 }
 
