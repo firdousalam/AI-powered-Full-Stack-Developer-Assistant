@@ -1,3 +1,5 @@
+import type { BrowserContext } from "../types/browser.types";
+
 const API_URL = "http://localhost:3000/api/v1/ai";
 
 /**
@@ -6,11 +8,9 @@ const API_URL = "http://localhost:3000/api/v1/ai";
  * ==========================================
  */
 export async function chatWithAI(
-    prompt: string,
-    model = "llama3.2:3b"
-) {
+    prompt: string, model = "llama3.2:3b", browserContext: BrowserContext) {
     try {
-
+        console.log("browserContext", browserContext)
         const response = await fetch(
             `${API_URL}/chat`,
             {
@@ -20,7 +20,8 @@ export async function chatWithAI(
                 },
                 body: JSON.stringify({
                     prompt,
-                    model
+                    model,
+                    browserContext
                 })
             }
         );
@@ -49,11 +50,8 @@ export async function chatWithAI(
  * ==========================================
  */
 export async function streamChat(
-    prompt: string,
-    model: string,
-    onToken: (token: string) => void
-) {
-
+    prompt: string, model: string, browserContext: BrowserContext, onToken: (token: string) => void) {
+    console.log("browserContext", browserContext)
     const response = await fetch(
         `${API_URL}/chat/stream`,
         {
@@ -63,7 +61,8 @@ export async function streamChat(
             },
             body: JSON.stringify({
                 prompt,
-                model
+                model,
+                browserContext
             })
         }
     );

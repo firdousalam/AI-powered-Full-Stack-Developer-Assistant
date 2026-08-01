@@ -138,7 +138,7 @@ function Popup() {
             }}
         >
 
-            <h2>🚀 DevPilot AI</h2>
+            <h2>🚀 Zeba AI</h2>
 
             <textarea
                 rows={6}

@@ -4,7 +4,6 @@ export async function streamChat(
     prompt: string,
 
     model: string,
-
     onToken: (token: string) => void
 
 ) {

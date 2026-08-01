@@ -13,6 +13,10 @@ import {
     AI_STREAM_ERROR
 } from "../constants/message.types";
 
+import getBrowserContext
+    from "../services/browserContext.service";
+import browserContextService from "../services/browserContext.service";
+
 console.log("🚀 Background Service Worker Started");
 
 /**
@@ -24,7 +28,6 @@ chrome.runtime.onMessage.addListener(
     (message, sender, sendResponse) => {
 
         if (message.type !== ASK_AI) {
-            console.log(sender)
             return;
         }
 
@@ -32,28 +35,37 @@ chrome.runtime.onMessage.addListener(
 
             try {
 
-                console.log("=================================");
-                console.log("ASK_AI Received");
-                console.log("Prompt :", message.prompt);
-                console.log("Model  :", message.model);
-                console.log("=================================");
+                console.log("Collecting Browser Context...");
 
-                const result = await chatWithAI(
-                    message.prompt,
-                    message.model ?? "llama3.2:3b"
-                );
+                const browserContext = await browserContextService.getBrowserContext();
 
-                console.log("Backend Response:", result);
+                console.log(browserContext);
+
+                const result =
+                    await chatWithAI(
+
+                        message.prompt,
+
+                        message.model,
+
+                        browserContext
+
+                    );
 
                 sendResponse(result);
 
-            } catch (error) {
+            }
 
-                console.error("Chat Error:", error);
+            catch (error) {
+
+                console.error(error);
 
                 sendResponse({
+
                     success: false,
-                    response: "Backend Error"
+
+                    response: "Background Worker Error"
+
                 });
 
             }
@@ -61,6 +73,7 @@ chrome.runtime.onMessage.addListener(
         })();
 
         return true;
+
     }
 );
 
@@ -73,7 +86,6 @@ chrome.runtime.onMessage.addListener(
     (message, sender) => {
 
         if (message.type !== ASK_AI_STREAM) {
-            console.log(sender)
             return;
         }
 
@@ -81,80 +93,51 @@ chrome.runtime.onMessage.addListener(
 
             try {
 
-                console.log("=================================");
-                console.log("STREAM REQUEST");
-                console.log("Prompt :", message.prompt);
-                console.log("Model  :", message.model);
-                console.log("=================================");
+                console.log("Collecting Browser Context...");
+
+                const browserContext = await browserContextService.getBrowserContext();
 
                 await streamChat(
+
                     message.prompt,
+
                     message.model ?? "llama3.2:3b",
+
+                    browserContext,
 
                     (token: string) => {
 
-                        console.log("TOKEN:", token);
+                        chrome.runtime.sendMessage({
 
-                        chrome.runtime.sendMessage(
-                            {
-                                type: AI_STREAM,
-                                token
-                            },
-                            () => {
+                            type: AI_STREAM,
 
-                                if (chrome.runtime.lastError) {
+                            token
 
-                                    console.warn(
-                                        "Popup not listening:",
-                                        chrome.runtime.lastError.message
-                                    );
-
-                                }
-
-                            }
-                        );
+                        });
 
                     }
+
                 );
 
-                chrome.runtime.sendMessage(
-                    {
-                        type: AI_STREAM_END
-                    },
-                    () => {
+                chrome.runtime.sendMessage({
 
-                        if (chrome.runtime.lastError) {
+                    type: AI_STREAM_END
 
-                            console.warn(
-                                chrome.runtime.lastError.message
-                            );
+                });
 
-                        }
+            }
 
-                    }
-                );
+            catch (error) {
 
-            } catch (error) {
+                console.error(error);
 
-                console.error("Streaming Error:", error);
+                chrome.runtime.sendMessage({
 
-                chrome.runtime.sendMessage(
-                    {
-                        type: AI_STREAM_ERROR,
-                        error: "Streaming Failed"
-                    },
-                    () => {
+                    type: AI_STREAM_ERROR,
 
-                        if (chrome.runtime.lastError) {
+                    error: "Streaming Failed"
 
-                            console.warn(
-                                chrome.runtime.lastError.message
-                            );
-
-                        }
-
-                    }
-                );
+                });
 
             }
 
