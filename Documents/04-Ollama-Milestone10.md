@@ -1160,6 +1160,802 @@ At the end of **Part 1**, you will have successfully implemented:
 - ✅ Foundation for RAG and Workspace Awareness
 
 ---
+
+
+
+📁 Milestone 4.10 – Context-Aware AI Assistant
+Learning-Doc/
+└── 4.10-Context-Aware-AI-Assistant/
+    │
+    ├── 01-Introduction.md
+    ├── 02-Browser-Context-Architecture.md
+    ├── 03-Chrome-Tabs-API.md
+    ├── 04-Content-Scripts.md
+    ├── 05-Runtime-Messaging.md
+    ├── 06-Browser-Context-Service.md
+    ├── 07-Background-Integration.md
+    ├── 08-Popup-Integration.md
+    ├── 09-Backend-Integration.md
+    ├── 10-Testing.md
+    └── 11-Next-Part.md
+📄 01-Introduction.md
+
+Contains
+
+Introduction
+Why Browser Context Matters
+Learning Objectives
+Modern AI Assistants
+Browser Context Overview
+Deliverables
+📄 02-Browser-Context-Architecture.md
+
+Contains
+
+Overall Architecture Diagram
+Browser Context Flow
+Browser Context Object
+Browser Components
+Project Structure
+Communication Flow
+Sequence Diagram
+📄 03-Chrome-Tabs-API.md
+
+Contains
+
+Chrome Tabs API
+Active Tab Detection
+Current URL
+Page Title
+Browser Metadata
+Chrome Permissions
+Complete Code
+
+Files
+
+manifest.json
+
+browser.types.ts
+
+browserContext.service.ts
+📄 04-Content-Scripts.md
+
+Contains
+
+Content Scripts
+Selection API
+DOM Access
+Current Selection
+Page Metadata
+Runtime Communication
+
+Files
+
+content.ts
+
+selection.ts
+
+page.ts
+
+dom.ts
+
+Includes
+
+Full TypeScript code
+Complete explanation
+Architecture diagrams
+📄 05-Runtime-Messaging.md
+
+Contains
+
+Chrome Runtime Messaging
+
+Popup
+      ↓
+Background
+      ↓
+Content Script
+      ↓
+Background
+      ↓
+Popup
+
+Topics
+
+Runtime Messages
+Message Types
+Constants
+Interfaces
+Error Handling
+Message Routing
+
+Files
+
+message.types.ts
+
+background.ts
+
+popup.tsx
+📄 06-Browser-Context-Service.md
+
+Contains
+
+Service Layer
+
+browserContext.service.ts
+
+Topics
+
+Active Tab
+Selected Text
+Metadata
+Browser Context Object
+Async APIs
+Error Handling
+
+Produces
+
+{
+  url,
+  title,
+  hostname,
+  protocol,
+  language,
+  selectedText,
+  timestamp
+}
+📄 07-Background-Integration.md
+
+Contains
+
+Background Worker
+
+Topics
+
+Receive popup request
+Collect browser context
+Merge prompt
+Send backend request
+Runtime listeners
+Error handling
+
+Files
+
+background.ts
+
+Includes
+
+Complete production code.
+
+📄 08-Popup-Integration.md
+
+Contains
+
+Popup UI
+
+Topics
+
+Ask AI
+Selected Text Preview
+Browser Context Preview
+Loading
+Streaming
+Error Handling
+
+Files
+
+Popup.tsx
+
+ChatWindow.tsx
+
+PromptInput.tsx
+
+Includes
+
+Full React code
+Hooks
+Streaming UI
+📄 09-Backend-Integration.md
+
+Contains
+
+Backend integration
+
+Topics
+
+Browser Context Request
+
+Express API
+
+Updated AI Prompt
+
+Context Injection
+
+Future RAG Integration
+
+Files
+
+ai.controller.ts
+
+ai.service.ts
+
+browserContext.types.ts
+
+Prompt becomes
+
+User Prompt
+
++
+
+Browser Context
+
++
+
+Current URL
+
++
+
+Page Title
+
++
+
+Selected Text
+
+↓
+
+LLM
+📄 10-Testing.md
+
+Contains
+
+Testing
+
+Checklist
+
+✅ Active Tab
+
+✅ URL
+
+✅ Title
+
+✅ Selected Text
+
+✅ Browser Metadata
+
+✅ Popup
+
+✅ Background
+
+✅ Content Script
+
+✅ Backend
+
+✅ Prompt Injection
+
+Debugging
+
+Common Errors
+
+Chrome Extension Reload
+
+Runtime Logs
+
+Developer Tools
+
+📄 11-Next-Part.md
+
+Contains
+
+What Comes Next
+
+Preview
+
+Part 2
+
+DOM Extraction
+
+Topics
+
+HTML Parsing
+Readability
+Code Blocks
+Markdown
+Intelligent Summaries
+DOM Optimization
+AI Context Compression
+🎯 Final Deliverables
+
+After completing all 11 Markdown documents, your viewers will have built:
+
+✅ Browser Context Collection
+✅ Active Tab Detection
+✅ URL Extraction
+✅ Page Title Detection
+✅ Selected Text Capture
+✅ Browser Metadata Collection
+✅ Chrome Tabs API Integration
+✅ Content Script Communication
+✅ Runtime Messaging Architecture
+✅ Background Service Worker Integration
+✅ Backend Context Injection
+✅ Production-Ready Browser Context Service
+✅ Foundation for RAG
+✅ Foundation for Workspace Awarenes
+
+# 📁 Milestone 4.10 – Context-Aware AI Assistant
+
+```
+Learning-Doc/
+└── 4.10-Context-Aware-AI-Assistant/
+│
+├── 01-Introduction.md
+├── 02-Browser-Context-Architecture.md
+├── 03-Chrome-Tabs-API.md
+├── 04-Content-Scripts.md
+├── 05-Runtime-Messaging.md
+├── 06-Browser-Context-Service.md
+├── 07-Background-Integration.md
+├── 08-Popup-Integration.md
+├── 09-Backend-Integration.md
+├── 10-Testing.md
+└── 11-Next-Part.md
+```
+
+---
+
+# 📄 01-Introduction.md
+
+## Overview
+
+This chapter introduces Context-Aware AI and explains why modern AI coding assistants understand browser context instead of relying solely on user prompts.
+
+### Contents
+
+- Introduction
+- Why Browser Context Matters
+- Learning Objectives
+- Modern AI Assistants
+- Browser Context Overview
+- Benefits of Context Awareness
+- Browser Context Components
+- Final Deliverables
+
+---
+
+# 📄 02-Browser-Context-Architecture.md
+
+## Overview
+
+This chapter explains the complete architecture used to collect browser context and send it to the AI backend.
+
+### Contents
+
+- Browser Context Architecture
+- Component Responsibilities
+- Communication Flow
+- Browser Context Lifecycle
+- Browser Context Object
+- Architecture Diagrams
+- Sequence Diagram
+- Updated Project Structure
+
+### Architecture
+
+```
+Popup
+      │
+      ▼
+Background
+      │
+      ▼
+Chrome Tabs API
+      │
+      ▼
+Active Tab
+      │
+      ▼
+Content Script
+      │
+      ▼
+Browser Context
+      │
+      ▼
+Backend
+      │
+      ▼
+LLM
+```
+
+---
+
+# 📄 03-Chrome-Tabs-API.md
+
+## Overview
+
+This chapter focuses on interacting with the active browser tab using the Chrome Tabs API.
+
+### Topics
+
+- Chrome Tabs API
+- Active Tab Detection
+- Current URL
+- Page Title
+- Browser Metadata
+- Chrome Permissions
+- Tabs Query API
+- Error Handling
+
+### Files
+
+```
+manifest.json
+
+src/types/browser.types.ts
+
+src/services/browserContext.service.ts
+```
+
+### Includes
+
+- Complete TypeScript implementation
+- Browser metadata interfaces
+- Tabs API examples
+- Production-ready code
+
+---
+
+# 📄 04-Content-Scripts.md
+
+## Overview
+
+This chapter explains how Content Scripts collect information directly from webpages.
+
+### Topics
+
+- Content Scripts
+- DOM Access
+- Selection API
+- Current Selected Text
+- Page Metadata
+- Runtime Communication
+- Content Script Lifecycle
+
+### Files
+
+```
+content.ts
+
+selection.ts
+
+page.ts
+
+dom.ts
+```
+
+### Includes
+
+- Complete TypeScript implementation
+- Selection extraction
+- Page metadata collection
+- Browser DOM access
+- Architecture diagrams
+
+---
+
+# 📄 05-Runtime-Messaging.md
+
+## Overview
+
+This chapter explains communication between Popup, Background, and Content Scripts.
+
+### Architecture
+
+```
+Popup
+      │
+      ▼
+Background
+      │
+      ▼
+Content Script
+      │
+      ▼
+Background
+      │
+      ▼
+Popup
+```
+
+### Topics
+
+- Chrome Runtime Messaging
+- Runtime Messages
+- Message Types
+- Constants
+- Interfaces
+- Error Handling
+- Message Routing
+- Asynchronous Communication
+
+### Files
+
+```
+message.types.ts
+
+background.ts
+
+popup.tsx
+```
+
+### Includes
+
+- Full TypeScript implementation
+- Production-ready messaging
+- Runtime debugging
+
+---
+
+# 📄 06-Browser-Context-Service.md
+
+## Overview
+
+This chapter builds the service responsible for collecting all browser context.
+
+### Topics
+
+- Browser Context Service
+- Active Tab
+- Selected Text
+- Browser Metadata
+- Browser Context Object
+- Async APIs
+- Error Handling
+- Service Architecture
+
+### File
+
+```
+browserContext.service.ts
+```
+
+### Produces
+
+```ts
+{
+  url,
+  title,
+  hostname,
+  protocol,
+  language,
+  selectedText,
+  timestamp
+}
+```
+
+### Includes
+
+- Complete production code
+- Context builder
+- Browser API abstraction
+
+---
+
+# 📄 07-Background-Integration.md
+
+## Overview
+
+This chapter integrates browser context collection into the Background Service Worker.
+
+### Topics
+
+- Receive Popup Request
+- Collect Browser Context
+- Merge Prompt
+- Runtime Listeners
+- Backend Communication
+- Streaming Integration
+- Error Handling
+
+### File
+
+```
+background.ts
+```
+
+### Includes
+
+- Complete production-ready Background Worker
+- Browser context injection
+- Runtime communication
+- Streaming support
+
+---
+
+# 📄 08-Popup-Integration.md
+
+## Overview
+
+This chapter updates the popup UI to display collected browser context before sending requests to the backend.
+
+### Topics
+
+- Ask AI
+- Browser Context Preview
+- Selected Text Preview
+- Loading Indicators
+- Streaming Responses
+- Error Handling
+- React Hooks
+- User Experience Improvements
+
+### Files
+
+```
+Popup.tsx
+
+PromptInput.tsx
+
+ChatWindow.tsx
+```
+
+### Includes
+
+- Full React + TypeScript implementation
+- Streaming UI
+- Browser context preview
+- Production-ready popup
+
+---
+
+# 📄 09-Backend-Integration.md
+
+## Overview
+
+This chapter updates the backend API to receive browser context and inject it into AI prompts.
+
+### Topics
+
+- Browser Context Request
+- Express API Updates
+- Prompt Construction
+- Context Injection
+- AI Service Updates
+- Future RAG Integration
+
+### Files
+
+```
+ai.controller.ts
+
+ai.service.ts
+
+browserContext.types.ts
+```
+
+### Prompt Flow
+
+```
+User Prompt
+      +
+Browser Context
+      +
+Current URL
+      +
+Page Title
+      +
+Selected Text
+      │
+      ▼
+Prompt Builder
+      │
+      ▼
+LLM
+```
+
+### Includes
+
+- Complete backend implementation
+- Context-aware prompt generation
+- Preparation for RAG
+
+---
+
+# 📄 10-Testing.md
+
+## Overview
+
+This chapter validates the complete browser context pipeline.
+
+### Testing Checklist
+
+- ✅ Active Tab Detection
+- ✅ URL Extraction
+- ✅ Page Title
+- ✅ Selected Text
+- ✅ Browser Metadata
+- ✅ Popup Communication
+- ✅ Background Worker
+- ✅ Content Script
+- ✅ Backend API
+- ✅ Prompt Injection
+
+### Debugging Topics
+
+- Chrome Extension Reload
+- Runtime Logs
+- Service Worker Logs
+- Developer Tools
+- Common Errors
+- Troubleshooting Guide
+
+---
+
+# 📄 11-Next-Part.md
+
+## What Comes Next
+
+The next milestone introduces intelligent webpage understanding.
+
+### Preview
+
+**Part 2 — DOM Extraction & Intelligent Page Understanding**
+
+### Topics
+
+- HTML Parsing
+- Readability API
+- Code Block Detection
+- Markdown Conversion
+- Intelligent Summarization
+- DOM Optimization
+- AI Context Compression
+- Page Understanding Pipeline
+
+### Learning Outcome
+
+By completing the next milestone, DevPilot AI will understand the complete structure of webpages instead of relying only on selected text, enabling advanced features such as intelligent summarization, semantic search, Retrieval-Augmented Generation (RAG), and workspace awareness.
+
+---
+
+# 🎯 Final Deliverables
+
+After completing all **11 Markdown documents**, learners will have built:
+
+- ✅ Browser Context Collection
+- ✅ Active Tab Detection
+- ✅ URL Extraction
+- ✅ Page Title Detection
+- ✅ Selected Text Capture
+- ✅ Browser Metadata Collection
+- ✅ Chrome Tabs API Integration
+- ✅ Content Script Communication
+- ✅ Runtime Messaging Architecture
+- ✅ Background Service Worker Integration
+- ✅ Backend Context Injection
+- ✅ Production-Ready Browser Context Service
+- ✅ Foundation for Retrieval-Augmented Generation (RAG)
+- ✅ Foundation for Workspace Awareness
+- ✅ Enterprise-Grade Browser Context Pipeline
+
+---
+
+### 📚 Estimated Course Size
+
+| Chapter | Approx. Pages | Code |
+|---------|---------------:|------|
+| 01 | 8–10 | No |
+| 02 | 12–15 | Diagrams |
+| 03 | 15–20 | ✔ |
+| 04 | 20–25 | ✔ |
+| 05 | 18–22 | ✔ |
+| 06 | 15–20 | ✔ |
+| 07 | 20–25 | ✔ |
+| 08 | 20–25 | ✔ |
+| 09 | 20–25 | ✔ |
+| 10 | 10–15 | Tests |
+| 11 | 5–8 | Preview |
+
+**Total:** Approximately **180–220 pages** of documentation with complete TypeScript implementations, architecture diagrams, production best practices, testing guidance, and enterprise-level explanations. This structure aligns well with a comprehensive YouTube series and GitHub learning repository.
 # What Comes Next
 
 # 📄 Part 2 — DOM Extraction & Intelligent Page Understanding
