@@ -6,7 +6,7 @@
 
 # 📖 Chapter Overview
 
-In this chapter, we will transform the DevPilot AI backend into a fully functional AI-powered backend by integrating **Ollama**, an open-source framework for running Large Language Models (LLMs) locally.
+In this chapter, we will transform the Zeba AI backend into a fully functional AI-powered backend by integrating **Ollama**, an open-source framework for running Large Language Models (LLMs) locally.
 
 Unlike cloud-based AI providers that require API keys and usage charges, Ollama enables developers to run AI models directly on their own machines, providing complete privacy, offline capabilities, and zero API costs.
 
@@ -593,7 +593,7 @@ git push origin develop
 
 # 📖 Chapter Summary
 
-In this chapter, you transformed the DevPilot AI backend into a powerful local AI platform by integrating Ollama and multiple Large Language Models. You built an intelligent AI Router capable of selecting the best model for each request, implemented reusable prompt templates, enabled streaming responses, and optimized memory usage for a 16 GB development machine.
+In this chapter, you transformed the Zeba AI backend into a powerful local AI platform by integrating Ollama and multiple Large Language Models. You built an intelligent AI Router capable of selecting the best model for each request, implemented reusable prompt templates, enabled streaming responses, and optimized memory usage for a 16 GB development machine.
 
 The architecture is now modular, scalable, and ready for advanced AI features such as Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), vector search, and multi-agent workflows.
 
@@ -613,6 +613,6 @@ In the next chapter, you will:
 - Add Kubernetes MCP
 - Enable secure tool discovery
 - Execute external developer tools
-- Prepare DevPilot AI for real-world developer automation
+- Prepare Zeba AI for real-world developer automation
 
-By the end of Chapter 5, DevPilot AI will evolve from a conversational AI assistant into an intelligent developer platform capable of interacting with real development tools and environments.
+By the end of Chapter 5, Zeba AI will evolve from a conversational AI assistant into an intelligent developer platform capable of interacting with real development tools and environments.

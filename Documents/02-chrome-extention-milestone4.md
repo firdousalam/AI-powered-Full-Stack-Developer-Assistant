@@ -493,7 +493,7 @@ Developer Mode
 
 Locate
 
-DevPilot AI
+Zeba AI
 
 Click
 
@@ -622,7 +622,7 @@ Everything working.
 
 ```
 
-DevPilot AI
+Zeba AI
 
 Version 1.0.0
 
@@ -666,4 +666,4 @@ In this module we learned:
 
 The Background Worker is now ready to communicate with the Popup UI.
 
-In the next module, we will build **Content Scripts**, allowing DevPilot AI to interact directly with web pages, selected text, and page content.
+In the next module, we will build **Content Scripts**, allowing Zeba AI to interact directly with web pages, selected text, and page content.

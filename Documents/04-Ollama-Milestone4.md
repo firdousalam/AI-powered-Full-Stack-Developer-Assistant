@@ -496,4 +496,4 @@ Streaming controller
 Live token-by-token responses in the Chrome Extension
 Proper cleanup and error handling
 
-This will turn DevPilot AI into a ChatGPT-like real-time experience.
+This will turn Zeba AI into a ChatGPT-like real-time experience.

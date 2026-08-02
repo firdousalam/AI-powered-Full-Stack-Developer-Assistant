@@ -1,76 +1,31 @@
-console.log("✅ DevPilot Content Script Loaded");
-function getSelectedText(): string {
-    return window.getSelection()?.toString() || "";
-}
+/// <reference types="chrome"/>
 
-const button = document.createElement("button");
+import contextBuilderService from "../services/contextBuilder.service";
 
-button.innerText = "🤖 Ask AI";
+chrome.runtime.onMessage.addListener(
+    (message, sender, sendResponse) => {
 
-button.style.position = "fixed";
-button.style.bottom = "20px";
-button.style.right = "20px";
+        if (message.type !== "GET_BROWSER_CONTEXT") {
+            console.log(sender)
+            return;
+        }
 
-button.style.padding = "12px 18px";
+        try {
 
-button.style.background = "#2563eb";
-button.style.color = "#ffffff";
+            const context =
+                contextBuilderService.build(document);
 
-button.style.border = "none";
-button.style.borderRadius = "10px";
+            sendResponse(context);
 
-button.style.cursor = "pointer";
+        }
+        catch (error) {
 
-button.style.zIndex = "999999";
+            console.error(error);
 
-if (!document.getElementById("devpilot-floating-button")) {
+            sendResponse(null);
 
-    button.id = "devpilot-floating-button";
+        }
 
-    document.body.appendChild(button);
-
-}
-button.addEventListener("click", () => {
-
-    const text = getSelectedText();
-
-
-    if (!text) {
-
-        alert("Please select some text.");
-
-        return;
-
+        return true;
     }
-
-    /*
-    const selectedText=window.getSelection()?.toString();
-    
-    chrome.runtime.sendMessage({
-    
-    type:"SELECTED_TEXT",
-    
-    text:selectedText
-    
-    });
-    */
-    chrome.runtime.sendMessage({
-
-        type: "SELECTED_TEXT",
-
-        text
-
-    });
-
-});
-button.addEventListener("mouseenter", () => {
-
-    button.style.transform = "scale(1.1)";
-
-});
-
-button.addEventListener("mouseleave", () => {
-
-    button.style.transform = "scale(1)";
-
-});
+);

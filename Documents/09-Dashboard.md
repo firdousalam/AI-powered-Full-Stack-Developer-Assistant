@@ -6,7 +6,7 @@
 
 # 📖 Chapter Overview
 
-In the previous chapters, we built the backend intelligence of DevPilot AI:
+In the previous chapters, we built the backend intelligence of Zeba AI:
 
 - Chrome Extension
 - Backend APIs
@@ -787,7 +787,7 @@ git push origin develop
 
 # 📖 Summary
 
-In this chapter, we built the DevPilot AI Dashboard—a modern React-based interface that brings together all platform capabilities into a single workspace. We created a responsive layout with reusable UI components, integrated AI chat, prompt management, chat history, bookmarks, resume review, interview preparation, and settings. Using Zustand for state management and Tailwind CSS with Shadcn UI for styling, the dashboard now provides a scalable foundation for interacting with Ollama, MCP servers, and the RAG pipeline.
+In this chapter, we built the Zeba AI Dashboard—a modern React-based interface that brings together all platform capabilities into a single workspace. We created a responsive layout with reusable UI components, integrated AI chat, prompt management, chat history, bookmarks, resume review, interview preparation, and settings. Using Zustand for state management and Tailwind CSS with Shadcn UI for styling, the dashboard now provides a scalable foundation for interacting with Ollama, MCP servers, and the RAG pipeline.
 
 ---
 
@@ -795,7 +795,7 @@ In this chapter, we built the DevPilot AI Dashboard—a modern React-based inter
 
 ## Chapter 10 – Docker & Kubernetes
 
-In the next chapter, we will prepare DevPilot AI for deployment by:
+In the next chapter, we will prepare Zeba AI for deployment by:
 
 - Containerizing the frontend and backend
 - Creating Dockerfiles

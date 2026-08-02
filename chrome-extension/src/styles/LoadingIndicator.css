@@ -1,0 +1,43 @@
+.loading-container {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+}
+
+.spinner {
+
+    width: 18px;
+
+    height: 18px;
+
+    border: 3px solid #ddd;
+
+    border-top: 3px solid #2196f3;
+
+    border-radius: 50%;
+
+    animation: spin 1s linear infinite;
+
+}
+
+@keyframes spin {
+
+    from {
+
+        transform: rotate(0deg);
+
+    }
+
+    to {
+
+        transform: rotate(360deg);
+
+    }
+
+}

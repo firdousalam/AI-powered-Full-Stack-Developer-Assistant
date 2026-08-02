@@ -4,7 +4,7 @@
 
 ## 🎥 YouTube Episode 2.7
 
-**Project:** DevPilot AI – AI Full Stack Developer Assistant
+**Project:** Zeba AI – AI Full Stack Developer Assistant
 
 **Chapter:** Chrome Extension Development (Manifest V3)
 
@@ -27,7 +27,7 @@ For long AI conversations, code reviews, PDF chat, GitHub chat, and documentatio
 
 Chrome's **Side Panel API** solves this problem.
 
-In this milestone, we will build a professional Side Panel UI that will become the primary interface of DevPilot AI.
+In this milestone, we will build a professional Side Panel UI that will become the primary interface of Zeba AI.
 
 At this stage, we will only create the **UI**.
 
@@ -63,7 +63,7 @@ After completing this milestone, you will understand:
 
         ┌─────────────────────────────────────┐
         │                                     │
-        │        DevPilot AI Extension        │
+        │        Zeba AI Extension        │
         │                                     │
         ├─────────────────────────────────────┤
         │ Popup                              │
@@ -159,7 +159,7 @@ Backend integration will come in later chapters.
 ```
 +------------------------------------------------+
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 -----------------------------------------------
 
@@ -181,7 +181,7 @@ Backend integration will come in later chapters.
 
 -----------------------------------------------
 
-Welcome to DevPilot AI
+Welcome to Zeba AI
 
 Start chatting with AI...
 
@@ -386,7 +386,7 @@ export default function SidePanelHeader() {
 
             <h1 className="text-xl font-bold">
 
-                DevPilot AI
+                Zeba AI
 
             </h1>
 
@@ -400,7 +400,7 @@ export default function SidePanelHeader() {
 Result
 
 ```
-🤖 DevPilot AI
+🤖 Zeba AI
 ```
 
 ---
@@ -514,7 +514,7 @@ return(
 
 <h2 className="text-2xl font-bold">
 
-Welcome to DevPilot AI
+Welcome to Zeba AI
 
 </h2>
 
@@ -534,7 +534,7 @@ Start chatting with your AI assistant.
 Result
 
 ```
-Welcome to DevPilot AI
+Welcome to Zeba AI
 
 Start chatting...
 ```
@@ -720,7 +720,7 @@ Example
 
 <meta charset="UTF-8">
 
-<title>DevPilot AI</title>
+<title>Zeba AI</title>
 
 <script type="module" src="/src/sidepanel/main.tsx"></script>
 
@@ -835,7 +835,7 @@ Expected
 ```
 +--------------------------------------+
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 Search
 
@@ -855,7 +855,7 @@ Settings
 
 --------------------------------------
 
-Welcome to DevPilot AI
+Welcome to Zeba AI
 
 Version 1.0.0
 
@@ -1058,7 +1058,7 @@ Open Side Panel
 
 ↓
 
-DevPilot AI Sidebar
+Zeba AI Sidebar
 
 ↓
 
@@ -1154,7 +1154,7 @@ Expected UI:
 
 +------------------------------------------------+
 
- DevPilot AI
+ Zeba AI
 
 -----------------------------------------------
 
@@ -1315,7 +1315,7 @@ export default function SidePanelHeader() {
   return (
     <header className="border-b p-4">
       <h1 className="text-xl font-bold">
-        🤖 DevPilot AI
+        🤖 Zeba AI
       </h1>
     </header>
   );
@@ -1369,7 +1369,7 @@ src/sidepanel/SidePanelFooter.tsx
 export default function SidePanelFooter() {
   return (
     <footer className="border-t p-4 text-center text-sm">
-      DevPilot AI © 2026
+      Zeba AI © 2026
     </footer>
   );
 }
@@ -1386,19 +1386,19 @@ Step 12 – Reload the Extension
 Open:
 chrome://extensions
 Enable Developer mode.
-Click Reload on the DevPilot AI extension.
+Click Reload on the Zeba AI extension.
 Step 13 – Open the Side Panel
 
 There are a few ways to open it:
 
 Method 1 (Recommended)
-Click your DevPilot AI extension icon.
+Click your Zeba AI extension icon.
 Click the pin icon if it's not pinned.
 Right-click the extension icon.
 Choose Open Side Panel (or Open in Side Panel, depending on your Chrome version).
 Method 2
 
-If your Chrome toolbar shows the Side Panel icon (a rectangle with a vertical bar), click it and select DevPilot AI.
+If your Chrome toolbar shows the Side Panel icon (a rectangle with a vertical bar), click it and select Zeba AI.
 
 Step 14 – Verify
 
@@ -1418,7 +1418,7 @@ Navigation
 
 ----------------------------------------------
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 ----------------------------------------------
 
@@ -1428,6 +1428,6 @@ AI conversation will appear here.
 
 ----------------------------------------------
 
-DevPilot AI © 2026
+Zeba AI © 2026
 
 +---------------------------------------------+

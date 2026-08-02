@@ -1,149 +1,106 @@
 import { Request, Response } from "express";
-import aiService from "../services/ai.service";
 
-/**
- * =====================================
- * Chat Endpoint
- * POST /api/v1/ai/chat
- * =====================================
- */
-export async function chat(
-    req: Request,
-    res: Response
-) {
-    try {
+import { chatWithAI, streamChat } from "../services/ai.service";
 
-        const {
-            sessionId,
-            prompt
-        } = req.body;
+class AIController {
 
-        console.log("====================================");
-        console.log("AI Chat Request");
-        console.log("Session :", sessionId);
-        console.log("Prompt  :", prompt);
-        console.log("====================================");
+    async chat(
+        req: Request,
+        res: Response
+    ) {
 
-        const result = await aiService.chat(
-            prompt
-        );
+        try {
 
-        res.json({
-            success: true,
-            response: result
-        });
+            const {
 
-    } catch (error) {
+                prompt,
 
-        console.error("Chat Error:", error);
+                browserContext,
 
-        res.status(500).json({
-            success: false,
-            message: "AI request failed"
-        });
+                model
 
-    }
-}
+            } = req.body;
 
-/**
- * =====================================
- * Generate Endpoint
- * POST /api/v1/ai/generate
- * =====================================
- */
-export async function generate(
-    req: Request,
-    res: Response
-) {
+            // second parameter must be browserContext
+            const response =
+                await chatWithAI(
+                    prompt,
+                    '',
+                    model
+                );
 
-    try {
+            res.json({
 
-        const {
-            prompt,
-            model
-        } = req.body;
+                success: true,
 
-        console.log("====================================");
-        console.log("AI Generate Request");
-        console.log("Model  :", model);
-        console.log("Prompt :", prompt);
-        console.log("====================================");
+                response
 
-        const response = await aiService.generate(
-            prompt
-        );
+            });
 
-        res.json({
-            success: true,
-            response
-        });
+        }
 
-    } catch (error) {
+        catch (error) {
 
-        console.error("Generate Error:", error);
-
-        res.status(500).json({
-            success: false,
-            message: "Generation failed"
-        });
-
-    }
-
-}
-
-/**
- * =====================================
- * Streaming Endpoint (SSE)
- * POST /api/v1/ai/chat/stream
- * =====================================
- */
-export async function streamChat(
-    req: Request,
-    res: Response
-) {
-    try {
-
-        const { prompt } = req.body;
-
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
-
-        res.flushHeaders();
-
-        await aiService.streamChat(
-
-            prompt,
-
-            (token: string) => {
-
-                res.write(token);
-
-            }
-
-        );
-
-        res.end();
-
-    } catch (error) {
-
-        console.error(error);
-
-        if (!res.headersSent) {
+            console.error(error);
 
             res.status(500).json({
 
                 success: false,
 
-                message: "Streaming Failed"
+                message: "Chat failed"
 
             });
 
-        } else {
+        }
+
+    }
+
+    async streamChat(
+        req: Request,
+        res: Response
+    ) {
+
+
+        const {
+            prompt,
+
+            model,
+            browserContext
+        } = req.body;
+
+        try {
+
+            res.setHeader(
+                "Content-Type",
+                "text/plain"
+            );
+            await streamChat(
+                prompt,
+                model,
+                browserContext,
+
+                token => {
+
+                    res.write(token);
+
+                }
+
+            );
 
             res.end();
 
         }
 
+        catch (error) {
+
+            console.error(error);
+
+            res.status(500).end();
+
+        }
+
     }
+
 }
+
+export default new AIController();

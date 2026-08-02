@@ -1,436 +1,277 @@
-
-
-/*import memoryService from "./memory.service";
+import type {
+    BrowserContext
+} from "../types/browserContext.types";
 import promptService from "./prompt.service";
 import aiRouter from "./ai-router.service";
-import ollamaService from "./ollama.service";
+import { AI_CONFIG } from "../config/ai.config";
+import { ProviderFactory } from "../providers/provider.factory";
+const API_URL =
+    "http://localhost:3000/api/v1/ai";
 
-class AIService {
+/**
+ * ==========================================
+ * Standard Chat API
+ * ==========================================
+ */
+export async function chatWithAI(
 
-    async chat(
+    prompt: string,
 
-        sessionId: string,
+    model: string,
 
-        prompt: string
+    browserContext: BrowserContext
 
-    ) {
+) {
 
-        // Load previous conversation
+    try {
 
-        // const history =
+        console.log("========== CHAT ==========");
+        console.log("Prompt:", prompt);
+        console.log("Model:", model);
+        console.log("Browser Context:", browserContext);
 
-        //     memoryService.getMessages(
+        const response = await fetch(
 
-        //         sessionId
+            `${API_URL}/chat`,
 
-        //     );
+            {
 
-        const history =
+                method: "POST",
 
-            memoryService.getRecentMessages(
+                headers: {
 
-                sessionId
+                    "Content-Type": "application/json"
 
-            );
+                },
 
-        console.log(
+                body: JSON.stringify({
 
-            "Conversation Messages:",
+                    prompt,
 
-            history.length
+                    model,
 
-        );
+                    browserContext
 
-        // Save user message
+                })
 
-        memoryService.addMessage(
-
-            sessionId,
-
-            "user",
-
-            prompt
-
-        );
-
-        // Build formatted prompt
-
-        const formattedPrompt =
-
-            promptService.buildPrompt(
-
-                prompt
-
-            );
-
-        // Select model
-
-        const route =
-
-            aiRouter.selectModel(
-
-                prompt
-
-            );
-
-        console.log(
-
-            "Selected Model:",
-
-            route.model
+            }
 
         );
 
-        // Generate response
+        if (!response.ok) {
 
-        const response =
+            throw new Error(
 
-            await ollamaService.chat(
-
-                formattedPrompt,
-
-                route.model
+                `Backend Error : ${response.status}`
 
             );
 
-        // Save assistant response
+        }
 
-        memoryService.addMessage(
+        const result = await response.json();
 
-            sessionId,
+        return result;
 
-            "assistant",
+    }
 
-            response
+    catch (error) {
+
+        console.error(
+
+            "Chat API Error:",
+
+            error
 
         );
 
         return {
 
-            success: true,
+            success: false,
 
-            response
+            response:
+                "Unable to connect to backend."
 
         };
 
     }
 
-    async streamChat(
-        prompt: string
+}
 
-    ) {
-        // Load previous conversation
+/**
+ * ==========================================
+ * Streaming Chat API
+ * ==========================================
+ */
+export async function streamChat(
 
-        // const history =
+    prompt: string,
 
-        //     memoryService.getMessages(
+    model: string,
 
-        //         sessionId
+    browserContext: BrowserContext,
 
-        //     );
+    onToken: (token: string) => void
 
-        // console.log(
+) {
 
-        //     "Conversation Messages:",
 
-        //     history.length
 
-        // );
+    /**
+        * Build final AI prompt
+        */
+    const finalPrompt =
 
-        // // Save user message
+        promptService.buildPrompt(
 
-        // memoryService.addMessage(
+            prompt,
 
-        //     sessionId,
+            browserContext
 
-        //     "user",
+        );
+    console.log("========== streamChat REQUEST ==========", browserContext)
+    /**
+     * Select model
+     */
+    const route =
 
-        //     prompt
+        aiRouter.selectModel(
 
-        // );
-
-        // Build formatted prompt
-
-        const formattedPrompt =
-
-            promptService.buildPrompt(
-
-                prompt
-
-            );
-
-        // Select model
-
-        const route =
-
-            aiRouter.selectModel(
-
-                prompt
-
-            );
-
-        console.log(
-
-            "Selected Model:",
-
-            route.model
+            model ?? prompt
 
         );
 
-        return ollamaService.streamChat(
+    console.log(
 
-            formattedPrompt,
+        "Selected Model:",
 
-            route.model
+        route.model
+
+    );
+    const provider =
+
+        ProviderFactory.create(
+
+            AI_CONFIG.provider
 
         );
-        // Save assistant response
 
-        // memoryService.addMessage(
 
-        //     sessionId,
+    // const response = await fetch("http://localhost:11434/api/chat", {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //         model,
+    //         stream: true,
+    //         messages: [
+    //             {
+    //                 role: "user",
+    //                 content: prompt
+    //             }
+    //         ]
+    //     })
+    // });
 
-        //     "assistant",
 
-        //     response
+    return provider.streamChat(
 
-        // );
+        finalPrompt,
 
+        route.model,
+
+        onToken
+
+    );
+    /*
+
+    console.log("Status:", response.status);
+
+    if (!response.ok) {
+
+        throw new Error(
+
+            `Streaming Error : ${response.status}`
+
+        );
 
     }
 
-}
+    if (!response.body) {
 
-export default new AIService();
+        throw new Error(
 
-*/
+            "ReadableStream not available."
 
-import aiRouter from "./ai-router.service";
-import promptService from "./prompt.service";
+        );
 
-import { AI_CONFIG } from "../config/ai.config";
+    }
 
-import {
+    const reader =
+        response.body.getReader();
 
-    ProviderFactory
+    const decoder =
+        new TextDecoder("utf-8");
 
-} from "../providers/provider.factory";
-import providerStrategy from "../providers/provider.strategy";
-// const providerType =
+    try {
 
-//     providerStrategy.selectProvider(
+        while (true) {
 
-//         prompt
+            const {
 
-//     );
+                done,
 
-// const provider =
+                value
 
-//     ProviderFactory.create(
+            } = await reader.read();
 
-//         providerType
+            if (done) {
 
-//     );
-
-class AIService {
-
-    async chat(
-
-        prompt: string
-
-    ) {
-
-        const formattedPrompt =
-
-            promptService.buildPrompt(prompt);
-
-        const route =
-
-            aiRouter.selectModel(prompt);
-
-        try {
-
-            const provider =
-
-                ProviderFactory.create(
-
-                    AI_CONFIG.provider
-
-                );
-
-            return await provider.chat(
-
-                formattedPrompt,
-
-                route.model
-
-            );
-
-        }
-
-        catch (error) {
-
-            console.error(
-
-                "Primary provider failed:",
-
-                error
-
-            );
-
-            if (
-
-                AI_CONFIG.enableFallback
-
-            ) {
-
-                console.log(
-
-                    "Switching to fallback provider..."
-
-                );
-
-                const fallbackProvider =
-
-                    ProviderFactory.create(
-
-                        AI_CONFIG.fallbackProvider
-
-                    );
-
-                return fallbackProvider.chat(
-
-                    formattedPrompt,
-
-                    route.model
-
-                );
+                break;
 
             }
 
-            throw error;
+            const chunk = decoder.decode(
 
-        }
+                value,
 
-    }
+                {
 
-    async generate(
+                    stream: true
 
-        prompt: string
-
-    ) {
-
-        const formattedPrompt =
-
-            promptService.buildPrompt(prompt);
-
-        const route =
-
-            aiRouter.selectModel(prompt);
-
-        try {
-
-            const provider =
-
-                ProviderFactory.create(
-
-                    AI_CONFIG.provider
-
-                );
-
-            return await provider.chat(
-
-                formattedPrompt,
-
-                route.model
+                }
 
             );
 
-        }
+            if (chunk) {
 
-        catch (error) {
 
-            console.error(
-
-                "Primary provider failed:",
-
-                error
-
-            );
-
-            if (
-
-                AI_CONFIG.enableFallback
-
-            ) {
-
-                console.log(
-
-                    "Switching to fallback provider..."
-
-                );
-
-                const fallbackProvider =
-
-                    ProviderFactory.create(
-
-                        AI_CONFIG.fallbackProvider
-
-                    );
-
-                return fallbackProvider.chat(
-
-                    formattedPrompt,
-
-                    route.model
-
-                );
+                onToken(chunk);
 
             }
 
-            throw error;
-
         }
 
     }
 
-    async streamChat(
+    catch (error) {
 
-        prompt: string,
+        console.error(
 
-        onToken: (token: string) => void
+            "Streaming Error:",
 
-    ) {
-
-        const formattedPrompt =
-
-            promptService.buildPrompt(prompt);
-        console.log("formattedPrompt", formattedPrompt)
-        const route =
-
-            aiRouter.selectModel(prompt);
-        console.log("route", route)
-        const provider =
-
-            ProviderFactory.create(
-
-                AI_CONFIG.provider
-
-            );
-        console.log("provider", provider)
-        return provider.streamChat(
-
-            formattedPrompt,
-
-            route.model,
-
-            onToken
+            error
 
         );
 
+        throw error;
+
     }
 
+    finally {
+
+        reader.releaseLock();
+
+    }*/
 
 }
-
-export default new AIService();

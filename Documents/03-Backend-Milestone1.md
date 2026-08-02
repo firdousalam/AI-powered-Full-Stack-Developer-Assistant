@@ -4,7 +4,7 @@
 
 ## 🎯 Objective
 
-In this milestone, we will create the backend application for the **DevPilot AI Chrome Extension**.
+In this milestone, we will create the backend application for the **Zeba AI Chrome Extension**.
 
 Until now, our Chrome Extension has been working with **mock responses**. From this chapter onward, we will build a real backend that will eventually connect to AI models such as **Ollama**, **OpenAI**, **Gemini**, and **Claude**.
 

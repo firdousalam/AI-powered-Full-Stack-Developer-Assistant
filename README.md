@@ -1,4 +1,4 @@
-# 🚀 Build DevPilot AI
+# 🚀 Build Zeba AI
 ## AI Developer Assistant using Chrome Extension, Ollama, MCP, RAG, Docker & Kubernetes
 
 > Build a production-ready AI Developer Assistant from scratch using **100% free and open-source technologies**.
@@ -7,7 +7,7 @@
 
 # 📖 Course Overview
 
-This course will guide you through building **DevPilot AI**, an enterprise-grade AI Developer Assistant capable of:
+This course will guide you through building **Zeba AI**, an enterprise-grade AI Developer Assistant capable of:
 
 - AI Chat
 - Local LLMs using Ollama
@@ -112,7 +112,7 @@ Each chapter builds upon the previous one and results in a working feature.
 
 # Chapter 1 - Project Planning & System Architecture
 
-> Build DevPilot AI – AI Developer Assistant using Chrome Extension, Ollama, MCP, RAG, Docker & Kubernetes
+> Build Zeba AI – AI Developer Assistant using Chrome Extension, Ollama, MCP, RAG, Docker & Kubernetes
 
 ---
 
@@ -153,7 +153,7 @@ After completing this chapter, you will understand:
 
 ## What are we building?
 
-DevPilot AI is a full-stack AI Developer Assistant that helps software engineers perform daily development tasks directly from a Chrome Extension.
+Zeba AI is a full-stack AI Developer Assistant that helps software engineers perform daily development tasks directly from a Chrome Extension.
 
 The application supports:
 
@@ -573,7 +573,7 @@ mkdir .github
 ```bash
 git add .
 
-git commit -m "feat: initialize DevPilot AI project"
+git commit -m "feat: initialize Zeba AI project"
 
 git push origin main
 ```

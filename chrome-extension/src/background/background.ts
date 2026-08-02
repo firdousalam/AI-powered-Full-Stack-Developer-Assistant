@@ -13,156 +13,284 @@ import {
     AI_STREAM_ERROR
 } from "../constants/message.types";
 
-console.log("🚀 Background Service Worker Started");
+
+import browserContextService from "../services/browserContext.service";
+
+
+console.log(
+    "🚀 Background Service Worker Started"
+);
+
+
 
 /**
  * ==========================================
  * Normal Chat API
  * ==========================================
  */
+
 chrome.runtime.onMessage.addListener(
-    (message, sender, sendResponse) => {
+
+    (
+        message,
+        sender,
+        sendResponse
+
+    ) => {
+
 
         if (message.type !== ASK_AI) {
-            console.log(sender)
+
             return;
+
         }
+
+
 
         (async () => {
 
+
             try {
 
-                console.log("=================================");
-                console.log("ASK_AI Received");
-                console.log("Prompt :", message.prompt);
-                console.log("Model  :", message.model);
-                console.log("=================================");
 
-                const result = await chatWithAI(
-                    message.prompt,
-                    message.model ?? "llama3.2:3b"
+                /**
+                 * Use context from popup
+                 * if provided
+                 *
+                 * Otherwise collect
+                 */
+
+                const browserContext =
+
+                    message.browserContext !== undefined
+
+                        ? message.browserContext
+
+                        : await browserContextService
+                            .getBrowserContext();
+
+
+
+                console.log(
+                    "browserContext = ",
+                    browserContext
                 );
 
-                console.log("Backend Response:", result);
+
+                console.log(
+                    "sender = ",
+                    sender
+                );
+
+
+
+                const result =
+
+                    await chatWithAI(
+
+                        message.prompt,
+
+                        message.model,
+
+                        browserContext
+
+                    );
+
+
 
                 sendResponse(result);
 
-            } catch (error) {
-
-                console.error("Chat Error:", error);
-
-                sendResponse({
-                    success: false,
-                    response: "Backend Error"
-                });
 
             }
 
+            catch (error) {
+
+
+                console.error(error);
+
+
+
+                sendResponse({
+
+                    success: false,
+
+                    response:
+                        "Background Worker Error"
+
+                });
+
+
+            }
+
+
         })();
 
+
+
         return true;
+
+
     }
+
 );
+
+
+
+
 
 /**
  * ==========================================
  * Streaming Chat API
  * ==========================================
  */
-chrome.runtime.onMessage.addListener(
-    (message, sender) => {
 
-        if (message.type !== ASK_AI_STREAM) {
-            console.log(sender)
+chrome.runtime.onMessage.addListener(
+
+    (
+        message,
+        sender,
+        sendResponse
+
+    ) => {
+
+
+        if (
+            message.type !== ASK_AI_STREAM
+        ) {
+
             return;
+
         }
+
+
 
         (async () => {
 
+
             try {
 
-                console.log("=================================");
-                console.log("STREAM REQUEST");
-                console.log("Prompt :", message.prompt);
-                console.log("Model  :", message.model);
-                console.log("=================================");
+
+                /**
+                 * Respect Popup Toggle
+                 */
+
+                const browserContext =
+
+                    message.browserContext !== undefined
+
+                        ? message.browserContext
+
+                        : await browserContextService
+                            .getBrowserContext();
+
+
+
+
+                console.log(
+                    "Streaming Context:",
+                    browserContext
+                );
+
+
+
+                console.log(
+                    "sender:",
+                    sender
+                );
+
+
+
 
                 await streamChat(
+
                     message.prompt,
-                    message.model ?? "llama3.2:3b",
+
+
+                    message.model ??
+                    "llama3.2:3b",
+
+
+                    browserContext,
+
+
 
                     (token: string) => {
 
-                        console.log("TOKEN:", token);
 
-                        chrome.runtime.sendMessage(
-                            {
-                                type: AI_STREAM,
-                                token
-                            },
-                            () => {
+                        chrome.runtime.sendMessage({
 
-                                if (chrome.runtime.lastError) {
+                            type: AI_STREAM,
 
-                                    console.warn(
-                                        "Popup not listening:",
-                                        chrome.runtime.lastError.message
-                                    );
+                            token
 
-                                }
+                        });
 
-                            }
-                        );
 
                     }
+
+
                 );
 
-                chrome.runtime.sendMessage(
-                    {
-                        type: AI_STREAM_END
-                    },
-                    () => {
 
-                        if (chrome.runtime.lastError) {
 
-                            console.warn(
-                                chrome.runtime.lastError.message
-                            );
 
-                        }
+                chrome.runtime.sendMessage({
 
-                    }
-                );
+                    type: AI_STREAM_END
 
-            } catch (error) {
+                });
 
-                console.error("Streaming Error:", error);
 
-                chrome.runtime.sendMessage(
-                    {
-                        type: AI_STREAM_ERROR,
-                        error: "Streaming Failed"
-                    },
-                    () => {
 
-                        if (chrome.runtime.lastError) {
+                sendResponse({
 
-                            console.warn(
-                                chrome.runtime.lastError.message
-                            );
+                    success: true
 
-                        }
+                });
 
-                    }
-                );
+
 
             }
 
+            catch (error) {
+
+
+                console.error(
+                    "Streaming Error",
+                    error
+                );
+
+
+
+                chrome.runtime.sendMessage({
+
+                    type: AI_STREAM_ERROR,
+
+                    error:
+                        "Streaming Failed"
+
+                });
+
+
+
+                sendResponse({
+
+                    success: false
+
+                });
+
+
+            }
+
+
+
         })();
+
+
 
         return true;
 
-    }
-);
 
-console.log("✅ Background Ready");
+    }
+
+);

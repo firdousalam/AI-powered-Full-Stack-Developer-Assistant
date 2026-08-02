@@ -2,7 +2,7 @@
 
 # 🎥 YouTube Episode 2.6
 
-**Project:** DevPilot AI – AI Full Stack Developer Assistant
+**Project:** Zeba AI – AI Full Stack Developer Assistant
 
 **Chapter:** Chrome Extension Development (Manifest V3)
 
@@ -14,7 +14,7 @@
 
 In this milestone, we will implement one of the most useful features of any developer-focused Chrome Extension: the **Chrome Context Menu API**.
 
-Instead of opening the extension popup every time, users can simply **right-click on selected text** and send it directly to DevPilot AI.
+Instead of opening the extension popup every time, users can simply **right-click on selected text** and send it directly to Zeba AI.
 
 This feature provides a native browser experience and lays the foundation for future AI capabilities such as:
 
@@ -99,7 +99,7 @@ Search Google
 
 -------------------
 
-Ask DevPilot AI
+Ask Zeba AI
 
 Explain
 
@@ -110,7 +110,7 @@ Translate
 Review Code
 ```
 
-Instead of copying text into ChatGPT manually, users can send it directly to DevPilot AI.
+Instead of copying text into ChatGPT manually, users can send it directly to Zeba AI.
 
 ---
 
@@ -245,7 +245,7 @@ chrome.contextMenus.create({
 
     id: MENU_IDS.ASK_AI,
 
-    title: "🤖 Ask DevPilot AI",
+    title: "🤖 Ask Zeba AI",
 
     contexts: ["selection"]
 
@@ -315,7 +315,7 @@ Right Click
 ↓
 
 ```
-Ask DevPilot AI
+Ask Zeba AI
 
 Explain
 
@@ -385,7 +385,7 @@ Right click.
 Expected
 
 ```
-Ask DevPilot AI
+Ask Zeba AI
 
 Explain
 
@@ -596,7 +596,7 @@ chrome.notifications.create({
 
     iconUrl:"icons/icon-128.png",
 
-    title:"DevPilot AI",
+    title:"Zeba AI",
 
     message:"Request received"
 
@@ -606,7 +606,7 @@ chrome.notifications.create({
 Expected
 
 ```
-DevPilot AI
+Zeba AI
 
 Request received
 ```
@@ -807,7 +807,7 @@ git push origin develop
 
 # Preview of Milestone 7
 
-In the next milestone, we will build the **DevPilot AI Side Panel**, which will become the primary workspace for long AI conversations.
+In the next milestone, we will build the **Zeba AI Side Panel**, which will become the primary workspace for long AI conversations.
 
 Features include:
 

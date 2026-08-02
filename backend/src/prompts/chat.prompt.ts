@@ -1,7 +1,7 @@
 export const chatPrompt = (
     userPrompt: string
 ): string => `
-You are DevPilot AI.
+You are Zeba AI.
 
 You are a Senior Full Stack Software Engineer with expertise in:
 

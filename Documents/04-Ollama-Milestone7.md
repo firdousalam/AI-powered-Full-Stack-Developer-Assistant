@@ -907,7 +907,7 @@ By the end of Part 1, you have learned:
 
 In this part, we explored the fundamental concepts behind conversational AI. We learned why Large Language Models are stateless by default, how conversation memory enables intelligent follow-up questions, and why context management is essential for high-quality AI responses. We also introduced context windows, token optimization, conversation trimming, and the overall memory architecture that will power our AI assistant.
 
-This conceptual foundation prepares us for the next part, where we will implement a production-ready `MemoryService` in TypeScript and integrate it into the DevPilot AI backend.
+This conceptual foundation prepares us for the next part, where we will implement a production-ready `MemoryService` in TypeScript and integrate it into the Zeba AI backend.
 
 ---
 # Chapter 4 – Ollama Integration & AI Router
@@ -1771,7 +1771,7 @@ git push origin develop
 
 # Part Summary
 
-In this part, we implemented the complete **Conversation Memory Service** for the DevPilot AI backend. We defined reusable conversation types, centralized memory configuration, and built a service capable of creating sessions, storing messages, retrieving conversation history, trimming old messages, and cleaning up inactive sessions. Although the implementation currently uses an in-memory `Map`, the architecture is intentionally designed so it can later be replaced with Redis or a database without affecting the rest of the application.
+In this part, we implemented the complete **Conversation Memory Service** for the Zeba AI backend. We defined reusable conversation types, centralized memory configuration, and built a service capable of creating sessions, storing messages, retrieving conversation history, trimming old messages, and cleaning up inactive sessions. Although the implementation currently uses an in-memory `Map`, the architecture is intentionally designed so it can later be replaced with Redis or a database without affecting the rest of the application.
 
 ---
 # Chapter 4 – Ollama Integration & AI Router
@@ -3221,7 +3221,7 @@ Summary
 User is learning Docker,
 Kubernetes,
 Node.js,
-and building DevPilot AI.
+and building Zeba AI.
 ```
 
 Instead of:
@@ -3381,7 +3381,7 @@ Summary
 
 ↓
 
-User is building DevPilot AI.
+User is building Zeba AI.
 
 +
 
@@ -3849,4 +3849,4 @@ In the next milestone, we will:
 - Implement provider selection strategies
 - Add automatic provider fallback
 - Build a provider factory pattern
-- Prepare DevPilot AI for hybrid local and cloud AI deployments
+- Prepare Zeba AI for hybrid local and cloud AI deployments

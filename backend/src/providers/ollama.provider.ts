@@ -139,85 +139,84 @@ export class ollamaProvider implements AIProvider {
 
         try {
 
-            const response = await fetch(
-
-                "http://localhost:11434/api/chat",
-
-                {
-
-                    method: "POST",
-
-                    headers: {
-
-                        "Content-Type": "application/json"
-
-                    },
-
-                    body: JSON.stringify({
-
-                        model,
-
-                        stream: true,
-
-                        messages: [
-
-                            {
-
-                                role: "user",
-
-                                content: prompt
-
-                            }
-
-                        ]
-
-                    })
-
-                }
-
-            );
-
-            if (!response.body)
-
-                throw new Error("ReadableStream Missing");
-
-            const reader = response.body.getReader();
-
-            const decoder = new TextDecoder();
-
-            while (true) {
-
-                const { done, value } = await reader.read();
-
-                if (done)
-
-                    break;
-
-                const chunk = decoder.decode(value);
-
-                const lines = chunk
-
-                    .split("\n")
-
-                    .filter(line => line.trim() !== "");
-
-                for (const line of lines) {
-
-                    try {
-
-                        const json = JSON.parse(line);
-
-                        if (json.message?.content) {
-
-                            onToken(json.message.content);
-
+            const response = await fetch("http://localhost:11434/api/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model,
+                    stream: true,
+                    messages: [
+                        {
+                            role: "user",
+                            content: prompt
                         }
+                    ]
+                })
+            });
+
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    `Streaming Error : ${response.status}`
+
+                );
+
+            }
+
+            if (!response.body) {
+
+                throw new Error(
+
+                    "ReadableStream not available."
+
+                );
+
+            }
+
+            const reader =
+                response.body.getReader();
+
+            const decoder =
+                new TextDecoder("utf-8");
+
+            try {
+
+                while (true) {
+
+                    const {
+
+                        done,
+
+                        value
+
+                    } = await reader.read();
+
+                    if (done) {
+
+                        break;
 
                     }
 
-                    catch {
+                    const chunk = decoder.decode(
 
-                        // Ignore malformed JSON fragments
+                        value,
+
+                        {
+
+                            stream: true
+
+                        }
+
+                    );
+
+                    if (chunk) {
+
+
+                        onToken(chunk);
 
                     }
 
@@ -225,16 +224,30 @@ export class ollamaProvider implements AIProvider {
 
             }
 
+            catch (error) {
+
+                console.error(
+
+                    "Streaming Error:",
+
+                    error
+
+                );
+
+                throw error;
+
+            }
+
+            finally {
+
+                reader.releaseLock();
+
+            }
+
         }
-
-        catch (error) {
-
-            console.error(error);
-
-            throw error;
+        catch {
 
         }
-
     }
-
 }
+

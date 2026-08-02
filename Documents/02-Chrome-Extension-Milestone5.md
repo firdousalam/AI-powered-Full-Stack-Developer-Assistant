@@ -5,7 +5,7 @@
 
 # 🎯 Objective
 
-In this milestone, we will build the **Content Script** for the DevPilot AI Chrome Extension.
+In this milestone, we will build the **Content Script** for the Zeba AI Chrome Extension.
 
 The Content Script is responsible for injecting JavaScript into web pages, allowing the extension to interact with the page's content.
 
@@ -467,7 +467,7 @@ In Milestone 6, we will implement the Context Menu API.
 
 New features include:
 
-Ask DevPilot AI
+Ask Zeba AI
 Explain Code
 Explain Selected Text
 Translate

@@ -47,7 +47,7 @@ Instead of sending only the user's input, they build a structured prompt that te
 - How to answer
 - Which format to follow
 
-This milestone introduces **Prompt Engineering** into our DevPilot AI backend.
+This milestone introduces **Prompt Engineering** into our Zeba AI backend.
 
 ---
 
@@ -796,7 +796,7 @@ src/prompts/chat.prompt.ts
 export const chatPrompt = (
     userPrompt: string
 ): string => `
-You are DevPilot AI.
+You are Zeba AI.
 
 You are a Senior Full Stack Software Engineer with expertise in:
 
@@ -860,7 +860,7 @@ Chat Prompt
 
 ↓
 
-You are DevPilot AI...
+You are Zeba AI...
 
 ↓
 
@@ -2380,7 +2380,7 @@ In the final part, we will:
 
 # 📖 Goal
 
-In the previous parts, we designed a complete Prompt Engineering architecture for the DevPilot AI backend.
+In the previous parts, we designed a complete Prompt Engineering architecture for the Zeba AI backend.
 
 We:
 
@@ -2558,7 +2558,7 @@ The Prompt Service should generate the Chat Prompt.
 Example
 
 ```text
-You are DevPilot AI.
+You are Zeba AI.
 
 You are an experienced Software Engineer.
 
@@ -3129,7 +3129,7 @@ git push origin develop
 
 # Milestone Summary
 
-In this milestone, we transformed the DevPilot AI backend from sending raw user prompts to generating intelligent, reusable, and structured prompts through a dedicated **Prompt Service**. We created specialized prompt templates for different domains such as Chat, Docker, Kubernetes, Jenkins, and Code Review, integrated them into the AI Service, and combined them with the AI Router for intelligent model selection. This architecture produces more consistent, maintainable, and higher-quality AI responses while keeping controllers lightweight and business logic modular.
+In this milestone, we transformed the Zeba AI backend from sending raw user prompts to generating intelligent, reusable, and structured prompts through a dedicated **Prompt Service**. We created specialized prompt templates for different domains such as Chat, Docker, Kubernetes, Jenkins, and Code Review, integrated them into the AI Service, and combined them with the AI Router for intelligent model selection. This architecture produces more consistent, maintainable, and higher-quality AI responses while keeping controllers lightweight and business logic modular.
 
 The backend is now well-prepared for future enhancements such as Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), OpenAI, Gemini, Claude integration, conversation memory, and advanced AI workflows.
 
@@ -3137,7 +3137,7 @@ The backend is now well-prepared for future enhancements such as Retrieval-Augme
 
 # Chapter 4 Progress
 
-After completing Milestone **4.6**, the DevPilot AI backend now includes:
+After completing Milestone **4.6**, the Zeba AI backend now includes:
 
 - ✅ Ollama Integration
 - ✅ Multiple Local AI Models

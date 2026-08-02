@@ -18,7 +18,7 @@ Design
 
 ----------------------------------
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 ----------------------------------
 
@@ -147,7 +147,7 @@ Episode 2.6
 
 Create
 
-Ask DevPilot AI
+Ask Zeba AI
 
 Explain
 
@@ -332,7 +332,7 @@ Design
 
 ----------------------------------
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 ----------------------------------
 
@@ -439,7 +439,7 @@ const PopupHeader = () => {
 
       <div>
         <h1 className="text-lg font-bold">
-          DevPilot AI
+          Zeba AI
         </h1>
 
         <p className="text-xs">
@@ -486,7 +486,7 @@ const PromptInput = () => {
 
       <textarea
         rows={6}
-        placeholder="Ask DevPilot AI..."
+        placeholder="Ask Zeba AI..."
         className="w-full border rounded-lg p-3 resize-none"
       />
     </div>
@@ -562,7 +562,7 @@ src/popup/PopupFooter.tsx
 const PopupFooter = () => {
   return (
     <footer className="text-center text-xs text-gray-500 py-4">
-      DevPilot AI v1.0.0
+      Zeba AI v1.0.0
     </footer>
   );
 };
@@ -623,7 +623,7 @@ export default App;
 Expected UI
 +--------------------------------------+
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 AI Full Stack Developer Assistant
 
@@ -643,7 +643,7 @@ Prompt
 
 ┌────────────────────────────┐
 
-Ask DevPilot AI...
+Ask Zeba AI...
 
 │
 
@@ -669,6 +669,6 @@ Recent Chats
 
 ----------------------------------------
 
-DevPilot AI v1.0.0
+Zeba AI v1.0.0
 
 +--------------------------------------+

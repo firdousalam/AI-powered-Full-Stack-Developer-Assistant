@@ -22,7 +22,7 @@ export function createContextMenus() {
 
         id: MENU_IDS.ASK_AI,
 
-        title: "🤖 Ask DevPilot AI",
+        title: "🤖 Ask Zeba AI",
 
         contexts: ["selection"]
 

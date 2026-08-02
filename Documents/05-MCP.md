@@ -6,7 +6,7 @@
 
 # 🎯 Chapter Goal
 
-In this chapter, we will transform **DevPilot AI** from a chatbot into a real **AI Agent**.
+In this chapter, we will transform **Zeba AI** from a chatbot into a real **AI Agent**.
 
 Until now, the AI could only answer questions using its internal knowledge.
 
@@ -265,7 +265,7 @@ Tool Registry
 
 ## Goal
 
-Allow DevPilot AI to analyze and interact with local files.
+Allow Zeba AI to analyze and interact with local files.
 
 ---
 
@@ -310,7 +310,7 @@ Project Folder
 
 ## Goal
 
-Connect DevPilot AI to GitHub repositories.
+Connect Zeba AI to GitHub repositories.
 
 ---
 
@@ -356,7 +356,7 @@ GitHub API
 
 ## Goal
 
-Allow DevPilot AI to inspect Docker resources.
+Allow Zeba AI to inspect Docker resources.
 
 ---
 
@@ -386,7 +386,7 @@ Allow DevPilot AI to inspect Docker resources.
 
 ## Goal
 
-Allow DevPilot AI to inspect Kubernetes clusters.
+Allow Zeba AI to inspect Kubernetes clusters.
 
 ---
 
@@ -417,7 +417,7 @@ Allow DevPilot AI to inspect Kubernetes clusters.
 
 ## Goal
 
-Integrate Git operations into DevPilot AI.
+Integrate Git operations into Zeba AI.
 
 ---
 
@@ -611,4 +611,4 @@ These agents will collaborate through orchestration to solve complex software en
 
 # 📖 Chapter Summary
 
-In this chapter, we will transform DevPilot AI into a true **AI Developer Agent** by integrating the **Model Context Protocol (MCP)**. We will build an MCP Gateway, connect multiple MCP servers, discover available tools dynamically, and enable the AI to interact with developer environments including the filesystem, GitHub, Docker, Kubernetes, and Git repositories. By the end of this chapter, DevPilot AI will be capable of intelligently selecting and executing external tools, laying the foundation for advanced Retrieval-Augmented Generation (RAG), Multi-Agent systems, and production-ready AI development workflows.
+In this chapter, we will transform Zeba AI into a true **AI Developer Agent** by integrating the **Model Context Protocol (MCP)**. We will build an MCP Gateway, connect multiple MCP servers, discover available tools dynamically, and enable the AI to interact with developer environments including the filesystem, GitHub, Docker, Kubernetes, and Git repositories. By the end of this chapter, Zeba AI will be capable of intelligently selecting and executing external tools, laying the foundation for advanced Retrieval-Augmented Generation (RAG), Multi-Agent systems, and production-ready AI development workflows.

@@ -20,7 +20,7 @@ However, our Chrome Extension is still acting as a simple frontend.
 
 In this milestone, we will connect the Chrome Extension to our AI backend and replace all mock responses with real AI-generated responses.
 
-By the end of this milestone, DevPilot AI will behave like a real AI assistant capable of communicating with the backend in real time.
+By the end of this milestone, Zeba AI will behave like a real AI assistant capable of communicating with the backend in real time.
 
 ---
 
@@ -528,7 +528,7 @@ git push origin develop
 
 # Milestone Summary
 
-In this milestone, we integrated the Chrome Extension with the DevPilot AI backend. The popup now communicates with the background script, which securely forwards requests to the backend. Instead of mock data, the extension receives real AI-generated responses using the Prompt Service, AI Router, Memory Service, and Provider Factory. Streaming responses provide a real-time typing experience, resulting in a production-ready communication architecture similar to modern AI-powered developer tools.
+In this milestone, we integrated the Chrome Extension with the Zeba AI backend. The popup now communicates with the background script, which securely forwards requests to the backend. Instead of mock data, the extension receives real AI-generated responses using the Prompt Service, AI Router, Memory Service, and Provider Factory. Streaming responses provide a real-time typing experience, resulting in a production-ready communication architecture similar to modern AI-powered developer tools.
 
 ---
 
@@ -574,7 +574,7 @@ In previous milestones, our backend became capable of:
 
 However, our Chrome Extension still acts like a simple frontend.
 
-In this milestone, we will connect the Chrome Extension with our AI backend so users can interact with DevPilot AI directly from the browser.
+In this milestone, we will connect the Chrome Extension with our AI backend so users can interact with Zeba AI directly from the browser.
 
 By the end of this milestone, the Chrome Extension will become a fully functional AI client capable of:
 
@@ -1045,12 +1045,12 @@ Benefits:
 
 # Extension Manifest
 
-A minimal Manifest V3 configuration for DevPilot AI:
+A minimal Manifest V3 configuration for Zeba AI:
 
 ```json
 {
   "manifest_version": 3,
-  "name": "DevPilot AI",
+  "name": "Zeba AI",
   "version": "1.0.0",
 
   "action": {
@@ -2017,7 +2017,7 @@ git push origin develop
 
 # Milestone Summary
 
-In this part, we implemented the communication layer between the Chrome Extension and the DevPilot AI backend. We centralized all backend interactions inside a dedicated API Service, added support for both standard and streaming AI responses, and used the Background Script as the communication bridge between the Popup UI and the backend. This architecture keeps the extension modular, simplifies maintenance, and prepares the project for future enhancements such as multiple AI providers, authentication, conversation memory, and real-time AI interactions.
+In this part, we implemented the communication layer between the Chrome Extension and the Zeba AI backend. We centralized all backend interactions inside a dedicated API Service, added support for both standard and streaming AI responses, and used the Background Script as the communication bridge between the Popup UI and the backend. This architecture keeps the extension modular, simplifies maintenance, and prepares the project for future enhancements such as multiple AI providers, authentication, conversation memory, and real-time AI interactions.
 
 
 # 📘 Chapter 4 – Chrome Extension Integration
@@ -2714,7 +2714,7 @@ git push origin develop
 
 # 📖 Part Summary
 
-In this part, we integrated the Chrome Extension with the DevPilot AI backend using both standard and streaming APIs. The Background Script now acts as the communication bridge, forwarding streamed AI tokens from the backend to the Popup in real time. The Popup progressively renders these tokens to create a natural typing animation, while loading indicators, error handling, and connection cleanup ensure a smooth and production-ready user experience. This architecture forms the foundation for future features such as conversation memory, Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), and multi-provider AI support.
+In this part, we integrated the Chrome Extension with the Zeba AI backend using both standard and streaming APIs. The Background Script now acts as the communication bridge, forwarding streamed AI tokens from the backend to the Popup in real time. The Popup progressively renders these tokens to create a natural typing animation, while loading indicators, error handling, and connection cleanup ensure a smooth and production-ready user experience. This architecture forms the foundation for future features such as conversation memory, Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), and multi-provider AI support.
 
 
 # 📘 Chapter 4 – Chrome Extension Integration
@@ -2727,13 +2727,13 @@ In this part, we integrated the Chrome Extension with the DevPilot AI backend us
 
 # 🎯 Goal
 
-In the previous parts, we successfully connected our Chrome Extension to the DevPilot AI backend and implemented real-time AI streaming.
+In the previous parts, we successfully connected our Chrome Extension to the Zeba AI backend and implemented real-time AI streaming.
 
 However, building a production-ready Chrome Extension requires much more than simply displaying AI responses.
 
 In this final part, we will focus on designing an enterprise-grade architecture by introducing session management, retry mechanisms, timeout handling, centralized logging, structured project organization, and comprehensive testing strategies.
 
-By the end of this part, the DevPilot AI Chrome Extension will be ready for real-world usage and future enterprise-scale enhancements.
+By the end of this part, the Zeba AI Chrome Extension will be ready for real-world usage and future enterprise-scale enhancements.
 
 ---
 
@@ -3420,6 +3420,6 @@ Congratulations! 🎉
 
 You have completed **Milestone 4.9 – Chrome Extension Integration**.
 
-Throughout this milestone, you transformed a basic Chrome Extension into a production-ready AI client capable of communicating with the DevPilot AI backend using both standard and streaming APIs. You implemented runtime messaging, session-based conversations, AI typing effects, loading indicators, retry strategies, timeout handling, structured logging, and enterprise-grade project organization. The resulting architecture is modular, scalable, and prepared for future enhancements such as Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), Multi-Agent AI systems, and cloud-based AI providers.
+Throughout this milestone, you transformed a basic Chrome Extension into a production-ready AI client capable of communicating with the Zeba AI backend using both standard and streaming APIs. You implemented runtime messaging, session-based conversations, AI typing effects, loading indicators, retry strategies, timeout handling, structured logging, and enterprise-grade project organization. The resulting architecture is modular, scalable, and prepared for future enhancements such as Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), Multi-Agent AI systems, and cloud-based AI providers.
 
 Your Chrome Extension is now ready to evolve from a simple AI interface into a powerful developer assistant capable of supporting enterprise-scale AI workflows.
