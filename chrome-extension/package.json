@@ -15,7 +15,6 @@
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.18.1",
     "clsx": "^2.1.1",
-    "jsdom": "^29.1.1",
     "lucide-react": "^1.26.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -29,7 +28,6 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/chrome": "^0.2.2",
-    "@types/jsdom": "^28.0.3",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

@@ -6,33 +6,37 @@ import linkExtractorService from "./linkExtractor.service";
 import tableExtractorService from "./tableExtractor.service";
 import formExtractorService from "./formExtractor.service";
 
-import type {
-    BrowserContext
-} from "../types/browserContext.types";
-
-
+import type { BrowserContext } from "../types/browserContext.types";
 
 class ContextBuilderService {
 
-    build(): BrowserContext {
-        const html = document.documentElement.outerHTML;
+    build(document: Document): BrowserContext {
+
+        // Clone the document so Readability doesn't modify the live DOM
+        const clonedDocument = document.cloneNode(true) as Document;
 
         const article =
-            readabilityService.extract(html);
+            readabilityService.extract(clonedDocument);
 
-        const markdown = article
-            ? markdownService.convert(article.content)
-            : "";
-        const headings = headingExtractorService.extract(document);
+        const markdown =
+            article
+                ? markdownService.convert(article.content)
+                : "";
 
-        const links = linkExtractorService.extract(document);
+        const headings =
+            headingExtractorService.extract(document);
 
-        const tables = tableExtractorService.extract(document);
+        const links =
+            linkExtractorService.extract(document);
 
-        const forms = formExtractorService.extract(document);
+        const tables =
+            tableExtractorService.extract(document);
 
+        const forms =
+            formExtractorService.extract(document);
 
-        const codeBlocks = codeExtractorService.extract(document);
+        const codeBlocks =
+            codeExtractorService.extract(document);
 
         return {
 
@@ -46,11 +50,9 @@ class ContextBuilderService {
 
                 protocol: location.protocol,
 
-                language:
-                    navigator.language,
+                language: navigator.language,
 
-                timestamp:
-                    new Date().toISOString()
+                timestamp: new Date().toISOString()
 
             },
 
@@ -58,28 +60,19 @@ class ContextBuilderService {
 
             markdown,
 
-            codeBlocks:
-                codeBlocks,
+            codeBlocks,
 
-            headings:
-                headings,
+            headings,
 
-            links:
-                links,
+            links,
 
-            tables:
-                tables,
+            tables,
 
-            forms:
-                forms
+            forms
 
         };
 
-
-
-
     }
-
 
 }
 

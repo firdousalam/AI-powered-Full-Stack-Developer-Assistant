@@ -114,9 +114,7 @@ export async function streamChat(
 
 ) {
 
-    console.log("========== streamChat REQUEST ==========");
-    console.log("Using Ollama Provider");
-    console.log("Model:", model);
+
 
     /**
         * Build final AI prompt
@@ -130,7 +128,7 @@ export async function streamChat(
             browserContext
 
         );
-
+    console.log("========== streamChat REQUEST ==========", browserContext)
     /**
      * Select model
      */

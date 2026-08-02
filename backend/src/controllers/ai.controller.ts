@@ -21,10 +21,11 @@ class AIController {
 
             } = req.body;
 
+            // second parameter must be browserContext
             const response =
                 await chatWithAI(
                     prompt,
-                    browserContext,
+                    '',
                     model
                 );
 

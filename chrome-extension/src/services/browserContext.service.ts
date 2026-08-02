@@ -1,76 +1,45 @@
-
-
 /// <reference types="chrome"/>
-import type { BrowserContext } from "../types/browserContext.types";
-import contextBuilderService from "./contextBuilder.service";
 
+import type { BrowserContext } from "../types/browserContext.types";
 
 class BrowserContextService {
 
-
     /**
-     * Get the currently active browser tab.
+     * =====================================
+     * Get Browser Context From Content Script
+     * =====================================
      */
-
-
-    // private async getActiveTab(): Promise<chrome.tabs.Tab> {
-
-    //     const tabs = await chrome.tabs.query({
-
-    //         active: true,
-
-    //         currentWindow: true
-
-    //     });
-
-    //     if (!tabs.length) {
-
-    //         throw new Error("No active browser tab found.");
-
-    //     }
-
-    //     return tabs[0];
-
-    // }
-
-    /**
-     * Collect browser context.
-     */
-
-
     async getBrowserContext(): Promise<BrowserContext> {
 
         try {
-            /*
 
-            const tab = await this.getActiveTab();
+            const tabs = await chrome.tabs.query({
 
-            const url = tab.url ?? "";
+                active: true,
 
-            const parsedUrl = new URL(url);
+                currentWindow: true
 
-            return {
+            });
 
-                url,
+            if (!tabs.length || !tabs[0].id) {
 
-                title: tab.title ?? "",
+                throw new Error("No active tab found.");
 
-                hostname: parsedUrl.hostname,
+            }
 
-                protocol: parsedUrl.protocol.replace(":", ""),
+            const context = await chrome.tabs.sendMessage(
 
-                language: navigator.language,
+                tabs[0].id,
 
-                tabId: tab.id ?? -1,
+                {
 
-                windowId: tab.windowId,
+                    type: "GET_BROWSER_CONTEXT"
 
-                timestamp: new Date().toISOString()
+                }
 
-            };
-            */
+            );
 
-            return contextBuilderService.build();
+            return context as BrowserContext;
 
         }
 
@@ -89,8 +58,6 @@ class BrowserContextService {
         }
 
     }
-
-
 
 }
 

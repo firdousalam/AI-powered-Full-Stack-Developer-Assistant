@@ -51,10 +51,13 @@ class PromptService {
 
         const basePrompt = this.getBasePrompt(prompt);
 
-        if (!browserContext) {
+        if (browserContext) {
             return basePrompt;
         }
 
+        return basePrompt;
+
+        /* 
         const metadata = browserContext.metadata;
 
         const headings =
@@ -191,7 +194,7 @@ When answering:
 • Never invent information that is not present in the browser context.
 • If the browser context is unrelated to the user's question, answer normally.
 • Respond as a senior software engineer with concise and accurate explanations.
-`;
+`; */
     }
 
 }

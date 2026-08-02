@@ -1,17 +1,22 @@
 /// <reference types="chrome" />
 
-import { useEffect, useState, useCallback } from "react";
+import {
+    useEffect,
+    useState,
+    useCallback,
+    useRef
+} from "react";
 
 import BrowserContextCard from "./components/BrowserContextCard";
 import PromptInput from "./components/PromptInput";
 import ChatWindow from "./components/ChatWindow";
 import LoadingIndicator from "./components/LoadingIndicator";
 import ErrorMessage from "./components/ErrorMessage";
+
 import type { ChatMessage } from "../types/chat.types";
+import type { BrowserContext } from "../types/browserContext.types";
 
 import browserContextService from "../services/browserContext.service";
-
-import type { BrowserContext } from "../types/browserContext.types";
 
 import {
     ASK_AI_STREAM,
@@ -21,8 +26,8 @@ import {
 } from "../constants/message.types";
 
 
-
 export default function Popup() {
+
 
     /**
      * ===========================
@@ -31,12 +36,24 @@ export default function Popup() {
      */
 
     const [
-
         browserContext,
-
         setBrowserContext
-
     ] = useState<BrowserContext | null>(null);
+
+
+
+    /**
+     * ===========================
+     * Send Browser Context Toggle
+     * ===========================
+     */
+
+    const [
+        sendBrowserContext,
+        setSendBrowserContext
+    ] = useState(true);
+
+
 
     /**
      * ===========================
@@ -45,40 +62,37 @@ export default function Popup() {
      */
 
     const [
-
         messages,
-
         setMessages
-
     ] = useState<ChatMessage[]>([]);
 
+
+
     /**
      * ===========================
-     * Current Streaming Response
+     * Streaming Response
      * ===========================
      */
 
     const [
-
         streamingResponse,
-
         setStreamingResponse
-
     ] = useState("");
 
+
+
     /**
      * ===========================
-     * Loading State
+     * Loading
      * ===========================
      */
 
     const [
-
         loading,
-
         setLoading
-
     ] = useState(false);
+
+
 
     /**
      * ===========================
@@ -87,26 +101,34 @@ export default function Popup() {
      */
 
     const [
-
         error,
-
         setError
-
     ] = useState("");
+
+
 
     /**
      * ===========================
-     * Selected AI Model
+     * AI Model
      * ===========================
      */
 
     const [
-
         model,
-
         setModel
-
     ] = useState("llama3.2:3b");
+
+
+
+    /**
+     * ===========================
+     * Stream Reference
+     * ===========================
+     */
+
+    const streamRef = useRef("");
+
+
 
     /**
      * ===========================
@@ -121,22 +143,19 @@ export default function Popup() {
             try {
 
                 const context =
-
                     await browserContextService
                         .getBrowserContext();
+
 
                 setBrowserContext(context);
 
             }
-
             catch (err) {
 
                 console.error(err);
 
                 setError(
-
                     "Unable to load browser context."
-
                 );
 
             }
@@ -147,9 +166,11 @@ export default function Popup() {
 
     );
 
+
+
     /**
      * ===========================
-     * Load Context on Startup
+     * Load Context Startup
      * ===========================
      */
 
@@ -157,85 +178,123 @@ export default function Popup() {
 
         loadBrowserContext();
 
-    }, [loadBrowserContext]);
+    }, [
+        loadBrowserContext
+    ]);
+
+
 
     /**
-     * ==================================
+     * ===========================
      * Runtime Listener
-     * ==================================
+     * ===========================
      */
 
     useEffect(() => {
 
+
         const listener = (
-
             message: any
-
         ) => {
+
 
             switch (message.type) {
 
+
                 case AI_STREAM:
 
+
+                    streamRef.current +=
+                        message.token;
+
+
                     setStreamingResponse(
-
-                        previous =>
-
-                            previous + message.token
-
+                        streamRef.current
                     );
 
                     break;
 
+
+
                 case AI_STREAM_END:
 
-                    setMessages(previous => [
 
-                        ...previous,
+                    setMessages(prev => [
+
+                        ...prev,
 
                         {
 
-                            id: Date.now().toString(),
+                            id:
+                                Date.now()
+                                    .toString(),
 
                             role: "assistant",
 
-                            content: streamingResponse
+                            content:
+                                streamRef.current
 
                         }
 
                     ]);
 
+
+                    streamRef.current = "";
+
                     setStreamingResponse("");
 
                     setLoading(false);
 
+
                     break;
+
+
 
                 case AI_STREAM_ERROR:
 
+
+                    streamRef.current = "";
+
+                    setStreamingResponse("");
+
                     setLoading(false);
 
+
                     setError(
-
                         message.error ??
-
                         "Streaming failed."
-
                     );
 
+
                     break;
+
+
             }
+
+
         };
 
-        chrome.runtime.onMessage.addListener(listener);
+
+
+        chrome.runtime
+            .onMessage
+            .addListener(listener);
+
+
 
         return () => {
 
-            chrome.runtime.onMessage.removeListener(listener);
+            chrome.runtime
+                .onMessage
+                .removeListener(listener);
 
         };
 
-    }, [streamingResponse]);
+
+    }, []);
+
+
+
 
     /**
      * ===========================
@@ -249,11 +308,14 @@ export default function Popup() {
 
     ) => {
 
+
         if (!prompt.trim()) {
 
             return;
 
         }
+
+
 
         setError("");
 
@@ -261,13 +323,17 @@ export default function Popup() {
 
         setStreamingResponse("");
 
+
+
         setMessages(previous => [
 
             ...previous,
 
             {
 
-                id: Date.now().toString(),
+                id:
+                    Date.now()
+                        .toString(),
 
                 role: "user",
 
@@ -277,17 +343,37 @@ export default function Popup() {
 
         ]);
 
+
+
         chrome.runtime.sendMessage({
 
             type: ASK_AI_STREAM,
 
             prompt,
 
-            model
+            model,
+
+
+            /**
+             * Send context only
+             * when user enables it
+             */
+
+            browserContext:
+
+                sendBrowserContext
+                    ? browserContext
+                    : null
+
 
         });
 
+
+
     };
+
+
+
 
     /**
      * ===========================
@@ -297,25 +383,34 @@ export default function Popup() {
 
     const clearChat = () => {
 
+
         setMessages([]);
 
         setStreamingResponse("");
 
         setError("");
 
+
     };
+
+
 
     /**
      * ===========================
-     * Refresh Browser Context
+     * Refresh Context
      * ===========================
      */
 
     const refreshContext = async () => {
 
+
         await loadBrowserContext();
 
+
     };
+
+
+
 
     /**
      * ===========================
@@ -325,15 +420,31 @@ export default function Popup() {
 
     return (
 
-        <div className="popup-container" style={{
-            minWidth: "400px",
-            width: "400px",
-            minHeight: "600px",
-            padding: "12px",
-            boxSizing: "border-box"
-        }}>
+
+        <div
+
+            className="popup-container"
+
+            style={{
+
+                minWidth: "400px",
+
+                width: "400px",
+
+                minHeight: "600px",
+
+                padding: "12px",
+
+                boxSizing: "border-box"
+
+            }}
+
+        >
+
+
 
             <header className="popup-header">
+
 
                 <h2>
 
@@ -341,11 +452,16 @@ export default function Popup() {
 
                 </h2>
 
+
             </header>
 
-            {
 
-                browserContext && (
+
+
+            {
+                browserContext &&
+
+                (
 
                     <BrowserContextCard
 
@@ -354,12 +470,16 @@ export default function Popup() {
                     />
 
                 )
-
             }
 
-            {
 
-                error && (
+
+
+
+            {
+                error &&
+
+                (
 
                     <ErrorMessage
 
@@ -368,12 +488,16 @@ export default function Popup() {
                     />
 
                 )
-
             }
 
-            {
 
-                loading && (
+
+
+
+            {
+                loading &&
+
+                (
 
                     <LoadingIndicator
 
@@ -382,30 +506,53 @@ export default function Popup() {
                     />
 
                 )
-
             }
+
+
+
+
 
             <ChatWindow
 
+
                 messages={messages}
 
-                streamingMessage={streamingResponse}
+
+                streamingMessage={
+                    streamingResponse
+                }
+
 
             />
+
+
+
+
 
             <PromptInput
 
+
                 onSubmit={handleSendPrompt}
+
 
                 loading={loading}
 
+
             />
+
+
+
+
+
 
             <footer
 
                 className="popup-footer"
 
             >
+
+
+
 
                 <button
 
@@ -417,6 +564,9 @@ export default function Popup() {
 
                 </button>
 
+
+
+
                 <button
 
                     onClick={clearChat}
@@ -427,19 +577,63 @@ export default function Popup() {
 
                 </button>
 
+
+
+
+
+                <label
+
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                    }}
+
+                >
+
+                    <input
+
+                        type="checkbox"
+
+                        checked={
+                            sendBrowserContext
+                        }
+
+                        onChange={e =>
+
+                            setSendBrowserContext(
+                                e.target.checked
+                            )
+
+                        }
+
+                    />
+
+
+                    Send Browser Context
+
+
+                </label>
+
+
+
+
+
+
                 <select
 
+
                     value={model}
+
 
                     onChange={e =>
 
                         setModel(
-
                             e.target.value
-
                         )
 
                     }
+
 
                 >
 
@@ -449,11 +643,13 @@ export default function Popup() {
 
                     </option>
 
+
                     <option>
 
                         qwen3:4b
 
                     </option>
+
 
                     <option>
 
@@ -461,11 +657,17 @@ export default function Popup() {
 
                     </option>
 
+
                 </select>
+
+
 
             </footer>
 
+
+
         </div>
+
 
     );
 
