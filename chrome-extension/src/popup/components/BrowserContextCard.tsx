@@ -1,19 +1,15 @@
-import type { BrowserContext } from "../types/browser.types";
+import type { BrowserContext } from "../../types/browserContext.types";
 
 interface BrowserContextCardProps {
     context: BrowserContext | null;
 }
 
 function BrowserContextCard({
-
     context
-
 }: BrowserContextCardProps) {
 
     if (!context) {
-
         return (
-
             <div
                 style={{
                     border: "1px solid #ddd",
@@ -23,19 +19,13 @@ function BrowserContextCard({
                     background: "#fafafa"
                 }}
             >
-
                 <h3>🌐 Browser Context</h3>
-
                 <p>Collecting browser context...</p>
-
             </div>
-
         );
-
     }
 
     return (
-
         <div
             style={{
                 border: "1px solid #ddd",
@@ -45,68 +35,45 @@ function BrowserContextCard({
                 background: "#fafafa"
             }}
         >
-
             <h3 style={{ marginTop: 0 }}>
-
                 🌐 Browser Context
-
             </h3>
 
             <p>
-
                 <strong>Title</strong>
-
                 <br />
-
-                {context.title}
-
+                {context.metadata.title}
             </p>
 
             <p>
-
                 <strong>URL</strong>
-
                 <br />
-
                 <span
                     style={{
                         wordBreak: "break-word",
                         color: "#1976d2"
                     }}
                 >
-                    {context.url}
+                    {context.metadata.url}
                 </span>
-
             </p>
 
             <p>
-
                 <strong>Hostname</strong>
-
                 <br />
-
-                {context.hostname}
-
+                {context.metadata.hostname}
             </p>
 
             <p>
-
                 <strong>Protocol</strong>
-
                 <br />
-
-                {context.protocol}
-
+                {context.metadata.protocol}
             </p>
 
             <p>
-
                 <strong>Language</strong>
-
                 <br />
-
-                {context.language}
-
+                {context.metadata.language}
             </p>
 
             <hr />
@@ -118,15 +85,10 @@ function BrowserContextCard({
                     marginBottom: 0
                 }}
             >
-
                 🟢 Context Available
-
             </p>
-
         </div>
-
     );
-
 }
 
 export default BrowserContextCard;

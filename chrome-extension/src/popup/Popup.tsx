@@ -11,7 +11,7 @@ import type { ChatMessage } from "../types/chat.types";
 
 import browserContextService from "../services/browserContext.service";
 
-import type { BrowserContext } from "../types/browser.types";
+import type { BrowserContext } from "../types/browserContext.types";
 
 import {
     ASK_AI_STREAM,

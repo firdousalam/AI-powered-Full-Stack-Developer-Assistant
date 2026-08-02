@@ -9,36 +9,40 @@ import type { BrowserContext } from "../types/browserContext.types";
 class PromptService {
 
     /**
-     * Select the appropriate prompt template.
+     * =====================================
+     * Select Prompt Template
+     * =====================================
      */
     private getBasePrompt(userPrompt: string): string {
 
         const prompt = userPrompt.toLowerCase();
 
         if (prompt.includes("docker")) {
-            return dockerPrompt(prompt);
+            return dockerPrompt(userPrompt);
         }
 
         if (prompt.includes("kubernetes")) {
-            return kubernetesPrompt(prompt);
+            return kubernetesPrompt(userPrompt);
         }
 
         if (prompt.includes("jenkins")) {
-            return jenkinsPrompt(prompt);
+            return jenkinsPrompt(userPrompt);
         }
 
         if (
             prompt.includes("review code") ||
             prompt.includes("code review")
         ) {
-            return codeReviewPrompt(prompt);
+            return codeReviewPrompt(userPrompt);
         }
 
-        return chatPrompt(prompt);
+        return chatPrompt(userPrompt);
     }
 
     /**
-     * Build the final prompt sent to the LLM.
+     * =====================================
+     * Build Final Prompt
+     * =====================================
      */
     buildPrompt(
         prompt: string,
@@ -51,47 +55,142 @@ class PromptService {
             return basePrompt;
         }
 
+        const metadata = browserContext.metadata;
+
+        const headings =
+            browserContext.headings
+                .map(h => `H${h.level}: ${h.text}`)
+                .join("\n");
+
+        const links =
+            browserContext.links
+                .slice(0, 20)
+                .map(link => `• ${link.text} (${link.href})`)
+                .join("\n");
+
+        const codeBlocks =
+            browserContext.codeBlocks
+                .map(code =>
+                    `Language: ${code.language}\n${code.code}`
+                )
+                .join("\n\n----------------------------------\n\n");
+
+        const tables =
+            browserContext.tables
+                .map(table =>
+                    JSON.stringify(table, null, 2)
+                )
+                .join("\n\n");
+
+        const forms =
+            browserContext.forms
+                .map(form => `
+Form: ${form.name || form.id}
+
+Action: ${form.action}
+
+Method: ${form.method}
+
+Fields:
+${form.fields
+                        .map(field =>
+                            `- ${field.label || field.name} (${field.type})`
+                        )
+                        .join("\n")}
+`)
+                .join("\n");
+
         return `
-===========================
-Zeba AI Browser Context
-===========================
+==================================================
+Zeba AI Browser Intelligence
+==================================================
 
-Current Page:
-${browserContext.title || "Unknown"}
+## Page Metadata
 
-Current URL:
-${browserContext.url || "Unknown"}
+Title:
+${metadata.title}
+
+URL:
+${metadata.url}
 
 Hostname:
-${browserContext.hostname || "Unknown"}
+${metadata.hostname}
 
 Protocol:
-${browserContext.protocol || "Unknown"}
+${metadata.protocol}
 
-Browser Language:
-${browserContext.language || "Unknown"}
-
-Selected Text:
-${browserContext.selectedText || "No text selected"}
+Language:
+${metadata.language}
 
 Timestamp:
-${browserContext.timestamp}
+${metadata.timestamp}
 
-===========================
+==================================================
+Main Article
+==================================================
+
+${browserContext.article || "No article extracted."}
+
+==================================================
+Markdown Version
+==================================================
+
+${browserContext.markdown || "No markdown available."}
+
+==================================================
+Document Headings
+==================================================
+
+${headings || "No headings found."}
+
+==================================================
+Detected Code Blocks
+==================================================
+
+${codeBlocks || "No code blocks found."}
+
+==================================================
+Links
+==================================================
+
+${links || "No links found."}
+
+==================================================
+Tables
+==================================================
+
+${tables || "No tables found."}
+
+==================================================
+Forms
+==================================================
+
+${forms || "No forms found."}
+
+==================================================
 Prompt Template
-===========================
+==================================================
 
 ${basePrompt}
 
-===========================
+==================================================
 Instructions
-===========================
+==================================================
 
-• Use browser context whenever it is relevant.
-• If selected text exists, explain it first.
-• If there is no selected text, infer context from the page title and URL.
-• Never invent browser information.
-• Respond as a senior software engineer.
+You are Zeba AI, an intelligent browser-aware AI assistant.
+
+When answering:
+
+• Use the browser context whenever it is relevant.
+• Prefer the extracted article over raw HTML.
+• Use headings to understand document structure.
+• Use markdown when it improves readability.
+• Use detected code blocks when explaining programming concepts.
+• Mention programming languages when code is detected.
+• Use tables and forms only if relevant to the user's question.
+• Never invent information that is not present in the browser context.
+• If the browser context is unrelated to the user's question, answer normally.
+• Respond as a senior software engineer with concise and accurate explanations.
 `;
     }
 

@@ -2,7 +2,7 @@ import type {
 
     BrowserContext
 
-} from "../types/browser.types";
+} from "../types/browserContext.types";
 
 const API_URL =
 

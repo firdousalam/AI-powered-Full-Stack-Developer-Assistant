@@ -1,41 +1,47 @@
 
 
 /// <reference types="chrome"/>
-
-import type { BrowserContext } from "../types/browser.types";
+import type { BrowserContext } from "../types/browserContext.types";
+import contextBuilderService from "./contextBuilder.service";
 
 
 class BrowserContextService {
 
+
     /**
      * Get the currently active browser tab.
      */
-    private async getActiveTab(): Promise<chrome.tabs.Tab> {
 
-        const tabs = await chrome.tabs.query({
 
-            active: true,
+    // private async getActiveTab(): Promise<chrome.tabs.Tab> {
 
-            currentWindow: true
+    //     const tabs = await chrome.tabs.query({
 
-        });
+    //         active: true,
 
-        if (!tabs.length) {
+    //         currentWindow: true
 
-            throw new Error("No active browser tab found.");
+    //     });
 
-        }
+    //     if (!tabs.length) {
 
-        return tabs[0];
+    //         throw new Error("No active browser tab found.");
 
-    }
+    //     }
+
+    //     return tabs[0];
+
+    // }
 
     /**
      * Collect browser context.
      */
+
+
     async getBrowserContext(): Promise<BrowserContext> {
 
         try {
+            /*
 
             const tab = await this.getActiveTab();
 
@@ -62,6 +68,9 @@ class BrowserContextService {
                 timestamp: new Date().toISOString()
 
             };
+            */
+
+            return contextBuilderService.build();
 
         }
 
@@ -80,6 +89,8 @@ class BrowserContextService {
         }
 
     }
+
+
 
 }
 
