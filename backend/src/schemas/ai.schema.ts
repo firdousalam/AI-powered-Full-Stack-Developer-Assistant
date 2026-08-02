@@ -1,39 +1,35 @@
-// import { z } from "zod";
-
-// export const chatSchema = z.object({
-
-//     prompt: z.string().min(1),
-
-//     model: z.string().min(1)
-
-// });
-
-
-// export const chatSchema = z.object({
-
-//     prompt: z
-
-//         .string()
-
-//         .min(1, "Prompt is required"),
-
-//     model: z
-
-//         .string()
-
-//         .min(1, "Model is required")
-
-// });
 import { z } from "zod";
 
-export const chatSchema =
+export const chatSchema = z.object({
 
-    z.object({
+    prompt: z
+        .string()
+        .min(1, "Prompt is required"),
 
-        prompt:
+    model: z
+        .string()
+        .optional(),
 
-            z.string()
+    browserContext: z.object({
 
-                .min(1)
+        url: z.string(),
 
-    });
+        title: z.string(),
+
+        hostname: z.string(),
+
+        protocol: z.string(),
+
+        language: z.string(),
+
+        tabId: z.number(),
+
+        windowId: z.number(),
+
+        timestamp: z.string(),
+
+        selectedText: z.string().optional()
+
+    }).optional()
+
+});

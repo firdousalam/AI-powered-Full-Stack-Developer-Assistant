@@ -61,7 +61,7 @@ export async function chatWithAI(
             }
 
         );
-
+        console.log(response)
         if (!response.ok) {
 
             throw new Error(
@@ -145,7 +145,7 @@ export async function streamChat(
         }
 
     );
-
+    console.log("streamresponse", response);
     if (!response.ok) {
 
         throw new Error(

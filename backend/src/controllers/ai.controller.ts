@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import aiService from "../services/ai.service";
+import { chatWithAI, streamChat } from "../services/ai.service";
 
 class AIController {
 
@@ -22,7 +22,7 @@ class AIController {
             } = req.body;
 
             const response =
-                await aiService.chat(
+                await chatWithAI(
                     prompt,
                     browserContext,
                     model
@@ -59,30 +59,24 @@ class AIController {
         res: Response
     ) {
 
+
+        const {
+            prompt,
+
+            model,
+            browserContext
+        } = req.body;
+
         try {
-
-            const {
-
-                prompt,
-
-                browserContext,
-
-                model
-
-            } = req.body;
 
             res.setHeader(
                 "Content-Type",
                 "text/plain"
             );
-
-            await aiService.streamChat(
-
+            await streamChat(
                 prompt,
-
-                browserContext,
-
                 model,
+                browserContext,
 
                 token => {
 

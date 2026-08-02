@@ -1,199 +1,279 @@
-import promptService from "./prompt.service";
-
-import aiRouter from "./ai-router.service";
-
-import { AI_CONFIG } from "../config/ai.config";
-
-import {
-
-    ProviderFactory
-
-} from "../providers/provider.factory";
-
 import type {
-
     BrowserContext
-
 } from "../types/browserContext.types";
+import promptService from "./prompt.service";
+import aiRouter from "./ai-router.service";
+import { AI_CONFIG } from "../config/ai.config";
+import { ProviderFactory } from "../providers/provider.factory";
+const API_URL =
+    "http://localhost:3000/api/v1/ai";
 
-class AIService {
+/**
+ * ==========================================
+ * Standard Chat API
+ * ==========================================
+ */
+export async function chatWithAI(
 
-    /**
-     * ======================================
-     * Standard Chat
-     * ======================================
-     */
-    async chat(
+    prompt: string,
 
-        prompt: string,
+    model: string,
 
-        browserContext: BrowserContext,
+    browserContext: BrowserContext
 
-        model?: string
+) {
 
-    ) {
+    try {
 
-        console.log("========== AI SERVICE ==========");
-
+        console.log("========== CHAT ==========");
         console.log("Prompt:", prompt);
+        console.log("Model:", model);
+        console.log("Browser Context:", browserContext);
 
-        console.log("Browser Context:");
+        const response = await fetch(
 
-        console.log(browserContext);
+            `${API_URL}/chat`,
 
-        /**
-         * Build final AI prompt
-         */
-        const finalPrompt =
+            {
 
-            promptService.buildPrompt(
+                method: "POST",
 
-                prompt,
+                headers: {
 
-                browserContext
+                    "Content-Type": "application/json"
 
-            );
+                },
 
-        /**
-         * Select model
-         */
-        const route =
+                body: JSON.stringify({
 
-            aiRouter.selectModel(
+                    prompt,
 
-                model ?? prompt
+                    model,
 
-            );
+                    browserContext
 
-        console.log(
-
-            "Selected Model:",
-
-            route.model
-
-        );
-
-        try {
-
-            const provider =
-
-                ProviderFactory.create(
-
-                    AI_CONFIG.provider
-
-                );
-
-            return await provider.chat(
-
-                finalPrompt,
-
-                route.model
-
-            );
-
-        }
-
-        catch (error) {
-
-            console.error(
-
-                "Primary Provider Failed",
-
-                error
-
-            );
-
-            if (
-
-                AI_CONFIG.enableFallback
-
-            ) {
-
-                console.log(
-
-                    "Switching to fallback provider..."
-
-                );
-
-                const fallback =
-
-                    ProviderFactory.create(
-
-                        AI_CONFIG.fallbackProvider
-
-                    );
-
-                return await fallback.chat(
-
-                    finalPrompt,
-
-                    route.model
-
-                );
+                })
 
             }
 
-            throw error;
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+
+                `Backend Error : ${response.status}`
+
+            );
 
         }
 
+        const result = await response.json();
+
+        return result;
+
     }
 
-    /**
-     * ======================================
-     * Streaming Chat
-     * ======================================
-     */
-    async streamChat(
+    catch (error) {
 
-        prompt: string,
+        console.error(
 
-        browserContext: BrowserContext,
+            "Chat API Error:",
 
-        model: string,
-
-        onToken: (token: string) => void
-
-    ) {
-
-        const finalPrompt =
-
-            promptService.buildPrompt(
-
-                prompt,
-
-                browserContext
-
-            );
-
-        const route =
-
-            aiRouter.selectModel(
-
-                model
-
-            );
-
-        const provider =
-
-            ProviderFactory.create(
-
-                AI_CONFIG.provider
-
-            );
-
-        return provider.streamChat(
-
-            finalPrompt,
-
-            route.model,
-
-            onToken
+            error
 
         );
+
+        return {
+
+            success: false,
+
+            response:
+                "Unable to connect to backend."
+
+        };
 
     }
 
 }
 
-export default new AIService();
+/**
+ * ==========================================
+ * Streaming Chat API
+ * ==========================================
+ */
+export async function streamChat(
+
+    prompt: string,
+
+    model: string,
+
+    browserContext: BrowserContext,
+
+    onToken: (token: string) => void
+
+) {
+
+    console.log("========== streamChat REQUEST ==========");
+    console.log("Using Ollama Provider");
+    console.log("Model:", model);
+
+    /**
+        * Build final AI prompt
+        */
+    const finalPrompt =
+
+        promptService.buildPrompt(
+
+            prompt,
+
+            browserContext
+
+        );
+
+    /**
+     * Select model
+     */
+    const route =
+
+        aiRouter.selectModel(
+
+            model ?? prompt
+
+        );
+
+    console.log(
+
+        "Selected Model:",
+
+        route.model
+
+    );
+    const provider =
+
+        ProviderFactory.create(
+
+            AI_CONFIG.provider
+
+        );
+
+
+    // const response = await fetch("http://localhost:11434/api/chat", {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //         model,
+    //         stream: true,
+    //         messages: [
+    //             {
+    //                 role: "user",
+    //                 content: prompt
+    //             }
+    //         ]
+    //     })
+    // });
+
+
+    return provider.streamChat(
+
+        finalPrompt,
+
+        route.model,
+
+        onToken
+
+    );
+    /*
+
+    console.log("Status:", response.status);
+
+    if (!response.ok) {
+
+        throw new Error(
+
+            `Streaming Error : ${response.status}`
+
+        );
+
+    }
+
+    if (!response.body) {
+
+        throw new Error(
+
+            "ReadableStream not available."
+
+        );
+
+    }
+
+    const reader =
+        response.body.getReader();
+
+    const decoder =
+        new TextDecoder("utf-8");
+
+    try {
+
+        while (true) {
+
+            const {
+
+                done,
+
+                value
+
+            } = await reader.read();
+
+            if (done) {
+
+                break;
+
+            }
+
+            const chunk = decoder.decode(
+
+                value,
+
+                {
+
+                    stream: true
+
+                }
+
+            );
+
+            if (chunk) {
+
+
+                onToken(chunk);
+
+            }
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+
+            "Streaming Error:",
+
+            error
+
+        );
+
+        throw error;
+
+    }
+
+    finally {
+
+        reader.releaseLock();
+
+    }*/
+
+}

@@ -149,5 +149,93 @@ chrome.runtime.onMessage.addListener(
 
     }
 );
+chrome.runtime.onMessage.addListener(
+    (
+        message,
+        sender,
+        sendResponse
+    ) => {
 
-console.log("✅ Background Ready");
+        if (message.type !== ASK_AI_STREAM) {
+            console.log("sender", sender)
+            return;
+        }
+
+        (async () => {
+
+            try {
+
+                const browserContext =
+                    await browserContextService.getBrowserContext();
+
+
+                await streamChat(
+
+                    message.prompt,
+
+                    message.model ?? "llama3.2:3b",
+
+                    browserContext,
+
+                    (token: string) => {
+
+                        chrome.runtime.sendMessage({
+
+                            type: AI_STREAM,
+
+                            token
+
+                        });
+
+                    }
+
+                );
+
+
+                chrome.runtime.sendMessage({
+
+                    type: AI_STREAM_END
+
+                });
+
+
+                sendResponse({
+                    success: true
+                });
+
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Streaming Error",
+                    error
+                );
+
+
+                chrome.runtime.sendMessage({
+
+                    type: AI_STREAM_ERROR,
+
+                    error:
+                        "Streaming Failed"
+
+                });
+
+
+                sendResponse({
+
+                    success: false
+
+                });
+
+            }
+
+
+        })();
+
+
+        return true;
+
+    }
+);
