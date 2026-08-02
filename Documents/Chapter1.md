@@ -1,6 +1,6 @@
 # Chapter 1 - Project Planning & System Architecture
 
-> Build DevPilot AI – AI Developer Assistant using Chrome Extension, Ollama, MCP, RAG, Docker & Kubernetes
+> Build Zeba AI – AI Developer Assistant using Chrome Extension, Ollama, MCP, RAG, Docker & Kubernetes
 
 ---
 
@@ -41,7 +41,7 @@ After completing this chapter, you will understand:
 
 ## What are we building?
 
-DevPilot AI is a full-stack AI Developer Assistant that helps software engineers perform daily development tasks directly from a Chrome Extension.
+Zeba AI is a full-stack AI Developer Assistant that helps software engineers perform daily development tasks directly from a Chrome Extension.
 
 The application supports:
 
@@ -461,7 +461,7 @@ mkdir .github
 ```bash
 git add .
 
-git commit -m "feat: initialize DevPilot AI project"
+git commit -m "feat: initialize Zeba AI project"
 
 git push origin main
 ```

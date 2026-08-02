@@ -1,12 +1,12 @@
 # Chapter 10 - Docker & Kubernetes
 
-> **Containerize and deploy DevPilot AI using Docker, Docker Compose, Kubernetes, and Helm for a production-ready local development environment.**
+> **Containerize and deploy Zeba AI using Docker, Docker Compose, Kubernetes, and Helm for a production-ready local development environment.**
 
 ---
 
 # 📖 Chapter Overview
 
-So far, we have built almost every major component of DevPilot AI:
+So far, we have built almost every major component of Zeba AI:
 
 - Chrome Extension
 - React Dashboard
@@ -22,7 +22,7 @@ So far, we have built almost every major component of DevPilot AI:
 
 Now it's time to package everything into containers and deploy the complete platform using Docker and Kubernetes.
 
-This chapter focuses on making DevPilot AI portable, scalable, and production-ready.
+This chapter focuses on making Zeba AI portable, scalable, and production-ready.
 
 ---
 
@@ -325,7 +325,7 @@ Examples:
 Example:
 
 ```yaml
-APP_NAME=DevPilot AI
+APP_NAME=Zeba AI
 
 DEFAULT_MODEL=qwen2.5-coder
 
@@ -719,7 +719,7 @@ By the end of this chapter, you will have:
 ```bash
 git add .
 
-git commit -m "feat: dockerize and deploy DevPilot AI to Kubernetes"
+git commit -m "feat: dockerize and deploy Zeba AI to Kubernetes"
 
 git push origin develop
 ```
@@ -728,7 +728,7 @@ git push origin develop
 
 # 📖 Summary
 
-In this chapter, we containerized the complete DevPilot AI platform using Docker and Docker Compose, then deployed it to Kubernetes using Deployments, Services, ConfigMaps, Secrets, Persistent Volumes, and NGINX Ingress. Finally, we packaged the deployment with Helm, creating a scalable and production-ready architecture that supports local development today and cloud deployment in later chapters.
+In this chapter, we containerized the complete Zeba AI platform using Docker and Docker Compose, then deployed it to Kubernetes using Deployments, Services, ConfigMaps, Secrets, Persistent Volumes, and NGINX Ingress. Finally, we packaged the deployment with Helm, creating a scalable and production-ready architecture that supports local development today and cloud deployment in later chapters.
 
 ---
 
@@ -736,7 +736,7 @@ In this chapter, we containerized the complete DevPilot AI platform using Docker
 
 ## Chapter 11 – Authentication & User Management
 
-In the next chapter, we will secure DevPilot AI by implementing:
+In the next chapter, we will secure Zeba AI by implementing:
 
 - JWT Authentication
 - Google OAuth Login

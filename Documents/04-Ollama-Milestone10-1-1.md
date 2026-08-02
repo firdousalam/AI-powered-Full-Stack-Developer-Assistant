@@ -8,7 +8,7 @@
 
 # Chapter Overview
 
-In the previous milestones, we built the core communication architecture for DevPilot AI.
+In the previous milestones, we built the core communication architecture for Zeba AI.
 
 Our Chrome Extension can now:
 
@@ -192,7 +192,7 @@ They first understand:
 - Open tabs
 - Workspace structure
 
-Our goal is to build the same architecture inside DevPilot AI.
+Our goal is to build the same architecture inside Zeba AI.
 
 ---
 
@@ -336,7 +336,7 @@ You simply ask:
 Explain this.
 ```
 
-DevPilot AI automatically attaches:
+Zeba AI automatically attaches:
 
 - Current URL
 - Page Title
@@ -444,7 +444,7 @@ Throughout this milestone, we will implement:
 
 # End Goal of This Milestone
 
-After completing this milestone, DevPilot AI will understand far more than just the user's typed prompt.
+After completing this milestone, Zeba AI will understand far more than just the user's typed prompt.
 
 It will know:
 

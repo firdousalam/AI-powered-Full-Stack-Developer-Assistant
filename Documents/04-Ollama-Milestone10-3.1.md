@@ -198,7 +198,7 @@ chrome://extensions
 ### Expected Result
 
 ```
-DevPilot AI
+Zeba AI
 
 Enabled
 
@@ -353,7 +353,7 @@ useEffect(() => {
 }, []);
 ```
 
-Open DevPilot AI.
+Open Zeba AI.
 
 Expected:
 
@@ -1013,7 +1013,7 @@ Congratulations!
 
 You have successfully completed **Milestone 4.10 – Context-Aware AI Assistant**.
 
-Your DevPilot AI now supports:
+Your Zeba AI now supports:
 
 - ✅ Active Browser Tab Detection
 - ✅ Current URL Extraction
@@ -1039,7 +1039,7 @@ Your application is now significantly closer to professional AI coding assistant
 
 ## 📄 Milestone 4.10 – Part 2: DOM Extraction & Intelligent Page Understanding
 
-In the next milestone, DevPilot AI will move beyond browser metadata and begin understanding the **actual content** of web pages.
+In the next milestone, Zeba AI will move beyond browser metadata and begin understanding the **actual content** of web pages.
 
 Upcoming features include:
 
@@ -1054,4 +1054,4 @@ Upcoming features include:
 - Context compression for LLMs
 - Optimized browser context for Retrieval-Augmented Generation (RAG)
 
-By the end of the next milestone, DevPilot AI will no longer depend only on selected text. It will understand the structure, content, and semantics of entire webpages, laying the foundation for advanced capabilities such as RAG, Workspace Awareness, and enterprise-grade AI development assistants.
+By the end of the next milestone, Zeba AI will no longer depend only on selected text. It will understand the structure, content, and semantics of entire webpages, laying the foundation for advanced capabilities such as RAG, Workspace Awareness, and enterprise-grade AI development assistants.

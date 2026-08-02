@@ -6,7 +6,7 @@
 
 # Overview
 
-In the previous chapters, we successfully built the frontend portion of DevPilot AI's browser context system.
+In the previous chapters, we successfully built the frontend portion of Zeba AI's browser context system.
 
 The Chrome Extension can now:
 
@@ -683,7 +683,7 @@ By the end of this chapter, you will have successfully implemented:
 
 # Milestone Progress
 
-After completing this chapter, DevPilot AI now supports:
+After completing this chapter, Zeba AI now supports:
 
 - ✅ Active browser tab detection
 - ✅ Current URL extraction
@@ -717,7 +717,7 @@ Topics include:
 - Multi-source context merging
 - Preparing prompts for Retrieval-Augmented Generation (RAG)
 
-By the end of the next chapter, DevPilot AI will generate structured, context-rich prompts that significantly improve the quality and relevance of AI responses, bringing it one step closer to enterprise-grade coding assistants such as Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
+By the end of the next chapter, Zeba AI will generate structured, context-rich prompts that significantly improve the quality and relevance of AI responses, bringing it one step closer to enterprise-grade coding assistants such as Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
 
 
 09-Backend-Integration/
@@ -731,7 +731,7 @@ By the end of the next chapter, DevPilot AI will generate structured, context-ri
 
 # Overview
 
-In the previous milestone, we enhanced the Chrome Extension by enabling it to collect valuable browser context, including the active tab, current URL, page title, browser metadata, and selected text. This transformed DevPilot AI from a simple chat interface into a browser-aware assistant capable of understanding what the user is currently viewing.
+In the previous milestone, we enhanced the Chrome Extension by enabling it to collect valuable browser context, including the active tab, current URL, page title, browser metadata, and selected text. This transformed Zeba AI from a simple chat interface into a browser-aware assistant capable of understanding what the user is currently viewing.
 
 However, collecting browser context alone is not enough.
 
@@ -747,7 +747,7 @@ By the end of this chapter, you will understand how professional AI assistants l
 
 After completing this chapter, you will be able to:
 
-- Understand the complete backend architecture of DevPilot AI
+- Understand the complete backend architecture of Zeba AI
 - Learn how browser context flows through the backend
 - Understand the responsibilities of each backend layer
 - Build scalable service-oriented architecture
@@ -1117,7 +1117,7 @@ Prompt Engineering is isolated inside this service so it can evolve independentl
 
 # Provider Factory
 
-One of the strengths of DevPilot AI is that it supports multiple AI providers.
+One of the strengths of Zeba AI is that it supports multiple AI providers.
 
 ```
 Prompt
@@ -1289,7 +1289,7 @@ Each step has a dedicated responsibility.
 
 A common mistake is placing everything inside one file.
 
-Instead, DevPilot AI follows a layered architecture.
+Instead, Zeba AI follows a layered architecture.
 
 ```
 Controller
@@ -1544,7 +1544,7 @@ Throughout the implementation, follow these guidelines:
 
 # Chapter Summary
 
-In this chapter, we explored the overall backend architecture that powers DevPilot AI's context-aware capabilities.
+In this chapter, we explored the overall backend architecture that powers Zeba AI's context-aware capabilities.
 
 We learned how browser context flows from the Chrome Extension into the Express backend, how responsibilities are divided across controllers, services, prompt builders, and providers, and why this layered architecture is essential for building scalable, maintainable AI applications.
 
@@ -2383,7 +2383,7 @@ Interfaces should remain simple data contracts.
 
 # Chapter Summary
 
-In this chapter, we designed a production-ready `BrowserContext` interface that standardizes how browser metadata is represented throughout DevPilot AI.
+In this chapter, we designed a production-ready `BrowserContext` interface that standardizes how browser metadata is represented throughout Zeba AI.
 
 By using strong TypeScript typing, we improve maintainability, readability, and scalability while laying the foundation for advanced capabilities such as Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), workspace awareness, and autonomous AI agents.
 
@@ -2419,7 +2419,7 @@ You will learn how to:
 - Improve request validation
 - Prepare the backend for intelligent context injection
 
-By the end of the next chapter, every AI request will include rich browser context, enabling DevPilot AI to generate more accurate, relevant, and context-aware responses.
+By the end of the next chapter, every AI request will include rich browser context, enabling Zeba AI to generate more accurate, relevant, and context-aware responses.
 
 
 ├── 09.3-api.service.md
@@ -2444,7 +2444,7 @@ Instead of sending:
 Explain this.
 ```
 
-DevPilot AI will now send:
+Zeba AI will now send:
 
 ```text
 Prompt
@@ -3226,7 +3226,7 @@ In this chapter, we upgraded the Chrome Extension's API Service to support conte
 
 Instead of sending only the user's prompt, the extension now transmits a complete `BrowserContext` object containing browser metadata and selected content. This greatly improves the AI's understanding of the user's intent while keeping the communication layer clean, modular, and scalable.
 
-This design also prepares DevPilot AI for future enhancements such as DOM extraction, RAG, workspace awareness, and MCP without requiring major architectural changes.
+This design also prepares Zeba AI for future enhancements such as DOM extraction, RAG, workspace awareness, and MCP without requiring major architectural changes.
 
 ---
 
@@ -4125,7 +4125,7 @@ Instead of forwarding only the user's prompt, the AI Service will combine:
 
 into a single structured prompt before sending it to the Prompt Service.
 
-This is where DevPilot AI truly becomes a **context-aware AI assistant**.
+This is where Zeba AI truly becomes a **context-aware AI assistant**.
 
 ├── 09.5-ai.service.md
 
@@ -4143,7 +4143,7 @@ Now we arrive at one of the most important components in the entire Context-Awar
 
 The AI Service is responsible for orchestrating the complete AI request lifecycle. It acts as the central coordinator between the Controller, Prompt Builder, AI Provider, and the browser context collected by the Chrome Extension.
 
-This chapter transforms DevPilot AI from a simple chatbot into a true context-aware AI assistant by injecting browser information into every prompt before it reaches the Large Language Model (LLM).
+This chapter transforms Zeba AI from a simple chatbot into a true context-aware AI assistant by injecting browser information into every prompt before it reaches the Large Language Model (LLM).
 
 This is the same architectural principle used by professional AI assistants such as:
 
@@ -4992,7 +4992,7 @@ Controllers should extract request data.
 
 # Chapter Summary
 
-In this chapter, we transformed the AI Service into the central orchestration layer of DevPilot AI.
+In this chapter, we transformed the AI Service into the central orchestration layer of Zeba AI.
 
 The service now receives browser context, delegates prompt construction to the Prompt Service, selects the appropriate AI model and provider, supports streaming responses, and handles fallback providers.
 
@@ -5031,7 +5031,7 @@ Instead of simply forwarding the user's message, the Prompt Service will intelli
 
 into a structured prompt that enables the LLM to fully understand the user's current browsing context.
 
-This is the final step that transforms DevPilot AI into a true **Context-Aware AI Assistant**.
+This is the final step that transforms Zeba AI into a true **Context-Aware AI Assistant**.
 
 
 ├── 09.6-prompt.service.md
@@ -5246,7 +5246,7 @@ class PromptService {
 
         return `
 
-You are DevPilot AI, an intelligent software engineering assistant.
+You are Zeba AI, an intelligent software engineering assistant.
 
 ==================================================
 BROWSER CONTEXT
@@ -5346,7 +5346,7 @@ Browser Context:
 The Prompt Service generates:
 
 ```
-You are DevPilot AI.
+You are Zeba AI.
 
 Current Page:
 React – useEffect
@@ -5727,7 +5727,7 @@ We will learn how to:
 - Validate AI responses
 - Troubleshoot common integration issues
 
-By the end of the next chapter, DevPilot AI will successfully collect browser context, inject it into prompts, communicate with the backend, and generate intelligent, context-aware AI responses similar to modern coding assistants like Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
+By the end of the next chapter, Zeba AI will successfully collect browser context, inject it into prompts, communicate with the backend, and generate intelligent, context-aware AI responses similar to modern coding assistants like Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
 
 
 ├── 09.7-Context-Injection.md
@@ -5983,7 +5983,7 @@ Explain this.
 # Prompt After Injection
 
 ```
-You are DevPilot AI.
+You are Zeba AI.
 
 Current Page:
 
@@ -6180,7 +6180,7 @@ This greatly improves:
 
 # Current Context Sources
 
-At this milestone, DevPilot AI injects:
+At this milestone, Zeba AI injects:
 
 - User Prompt
 - Current URL
@@ -6395,7 +6395,7 @@ Tool Results
 Prompt
 ```
 
-This allows DevPilot AI to reason over live project data rather than static browser information alone.
+This allows Zeba AI to reason over live project data rather than static browser information alone.
 
 ---
 
@@ -6526,7 +6526,7 @@ The architecture remains the same while the injected context becomes richer.
 
 # Chapter Summary
 
-In this chapter, we completed the Context Injection pipeline for DevPilot AI.
+In this chapter, we completed the Context Injection pipeline for Zeba AI.
 
 By combining browser metadata, selected text, and user prompts into a structured AI request, the extension now provides the LLM with the information it needs to generate accurate, context-aware responses.
 
@@ -6565,7 +6565,7 @@ You will learn how to:
 - Troubleshoot common integration issues
 - Measure response quality improvements
 
-By the end of the next chapter, DevPilot AI will have a fully tested and production-ready Context-Aware AI workflow capable of delivering intelligent responses based on the user's active browser context.
+By the end of the next chapter, Zeba AI will have a fully tested and production-ready Context-Aware AI workflow capable of delivering intelligent responses based on the user's active browser context.
 
 
 ├── 09.8-Production-Best-Practices.md
@@ -6578,11 +6578,11 @@ By the end of the next chapter, DevPilot AI will have a fully tested and product
 
 # Overview
 
-Throughout this milestone, we successfully transformed DevPilot AI from a simple AI chatbot into a **Context-Aware AI Assistant** capable of understanding the user's browser environment.
+Throughout this milestone, we successfully transformed Zeba AI from a simple AI chatbot into a **Context-Aware AI Assistant** capable of understanding the user's browser environment.
 
 However, building features is only one aspect of software engineering. Writing **production-quality software** requires careful attention to architecture, maintainability, performance, scalability, security, and reliability.
 
-This chapter focuses on the engineering principles and best practices that make DevPilot AI maintainable as it grows into a full-scale AI development platform.
+This chapter focuses on the engineering principles and best practices that make Zeba AI maintainable as it grows into a full-scale AI development platform.
 
 Rather than discussing new features, we will learn how to organize and optimize the existing system for long-term success.
 
@@ -7399,7 +7399,7 @@ This makes debugging much easier.
 
 # Production Checklist
 
-Before releasing DevPilot AI, verify:
+Before releasing Zeba AI, verify:
 
 - ✅ Browser context collection
 - ✅ Prompt injection
@@ -7508,11 +7508,11 @@ The architecture you built in this milestone is already prepared for these advan
 
 # Chapter Summary
 
-In this chapter, we explored the engineering principles required to transform DevPilot AI into a production-ready AI platform.
+In this chapter, we explored the engineering principles required to transform Zeba AI into a production-ready AI platform.
 
 Rather than focusing on new features, we emphasized maintainability, modularity, performance, security, scalability, and clean architecture. By following these best practices, the project becomes easier to extend, test, and deploy while remaining flexible enough to support future capabilities such as RAG, MCP, workspace awareness, and autonomous AI agents.
 
-These practices are the foundation of modern enterprise software development and ensure that DevPilot AI can continue evolving without requiring major architectural changes.
+These practices are the foundation of modern enterprise software development and ensure that Zeba AI can continue evolving without requiring major architectural changes.
 
 ---
 
@@ -7547,5 +7547,5 @@ We will verify the complete Context-Aware AI pipeline by:
 - Measuring AI response quality
 - Troubleshooting common issues
 
-By the end of the final chapter, DevPilot AI will feature a fully functional, production-ready Context-Aware AI workflow that serves as the foundation for upcoming milestones including DOM Extraction, Retrieval-Augmented Generation (RAG), Workspace Awareness, Model Context Protocol (MCP), and Autonomous AI Agents.
+By the end of the final chapter, Zeba AI will feature a fully functional, production-ready Context-Aware AI workflow that serves as the foundation for upcoming milestones including DOM Extraction, Retrieval-Augmented Generation (RAG), Workspace Awareness, Model Context Protocol (MCP), and Autonomous AI Agents.
 

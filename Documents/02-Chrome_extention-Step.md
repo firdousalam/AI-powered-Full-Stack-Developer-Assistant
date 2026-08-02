@@ -320,7 +320,7 @@ Step 10 – Context Menu
 
 Create:
 
-Ask DevPilot AI
+Ask Zeba AI
 
 Explain Code
 
@@ -759,7 +759,7 @@ Design
 
 ----------------------------------
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 ----------------------------------
 
@@ -888,7 +888,7 @@ Episode 2.6
 
 Create
 
-Ask DevPilot AI
+Ask Zeba AI
 
 Explain
 

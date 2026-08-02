@@ -410,7 +410,7 @@ Display
 
 No Recent Chats
 
-Start asking DevPilot AI.
+Start asking Zeba AI.
 
 ```
 
@@ -554,7 +554,7 @@ Right Click
 
 ↓
 
-Ask DevPilot AI
+Ask Zeba AI
 
 Explain
 
@@ -578,7 +578,7 @@ chrome://extensions
 
 ↓
 
-DevPilot AI
+Zeba AI
 
 ↓
 
@@ -748,7 +748,7 @@ Expected
 
 ```
 
-DevPilot AI
+Zeba AI
 
 Version 1.0.0
 
@@ -960,4 +960,4 @@ Your extension now includes:
 
 This completes **Chapter 2**.
 
-In **Chapter 3**, you will begin connecting the extension to a real AI backend using **Node.js**, **Express**, **Ollama/OpenAI**, and streaming responses, transforming DevPilot AI into a fully functional AI-powered developer assistant.
+In **Chapter 3**, you will begin connecting the extension to a real AI backend using **Node.js**, **Express**, **Ollama/OpenAI**, and streaming responses, transforming Zeba AI into a fully functional AI-powered developer assistant.

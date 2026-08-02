@@ -4,7 +4,7 @@
 
 ## 📖 Chapter Overview
 
-In this chapter, we will build the **DevPilot AI Chrome Extension** using **Manifest V3**, **React**, **TypeScript**, **Vite**, and **Tailwind CSS**.
+In this chapter, we will build the **Zeba AI Chrome Extension** using **Manifest V3**, **React**, **TypeScript**, **Vite**, and **Tailwind CSS**.
 
 Rather than building the entire extension in a single chapter, we will divide it into **10 milestones**.
 
@@ -441,7 +441,7 @@ No AI.
 ```
 ----------------------------------
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 ----------------------------------
 
@@ -621,7 +621,7 @@ git commit -m "feat(extension): implement content script"
 
 ## Context Menu Options
 
-- Ask DevPilot AI
+- Ask Zeba AI
 - Explain
 - Summarize
 - Translate

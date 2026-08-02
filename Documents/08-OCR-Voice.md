@@ -6,7 +6,7 @@
 
 # 📖 Chapter Overview
 
-Until now, DevPilot AI can:
+Until now, Zeba AI can:
 
 - Chat using Ollama
 - Search code with RAG
@@ -14,7 +14,7 @@ Until now, DevPilot AI can:
 - Review code
 - Analyze resumes
 
-In this chapter, we'll make DevPilot AI **multimodal**.
+In this chapter, we'll make Zeba AI **multimodal**.
 
 Instead of only accepting text, it will also understand:
 
@@ -355,7 +355,7 @@ Find Kubernetes Examples
 
 # 🎤 Voice Chat
 
-Users can communicate with DevPilot AI using voice.
+Users can communicate with Zeba AI using voice.
 
 Workflow:
 
@@ -741,7 +741,7 @@ git commit -m "feat: implement OCR, voice, and file processing"
 git push origin develop
 # 📖 Summary
 
-In this chapter, we transformed DevPilot AI into a multimodal assistant capable of understanding text, images, voice, and documents. We implemented OCR for screenshots and scanned documents, added secure file upload and PDF processing, enabled speech-to-text and text-to-speech, and enhanced the user experience with drag-and-drop uploads, Markdown rendering, and syntax highlighting. These features allow developers to interact with the AI using multiple input methods while keeping processing local and integrated with the existing RAG and MCP architecture.
+In this chapter, we transformed Zeba AI into a multimodal assistant capable of understanding text, images, voice, and documents. We implemented OCR for screenshots and scanned documents, added secure file upload and PDF processing, enabled speech-to-text and text-to-speech, and enhanced the user experience with drag-and-drop uploads, Markdown rendering, and syntax highlighting. These features allow developers to interact with the AI using multiple input methods while keeping processing local and integrated with the existing RAG and MCP architecture.
 
 # ⏭ Next Chapter
 Chapter 9 – Dashboard & User Interface

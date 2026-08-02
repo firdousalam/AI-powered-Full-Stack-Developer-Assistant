@@ -24,7 +24,7 @@ The Chrome Tabs API enables a Chrome Extension to interact with browser tabs. It
 
 This information forms the foundation of a **Context-Aware AI Assistant**.
 
-Without the Tabs API, DevPilot AI has no knowledge of what webpage the user is currently viewing.
+Without the Tabs API, Zeba AI has no knowledge of what webpage the user is currently viewing.
 
 ---
 
@@ -73,7 +73,7 @@ The answer will most likely be incorrect or too generic.
 
 ---
 
-Now imagine DevPilot AI automatically collects browser context.
+Now imagine Zeba AI automatically collects browser context.
 
 The request becomes:
 
@@ -133,7 +133,7 @@ The Tabs API connects the Background Worker with the browser.
 
 ---
 
-# Chrome Tabs API in DevPilot AI
+# Chrome Tabs API in Zeba AI
 
 Our architecture will use the Tabs API like this:
 
@@ -243,7 +243,7 @@ YouTube
 ------------------------------------
 ```
 
-DevPilot AI collects context only from this active tab.
+Zeba AI collects context only from this active tab.
 
 ---
 
@@ -268,7 +268,7 @@ Tab
 └── audible
 ```
 
-For DevPilot AI, the most important fields are:
+For Zeba AI, the most important fields are:
 
 - URL
 - Title
@@ -583,7 +583,7 @@ This knowledge forms the foundation for collecting browser context in the next i
 
 # 📄 Part 3.2 — Browser Types & Browser Context Service
 
-In the next chapter, we will begin implementing the first production-ready browser context components for DevPilot AI.
+In the next chapter, we will begin implementing the first production-ready browser context components for Zeba AI.
 
 Now that we understand the Chrome Tabs API and browser context architecture, it's time to write the code that transforms browser metadata into a reusable, strongly typed service.
 
@@ -695,7 +695,7 @@ This keeps the code modular, reusable, and easier to maintain.
 
 # 📄 Browser Context Object
 
-By the end of this chapter, DevPilot AI will be able to generate a structured Browser Context object similar to the following:
+By the end of this chapter, Zeba AI will be able to generate a structured Browser Context object similar to the following:
 
 ```ts
 {
@@ -781,7 +781,7 @@ As the project grows to include DOM extraction, Retrieval-Augmented Generation (
 
 # 🚀 End Goal
 
-By the end of the next chapter, DevPilot AI will be able to:
+By the end of the next chapter, Zeba AI will be able to:
 
 - ✅ Configure the required Chrome Extension permissions
 - ✅ Create strongly typed browser models
@@ -793,7 +793,7 @@ By the end of the next chapter, DevPilot AI will be able to:
 - ✅ Return a structured Browser Context object
 - ✅ Prepare the foundation for Content Scripts, selected text capture, DOM extraction, RAG, and Workspace Awareness
 
-This will be the first production-ready implementation step toward transforming DevPilot AI from a traditional chatbot into an intelligent, context-aware AI developer assistant.
+This will be the first production-ready implementation step toward transforming Zeba AI from a traditional chatbot into an intelligent, context-aware AI developer assistant.
 
 # 📄 03.3-browserContext.service.md
 
@@ -807,7 +807,7 @@ This will be the first production-ready implementation step toward transforming 
 
 In the previous chapter, we learned about the Chrome Tabs API and how it enables Chrome Extensions to access information about the active browser tab.
 
-Now it's time to build one of the most important components of DevPilot AI—the **Browser Context Service**.
+Now it's time to build one of the most important components of Zeba AI—the **Browser Context Service**.
 
 Rather than allowing different parts of the extension to call Chrome APIs directly, we'll create a dedicated service responsible for collecting browser information and exposing a clean, reusable interface.
 
@@ -1399,7 +1399,7 @@ We covered:
 - TypeScript Best Practices
 - Production Design Patterns
 
-By introducing this service, DevPilot AI now has a centralized mechanism for collecting browser information, providing the foundation for selected text capture, DOM extraction, Retrieval-Augmented Generation (RAG), Workspace Awareness, and future AI agent capabilities.
+By introducing this service, Zeba AI now has a centralized mechanism for collecting browser information, providing the foundation for selected text capture, DOM extraction, Retrieval-Augmented Generation (RAG), Workspace Awareness, and future AI agent capabilities.
 
 ---
 
@@ -1417,7 +1417,7 @@ Topics include:
 - Runtime Messaging
 - Communication with the Background Service Worker
 
-By the end of the next chapter, DevPilot AI will move beyond browser metadata and begin understanding the actual content of webpages, enabling far richer context-aware AI interactions.
+By the end of the next chapter, Zeba AI will move beyond browser metadata and begin understanding the actual content of webpages, enabling far richer context-aware AI interactions.
 
 # 📄 03.4-manifest.md
 
@@ -1496,7 +1496,7 @@ The Manifest defines:
 
 ---
 
-# DevPilot AI Architecture
+# Zeba AI Architecture
 
 ```
 manifest.json
@@ -1568,7 +1568,7 @@ With permission:
 
 # Required Permissions
 
-For DevPilot AI we need:
+For Zeba AI we need:
 
 ```json
 "permissions": [
@@ -1889,7 +1889,7 @@ document_idle
 After page finishes loading
 ```
 
-For DevPilot AI we use:
+For Zeba AI we use:
 
 ```
 document_idle
@@ -1927,7 +1927,7 @@ Responsibilities:
 ```json
 "action": {
     "default_popup": "src/popup/index.html",
-    "default_title": "DevPilot AI"
+    "default_title": "Zeba AI"
 }
 ```
 
@@ -1941,7 +1941,7 @@ This tells Chrome which UI to display when the extension icon is clicked.
 {
   "manifest_version": 3,
 
-  "name": "DevPilot AI",
+  "name": "Zeba AI",
 
   "description": "AI-powered Full Stack Developer Assistant",
 
@@ -2082,7 +2082,7 @@ Incorrect content script path in `manifest.json`.
 
 # Chapter Summary
 
-In this chapter, we configured the Manifest file for DevPilot AI.
+In this chapter, we configured the Manifest file for Zeba AI.
 
 We covered:
 
@@ -2105,9 +2105,9 @@ The Manifest is the foundation of every Chrome Extension and enables the browser
 
 In the next chapter, we will begin building **Content Scripts**, one of the most powerful components of a Chrome Extension.
 
-Unlike the Popup or Background Service Worker, Content Scripts execute directly inside web pages, giving DevPilot AI the ability to inspect, understand, and interact with the content users are viewing.
+Unlike the Popup or Background Service Worker, Content Scripts execute directly inside web pages, giving Zeba AI the ability to inspect, understand, and interact with the content users are viewing.
 
-This is a major milestone in transforming DevPilot AI from a browser extension into a truly **Context-Aware AI Assistant**.
+This is a major milestone in transforming Zeba AI from a browser extension into a truly **Context-Aware AI Assistant**.
 
 ---
 
@@ -2295,7 +2295,7 @@ LLM
 
 # 💡 Why Content Scripts Matter
 
-Until now, DevPilot AI only knew:
+Until now, Zeba AI only knew:
 
 - Current URL
 - Page Title
@@ -2315,7 +2315,7 @@ This dramatically improves prompt quality and provides the foundation for advanc
 
 # 🚀 End Goal
 
-By the end of the next chapter, DevPilot AI will be able to:
+By the end of the next chapter, Zeba AI will be able to:
 
 - ✅ Inject Content Scripts into webpages
 - ✅ Access the DOM safely
@@ -2326,7 +2326,7 @@ By the end of the next chapter, DevPilot AI will be able to:
 - ✅ Build a reusable browser context pipeline
 - ✅ Prepare the foundation for DOM extraction, code block detection, intelligent summarization, Retrieval-Augmented Generation (RAG), and Workspace Awareness
 
-This marks the beginning of DevPilot AI's ability to truly understand the content users are interacting with, bringing it one step closer to enterprise AI coding assistants such as **Cursor AI**, **Claude Code**, **GitHub Copilot Chat**, and **Windsurf**.
+This marks the beginning of Zeba AI's ability to truly understand the content users are interacting with, bringing it one step closer to enterprise AI coding assistants such as **Cursor AI**, **Claude Code**, **GitHub Copilot Chat**, and **Windsurf**.
 
 # 📄 07 – Background Integration
 
@@ -2352,7 +2352,7 @@ In this chapter, we will integrate:
 
 into one unified workflow.
 
-By the end of this chapter, DevPilot AI will automatically collect browser context before every AI request and send that context to the backend.
+By the end of this chapter, Zeba AI will automatically collect browser context before every AI request and send that context to the backend.
 
 ---
 
@@ -3152,7 +3152,7 @@ Browser Context
 └── MCP Tool Results
 ```
 
-By gradually enriching the browser context, DevPilot AI will evolve from a simple chatbot into a context-aware development assistant capable of understanding the user's environment before generating a response.
+By gradually enriching the browser context, Zeba AI will evolve from a simple chatbot into a context-aware development assistant capable of understanding the user's environment before generating a response.
 
 ---
 
@@ -3190,12 +3190,12 @@ LLM (Ollama/OpenAI/Gemini)
 
 ## Summary
 
-At this stage, DevPilot AI no longer sends only the user's prompt to the backend. Every request now includes browser metadata, providing the AI with valuable contextual information about the user's current browsing session. This forms the foundation for upcoming features such as selected text extraction, DOM analysis, Retrieval-Augmented Generation (RAG), workspace awareness, and intelligent developer assistance.
+At this stage, Zeba AI no longer sends only the user's prompt to the backend. Every request now includes browser metadata, providing the AI with valuable contextual information about the user's current browsing session. This forms the foundation for upcoming features such as selected text extraction, DOM analysis, Retrieval-Augmented Generation (RAG), workspace awareness, and intelligent developer assistance.
 # 📌 Next Chapter
 
 # 📄 Popup Integration (React UI)
 
-In the next chapter, we will build the **Popup Integration**, where users will interact directly with **DevPilot AI** through a modern, responsive, and production-ready React interface.
+In the next chapter, we will build the **Popup Integration**, where users will interact directly with **Zeba AI** through a modern, responsive, and production-ready React interface.
 
 Until now, our extension has successfully collected browser context and communicated with the background service worker. The next step is to expose these capabilities through an intuitive user interface that allows users to visualize browser context, submit prompts, and receive AI responses in real time.
 
@@ -3360,7 +3360,7 @@ This preview helps users verify the context before interacting with the AI.
 
 # ⚡ Streaming AI Responses
 
-Unlike traditional chat applications that wait for the full response, DevPilot AI streams tokens as they are generated.
+Unlike traditional chat applications that wait for the full response, Zeba AI streams tokens as they are generated.
 
 ```
 AI is typing...
@@ -3530,7 +3530,7 @@ Modern AI coding assistants prioritize usability.
 
 Tools like Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf provide seamless interfaces that combine context awareness with interactive conversations.
 
-By implementing a production-ready popup, DevPilot AI moves beyond a basic Chrome extension and begins offering a professional developer experience.
+By implementing a production-ready popup, Zeba AI moves beyond a basic Chrome extension and begins offering a professional developer experience.
 
 ---
 
@@ -3554,7 +3554,7 @@ By the end of this chapter, you will have successfully implemented:
 
 # 🚀 Milestone Progress
 
-After completing this chapter, DevPilot AI will support:
+After completing this chapter, Zeba AI will support:
 
 - ✅ Active browser tab detection
 - ✅ Current URL extraction
@@ -3586,4 +3586,4 @@ We will learn how to:
 - Prepare the backend for future RAG integration
 - Build a scalable context-processing pipeline
 
-By the end of the next chapter, DevPilot AI will generate AI responses using not only the user's prompt but also rich browser context, significantly improving response quality and laying the foundation for Retrieval-Augmented Generation (RAG), long-term memory, and workspace awareness.
+By the end of the next chapter, Zeba AI will generate AI responses using not only the user's prompt but also rich browser context, significantly improving response quality and laying the foundation for Retrieval-Augmented Generation (RAG), long-term memory, and workspace awareness.

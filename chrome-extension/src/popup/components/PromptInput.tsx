@@ -78,7 +78,7 @@ function PromptInput({
 
                 rows={3}
 
-                placeholder="Ask DevPilot AI..."
+                placeholder="Ask Zeba AI..."
 
                 value={prompt}
 

@@ -897,7 +897,7 @@ git push origin develop
 
 # 📖 Summary
 
-In this chapter, we built the Retrieval-Augmented Generation (RAG) layer for DevPilot AI. We introduced embeddings, installed ChromaDB, created an indexing pipeline, generated vector embeddings using `nomic-embed-text`, and implemented semantic search. By combining ChromaDB with Ollama, the AI can now answer questions using private source code, PDFs, documentation, Kubernetes manifests, Dockerfiles, and GitHub repositories. This significantly improves the accuracy and usefulness of the assistant while keeping all data local.
+In this chapter, we built the Retrieval-Augmented Generation (RAG) layer for Zeba AI. We introduced embeddings, installed ChromaDB, created an indexing pipeline, generated vector embeddings using `nomic-embed-text`, and implemented semantic search. By combining ChromaDB with Ollama, the AI can now answer questions using private source code, PDFs, documentation, Kubernetes manifests, Dockerfiles, and GitHub repositories. This significantly improves the accuracy and usefulness of the assistant while keeping all data local.
 
 ---
 
@@ -905,7 +905,7 @@ In this chapter, we built the Retrieval-Augmented Generation (RAG) layer for Dev
 
 ## Chapter 7 – AI Productivity Features
 
-In the next chapter, we will build the user-facing AI features that make DevPilot AI a complete developer assistant, including:
+In the next chapter, we will build the user-facing AI features that make Zeba AI a complete developer assistant, including:
 
 - Prompt Library
 - Chat History

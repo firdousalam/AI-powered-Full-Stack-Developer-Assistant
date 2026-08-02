@@ -23,7 +23,7 @@ Each document will include:
 ✅ Production notes
 ✅ Interview tips
 
-The code will match the DevPilot AI project you've been building rather than generic examples.
+The code will match the Zeba AI project you've been building rather than generic examples.
 
 Breakdown
 📄 08.1 — Popup Architecture (~2,500 words)
@@ -52,13 +52,13 @@ Diagrams
 
 # Chapter Overview
 
-In the previous chapters, we built the core infrastructure that enables DevPilot AI to communicate with the backend, stream AI responses, support multiple AI providers, and collect browser context.
+In the previous chapters, we built the core infrastructure that enables Zeba AI to communicate with the backend, stream AI responses, support multiple AI providers, and collect browser context.
 
 However, none of those capabilities are useful unless users have an intuitive way to interact with them.
 
 That is the responsibility of the **Popup UI**.
 
-The popup is the primary interface between the developer and DevPilot AI. It is where users ask questions, preview browser context, monitor AI responses, and interact with the assistant in real time.
+The popup is the primary interface between the developer and Zeba AI. It is where users ask questions, preview browser context, monitor AI responses, and interact with the assistant in real time.
 
 Unlike a simple chat window, our popup is designed to become a **professional AI workspace** that can evolve into an experience similar to Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
 
@@ -216,7 +216,7 @@ React provides:
 * TypeScript support
 * Improved developer productivity
 
-As DevPilot AI grows, React allows us to add features without turning the popup into an unmanageable file.
+As Zeba AI grows, React allows us to add features without turning the popup into an unmanageable file.
 
 ---
 
@@ -726,7 +726,7 @@ These states determine what is rendered on the screen.
 ```
 --------------------------------------------------
 
-🚀 DevPilot AI
+🚀 Zeba AI
 
 --------------------------------------------------
 
@@ -818,7 +818,7 @@ This approach mirrors production-grade React applications used by enterprise sof
 
 # Chapter Summary
 
-In this chapter, we explored the architectural foundation of the DevPilot AI popup.
+In this chapter, we explored the architectural foundation of the Zeba AI popup.
 
 We learned:
 
@@ -868,7 +868,7 @@ You will learn how to:
 * Pass strongly typed props using TypeScript
 * Design production-quality UI components
 
-By the end of the next chapter, DevPilot AI will begin visually exposing the browser context collected by the Background Service Worker, making the AI interaction more transparent and laying the foundation for context-aware conversations.
+By the end of the next chapter, Zeba AI will begin visually exposing the browser context collected by the Background Service Worker, making the AI interaction more transparent and laying the foundation for context-aware conversations.
 
 
 
@@ -897,7 +897,7 @@ Responsive UI
 
 # Overview
 
-In the previous chapter, we designed the overall Popup Architecture for DevPilot AI and learned how the popup communicates with the Background Service Worker to retrieve browser context.
+In the previous chapter, we designed the overall Popup Architecture for Zeba AI and learned how the popup communicates with the Background Service Worker to retrieve browser context.
 
 In this chapter, we will build our first reusable React component:
 
@@ -905,7 +905,7 @@ In this chapter, we will build our first reusable React component:
 
 This component is responsible for presenting browser information in a clean, user-friendly, and production-ready format before sending requests to the AI backend.
 
-Rather than asking users to trust that the extension has collected the correct information, DevPilot AI displays the context transparently so users always know what data will be included in the AI prompt.
+Rather than asking users to trust that the extension has collected the correct information, Zeba AI displays the context transparently so users always know what data will be included in the AI prompt.
 
 This design philosophy is inspired by modern AI developer tools such as Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf, all of which emphasize visibility and control over contextual information.
 
@@ -938,7 +938,7 @@ Instead of showing nothing...
 Ask AI
 ```
 
-DevPilot AI displays:
+Zeba AI displays:
 
 ```
 Current Page
@@ -1377,7 +1377,7 @@ These practices improve scalability and maintainability.
 
 # Chapter Summary
 
-In this chapter, we built the BrowserContextCard component, the first reusable UI element of the DevPilot AI popup.
+In this chapter, we built the BrowserContextCard component, the first reusable UI element of the Zeba AI popup.
 
 We learned how to:
 
@@ -1463,11 +1463,11 @@ Send button
 
 # Overview
 
-The Prompt Input component is the primary interface through which users communicate with DevPilot AI. While previous chapters focused on collecting browser context and displaying it in the popup, this chapter focuses on allowing users to enter natural language prompts and submit them to the AI backend.
+The Prompt Input component is the primary interface through which users communicate with Zeba AI. While previous chapters focused on collecting browser context and displaying it in the popup, this chapter focuses on allowing users to enter natural language prompts and submit them to the AI backend.
 
 A modern AI assistant is far more than a simple text box. It should provide a smooth, responsive, and intuitive experience that feels natural to developers. Features such as keyboard shortcuts, automatic validation, auto-resizing textareas, loading states, and clear visual feedback significantly improve usability.
 
-Professional AI tools such as Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf all emphasize an efficient prompt input experience. DevPilot AI follows the same design philosophy.
+Professional AI tools such as Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf all emphasize an efficient prompt input experience. Zeba AI follows the same design philosophy.
 
 ---
 
@@ -1493,7 +1493,7 @@ The Prompt Input component is the entry point for every AI interaction.
 
 Without it, users cannot communicate with the AI assistant.
 
-Instead of requiring users to manually construct long prompts, DevPilot AI combines browser context with natural language questions.
+Instead of requiring users to manually construct long prompts, Zeba AI combines browser context with natural language questions.
 
 For example, the user simply types:
 
@@ -1821,7 +1821,7 @@ function PromptInput({
 
                 rows={3}
 
-                placeholder="Ask DevPilot AI..."
+                placeholder="Ask Zeba AI..."
 
                 value={prompt}
 
@@ -1949,7 +1949,7 @@ When building input components:
 
 # Chapter Summary
 
-In this chapter, we built the PromptInput component that serves as the primary interaction point between users and DevPilot AI.
+In this chapter, we built the PromptInput component that serves as the primary interaction point between users and Zeba AI.
 
 We learned how to:
 
@@ -1993,7 +1993,7 @@ You will learn how to:
 * Add copy-to-clipboard functionality
 * Build a professional chat interface similar to Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
 
-By the end of the next chapter, DevPilot AI will provide a polished conversational experience with real-time streaming responses and rich message rendering.
+By the end of the next chapter, Zeba AI will provide a polished conversational experience with real-time streaming responses and rich message rendering.
 
 
 📄 08.4 — Chat Window (~3,000 words)
@@ -2021,9 +2021,9 @@ Message history
 
 # Overview
 
-The **Chat Window** is the heart of the DevPilot AI user interface. It is responsible for displaying AI conversations, rendering streamed responses in real time, managing chat history, formatting Markdown, rendering syntax-highlighted code blocks, and providing utilities such as copying AI responses.
+The **Chat Window** is the heart of the Zeba AI user interface. It is responsible for displaying AI conversations, rendering streamed responses in real time, managing chat history, formatting Markdown, rendering syntax-highlighted code blocks, and providing utilities such as copying AI responses.
 
-Unlike a traditional application that waits for the complete response before displaying anything, DevPilot AI streams responses token by token, creating a fast and interactive experience similar to modern AI assistants like **Cursor AI**, **GitHub Copilot Chat**, **Claude Code**, and **Windsurf**.
+Unlike a traditional application that waits for the complete response before displaying anything, Zeba AI streams responses token by token, creating a fast and interactive experience similar to modern AI assistants like **Cursor AI**, **GitHub Copilot Chat**, **Claude Code**, and **Windsurf**.
 
 ---
 
@@ -2647,7 +2647,7 @@ We learned how to:
 * Copy AI responses
 * Build a reusable React component
 
-This component forms the visual foundation of DevPilot AI and prepares the application for advanced capabilities such as syntax highlighting, RAG citations, diagrams, and rich content rendering.
+This component forms the visual foundation of Zeba AI and prepares the application for advanced capabilities such as syntax highlighting, RAG citations, diagrams, and rich content rendering.
 
 ---
 
@@ -2681,7 +2681,7 @@ You will learn how to implement:
 * Smooth message transitions
 * Professional AI interaction patterns inspired by Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
 
-By the end of the next chapter, DevPilot AI will provide a polished, responsive, and production-grade conversational experience that closely resembles commercial AI development assistants.
+By the end of the next chapter, Zeba AI will provide a polished, responsive, and production-grade conversational experience that closely resembles commercial AI development assistants.
 
 📄 08.5 — Streaming Response (~2,500 words)
 
@@ -2724,7 +2724,7 @@ Modern AI development assistants such as:
 
 all rely on **streaming responses** rather than waiting for the complete response.
 
-In this chapter, we'll learn how DevPilot AI implements a production-ready streaming architecture.
+In this chapter, we'll learn how Zeba AI implements a production-ready streaming architecture.
 
 ---
 
@@ -3424,7 +3424,7 @@ When implementing streaming:
 
 # Chapter Summary
 
-In this chapter, we explored the complete streaming architecture used by DevPilot AI.
+In this chapter, we explored the complete streaming architecture used by Zeba AI.
 
 We learned how tokens travel from the AI model through the backend and Background Service Worker before being rendered inside the popup.
 
@@ -3461,7 +3461,7 @@ You will learn how to:
 - Smoothly update the UI during streaming
 - Build a reusable React component for AI responses
 
-By the end of the next chapter, DevPilot AI will provide a responsive streaming experience comparable to professional AI assistants such as Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
+By the end of the next chapter, Zeba AI will provide a responsive streaming experience comparable to professional AI assistants such as Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
 
 # 📄 08.5.2 — StreamingMessage Component
 
@@ -3604,7 +3604,7 @@ The component accepts the following properties.
 ```text
 +------------------------------------+
 
-🤖 DevPilot AI
+🤖 Zeba AI
 
 --------------------------------------
 
@@ -3872,7 +3872,7 @@ Examples include:
 
 All of them immediately inform the user that the request is being processed.
 
-In this chapter, we'll build a reusable **LoadingIndicator** component for DevPilot AI.
+In this chapter, we'll build a reusable **LoadingIndicator** component for Zeba AI.
 
 ---
 
@@ -4498,7 +4498,7 @@ ChatWindow Streams Response
 
 # Chapter Summary
 
-In this chapter, we built a reusable **LoadingIndicator** component for DevPilot AI.
+In this chapter, we built a reusable **LoadingIndicator** component for Zeba AI.
 
 We learned how to:
 
@@ -4541,7 +4541,7 @@ We will learn how to:
 - Display browser context alongside AI responses
 - Organize the popup into a clean, maintainable component hierarchy
 
-By the end of the next chapter, DevPilot AI will feature a polished popup interface comparable to modern AI coding assistants such as Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
+By the end of the next chapter, Zeba AI will feature a polished popup interface comparable to modern AI coding assistants such as Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
 
 
 # 📄 08.5.4 — Runtime Listener
@@ -4550,7 +4550,7 @@ By the end of the next chapter, DevPilot AI will feature a polished popup interf
 
 ## Overview
 
-One of the most important features of DevPilot AI is its ability to display AI responses as they are generated instead of waiting for the entire response to finish.
+One of the most important features of Zeba AI is its ability to display AI responses as they are generated instead of waiting for the entire response to finish.
 
 This is achieved through **Chrome Runtime Messaging**.
 
@@ -5399,7 +5399,7 @@ We learned:
 - Error handling
 - Production-ready messaging architecture
 
-This listener is the heart of the streaming experience, allowing DevPilot AI to behave like modern AI assistants such as ChatGPT, Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
+This listener is the heart of the streaming experience, allowing Zeba AI to behave like modern AI assistants such as ChatGPT, Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
 
 ---
 
@@ -6060,7 +6060,7 @@ This keeps responsibilities clear.
 
 # Best Practice 20 — Think Like an Enterprise Application
 
-As DevPilot AI grows, it will include:
+As Zeba AI grows, it will include:
 
 - Browser Context
 - Long-Term Memory
@@ -6081,7 +6081,7 @@ This mindset leads to cleaner, more maintainable software.
 
 Building a production-ready AI assistant requires much more than connecting an LLM to a user interface.
 
-By following the best practices covered in this chapter, DevPilot AI becomes:
+By following the best practices covered in this chapter, Zeba AI becomes:
 
 - Modular
 - Maintainable
@@ -6132,7 +6132,7 @@ into a cohesive React application that provides a polished, context-aware, real-
 
 Congratulations! 🎉
 
-At this point, DevPilot AI has evolved from a simple popup interface into a modern AI-powered user experience capable of:
+At this point, Zeba AI has evolved from a simple popup interface into a modern AI-powered user experience capable of:
 
 - Collecting browser context
 - Displaying context information
@@ -6443,7 +6443,7 @@ all follow a layered architecture where:
 - Streaming remains asynchronous
 - Components remain reusable
 
-By following the same architecture, DevPilot AI becomes easier to extend as new AI capabilities are introduced.
+By following the same architecture, Zeba AI becomes easier to extend as new AI capabilities are introduced.
 
 ---
 
@@ -6487,7 +6487,7 @@ By the end of the next chapter, you will have implemented:
 
 # 🏁 Milestone Progress
 
-After completing the next chapter, DevPilot AI will support:
+After completing the next chapter, Zeba AI will support:
 
 - ✅ Active browser tab detection
 - ✅ Current URL extraction
@@ -6512,7 +6512,7 @@ After completing the next chapter, DevPilot AI will support:
 
 The next chapter represents the final step in building the **Context-Aware Popup Experience**.
 
-Once completed, DevPilot AI will no longer behave like a basic Chrome extension—it will provide a polished, production-quality interface comparable to professional AI coding assistants.
+Once completed, Zeba AI will no longer behave like a basic Chrome extension—it will provide a polished, production-quality interface comparable to professional AI coding assistants.
 
 This architecture will also serve as the foundation for every advanced feature introduced in the upcoming milestones, including DOM understanding, Retrieval-Augmented Generation (RAG), Model Context Protocol (MCP), Tool Calling, Workspace Awareness, and Autonomous AI Agents.
 
@@ -6545,9 +6545,9 @@ Network failures
 
 Modern AI applications must gracefully handle delays, failures, and unexpected situations. Whether the AI model is generating a long response, the backend server is temporarily unavailable, or the local Ollama instance is offline, users should always receive meaningful feedback instead of a broken interface.
 
-In this chapter, we will build a robust loading and error handling system for DevPilot AI. The popup will display informative loading indicators during AI generation, detect various error conditions, and present user-friendly messages with retry options.
+In this chapter, we will build a robust loading and error handling system for Zeba AI. The popup will display informative loading indicators during AI generation, detect various error conditions, and present user-friendly messages with retry options.
 
-By implementing these features, DevPilot AI will provide a professional user experience similar to ChatGPT, Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
+By implementing these features, Zeba AI will provide a professional user experience similar to ChatGPT, Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
 
 ---
 
@@ -6630,7 +6630,7 @@ Popup UI
 
 # Types of Errors
 
-DevPilot AI should handle multiple categories of errors.
+Zeba AI should handle multiple categories of errors.
 
 ### Runtime Errors
 
@@ -7288,7 +7288,7 @@ Retry
 
 # Summary
 
-In this chapter, we built a complete loading and error handling system for DevPilot AI.
+In this chapter, we built a complete loading and error handling system for Zeba AI.
 
 We implemented:
 
@@ -7377,7 +7377,7 @@ React architecture diagrams
 
 # Overview
 
-The Popup is the primary user interface of DevPilot AI. It serves as the bridge between the developer and the AI assistant, allowing users to submit prompts, view browser context, and receive streaming AI responses in real time.
+The Popup is the primary user interface of Zeba AI. It serves as the bridge between the developer and the AI assistant, allowing users to submit prompts, view browser context, and receive streaming AI responses in real time.
 
 Unlike the Background Service Worker, which handles browser APIs and communication with the backend, the Popup focuses exclusively on the user experience. It presents collected browser context, accepts user input, displays AI responses, and reacts to runtime events sent by the Background Worker.
 
@@ -7766,7 +7766,7 @@ This separation keeps browser APIs isolated from the user interface.
 
 # Streaming Architecture
 
-Streaming is one of the key features of DevPilot AI.
+Streaming is one of the key features of Zeba AI.
 
 Instead of waiting for the complete AI response, tokens are displayed immediately.
 
@@ -8072,7 +8072,7 @@ Because responsibilities are clearly separated, these advanced capabilities can 
 
 # Summary
 
-In this chapter, we designed the architecture of the DevPilot AI Popup.
+In this chapter, we designed the architecture of the Zeba AI Popup.
 
 We explored:
 
@@ -8979,7 +8979,7 @@ We'll build the interactive portion of the popup, including:
 - JSX layout
 - Component composition
 
-By the end of this chapter, the Popup will function as the primary user interface for DevPilot AI, providing a professional developer experience comparable to modern AI coding assistants.
+By the end of this chapter, the Popup will function as the primary user interface for Zeba AI, providing a professional developer experience comparable to modern AI coding assistants.
 
 ---
 
@@ -9323,7 +9323,7 @@ return (
 
     <h2>
 
-        🚀 DevPilot AI
+        🚀 Zeba AI
 
     </h2>
 
@@ -9483,7 +9483,7 @@ return (
 
         <h2>
 
-            🚀 DevPilot AI
+            🚀 Zeba AI
 
         </h2>
 
@@ -9793,7 +9793,7 @@ We implemented:
 - Refresh browser context
 - Clear chat functionality
 
-The Popup now acts as the central orchestrator of the DevPilot AI user interface, coordinating browser context, user prompts, runtime communication, and AI streaming while delegating presentation to reusable React components.
+The Popup now acts as the central orchestrator of the Zeba AI user interface, coordinating browser context, user prompts, runtime communication, and AI streaming while delegating presentation to reusable React components.
 
 ---
 
@@ -9830,7 +9830,7 @@ We will implement:
 - Toast notifications
 - Improved accessibility
 
-By the end of the next chapter, DevPilot AI will provide a polished, modern, and production-grade user experience comparable to professional AI coding assistants such as Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
+By the end of the next chapter, Zeba AI will provide a polished, modern, and production-grade user experience comparable to professional AI coding assistants such as Cursor AI, GitHub Copilot Chat, Claude Code, and Windsurf.
 
 # 08.7.4 – Code Walkthrough
 Line-by-line explanation
@@ -10943,7 +10943,7 @@ Future improvements
 
 # Overview
 
-By this point in the project, DevPilot AI has evolved from a simple Chrome Extension into a production-ready AI assistant capable of:
+By this point in the project, Zeba AI has evolved from a simple Chrome Extension into a production-ready AI assistant capable of:
 
 - Collecting browser context
 - Communicating with the Background Service Worker
@@ -10985,7 +10985,7 @@ By the end of this chapter, you will understand how to:
 
 Small demo projects often work well with minimal architecture.
 
-However, DevPilot AI is becoming much larger.
+However, Zeba AI is becoming much larger.
 
 Current Features
 
@@ -11883,7 +11883,7 @@ Following these best practices provides:
 - Improved developer experience
 - Production-ready quality
 
-These principles will continue to pay dividends as DevPilot AI grows to include RAG, embeddings, MCP, tool calling, workspace awareness, autonomous AI agents, and enterprise deployment.
+These principles will continue to pay dividends as Zeba AI grows to include RAG, embeddings, MCP, tool calling, workspace awareness, autonomous AI agents, and enterprise deployment.
 
 ---
 
@@ -11903,7 +11903,7 @@ Topics include:
 - Common issues and troubleshooting
 - Production readiness checklist
 
-By the end of the next chapter, the Popup module will be fully tested, optimized, and ready to serve as the primary user interface for DevPilot AI's context-aware development experience.
+By the end of the next chapter, the Popup module will be fully tested, optimized, and ready to serve as the primary user interface for Zeba AI's context-aware development experience.
 
 📄 08.8 — UI Architecture & Best Practices (~2,500 words)
 
@@ -11925,7 +11925,7 @@ Scalability
 
 # Overview
 
-By this stage of the project, DevPilot AI has evolved far beyond a simple Chrome Extension popup. It now includes:
+By this stage of the project, Zeba AI has evolved far beyond a simple Chrome Extension popup. It now includes:
 
 - React + TypeScript frontend
 - Background Service Worker
@@ -11938,7 +11938,7 @@ By this stage of the project, DevPilot AI has evolved far beyond a simple Chrome
 
 As the project continues to grow with features such as Retrieval-Augmented Generation (RAG), Embeddings, MCP (Model Context Protocol), Workspace Awareness, and Autonomous AI Agents, maintaining a clean and scalable user interface architecture becomes increasingly important.
 
-This chapter introduces the architectural principles, design patterns, and best practices used in professional React applications to ensure that DevPilot AI remains modular, maintainable, and production-ready.
+This chapter introduces the architectural principles, design patterns, and best practices used in professional React applications to ensure that Zeba AI remains modular, maintainable, and production-ready.
 
 ---
 
@@ -13062,7 +13062,7 @@ export default function Popup() {
 
                 <h2>
 
-                    DevPilot AI
+                    Zeba AI
 
                 </h2>
 
@@ -13248,7 +13248,7 @@ Popup
 
 # Key Takeaways
 
-In this chapter, we explored how to build a scalable and maintainable UI architecture for DevPilot AI.
+In this chapter, we explored how to build a scalable and maintainable UI architecture for Zeba AI.
 
 We learned how to:
 
@@ -13261,7 +13261,7 @@ We learned how to:
 - Follow modern React design patterns
 - Prepare the project for future enterprise-scale AI features
 
-These practices ensure that DevPilot AI remains easy to extend as upcoming milestones introduce advanced capabilities such as DOM extraction, RAG, vector databases, MCP, workspace awareness, tool calling, and autonomous AI agents.
+These practices ensure that Zeba AI remains easy to extend as upcoming milestones introduce advanced capabilities such as DOM extraction, RAG, vector databases, MCP, workspace awareness, tool calling, and autonomous AI agents.
 
 ---
 
@@ -13280,7 +13280,7 @@ Topics include:
 - Common issues and troubleshooting
 - Production readiness checklist
 
-By the end of the next chapter, DevPilot AI's popup will be fully tested, optimized, and ready for real-world use.
+By the end of the next chapter, Zeba AI's popup will be fully tested, optimized, and ready for real-world use.
 
 📄 08.9 — Next Chapter
 
@@ -13294,7 +13294,7 @@ Preview of Backend Context Injection.
 
 Congratulations! 🎉
 
-At this point in the project, DevPilot AI has successfully evolved from a simple chat interface into a **context-aware Chrome Extension** capable of understanding the user's browsing environment.
+At this point in the project, Zeba AI has successfully evolved from a simple chat interface into a **context-aware Chrome Extension** capable of understanding the user's browsing environment.
 
 So far, we have implemented:
 
@@ -13580,7 +13580,7 @@ The AI now understands exactly what the user is referring to.
 
 # Benefits
 
-By injecting browser context into every request, DevPilot AI will gain several advantages:
+By injecting browser context into every request, Zeba AI will gain several advantages:
 
 - More accurate AI responses
 - Better understanding of developer intent
@@ -13634,7 +13634,7 @@ By the end of the next chapter, you will have successfully implemented:
 
 # Milestone Progress
 
-After completing the next chapter, DevPilot AI will support:
+After completing the next chapter, Zeba AI will support:
 
 - ✅ Active browser tab detection
 - ✅ Current URL extraction
@@ -13660,4 +13660,4 @@ The browser can now understand **where the developer is working**.
 
 In the next chapter, we'll teach the **backend and AI model to understand that context** by implementing a production-ready **Backend Context Injection Pipeline**.
 
-This will transform DevPilot AI from a browser-aware extension into an **AI assistant capable of generating responses based on the user's current development context**, bringing it one step closer to professional tools like **GitHub Copilot Chat, Cursor AI, Claude Code, Continue.dev, and Windsurf**.
+This will transform Zeba AI from a browser-aware extension into an **AI assistant capable of generating responses based on the user's current development context**, bringing it one step closer to professional tools like **GitHub Copilot Chat, Cursor AI, Claude Code, Continue.dev, and Windsurf**.

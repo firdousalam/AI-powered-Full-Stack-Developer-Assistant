@@ -325,13 +325,19 @@ export default function Popup() {
 
     return (
 
-        <div className="popup-container">
+        <div className="popup-container" style={{
+            minWidth: "400px",
+            width: "400px",
+            minHeight: "600px",
+            padding: "12px",
+            boxSizing: "border-box"
+        }}>
 
             <header className="popup-header">
 
                 <h2>
 
-                    DevPilot AI
+                    Zeba AI
 
                 </h2>
 

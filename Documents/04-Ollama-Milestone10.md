@@ -8,7 +8,7 @@
 
 Congratulations! 🎉
 
-In the previous milestone, we successfully transformed DevPilot AI into a production-ready AI assistant capable of communicating with multiple AI providers through a scalable provider architecture.
+In the previous milestone, we successfully transformed Zeba AI into a production-ready AI assistant capable of communicating with multiple AI providers through a scalable provider architecture.
 
 Our Chrome Extension can now:
 
@@ -47,7 +47,7 @@ That is exactly what we are going to build in this milestone.
 
 # What We Will Build
 
-By the end of this milestone, DevPilot AI will become a true developer assistant capable of understanding your environment before generating responses.
+By the end of this milestone, Zeba AI will become a true developer assistant capable of understanding your environment before generating responses.
 
 We'll add support for:
 
@@ -66,7 +66,7 @@ We'll add support for:
 
 Instead of answering only from a prompt…
 
-DevPilot AI will answer using **context + memory + documents + tools + AI reasoning**.
+Zeba AI will answer using **context + memory + documents + tools + AI reasoning**.
 
 ---
 
@@ -283,7 +283,7 @@ Deliverables:
 
 # Part 3 — Code Intelligence
 
-When browsing GitHub, StackOverflow or documentation, DevPilot AI should automatically detect code.
+When browsing GitHub, StackOverflow or documentation, Zeba AI should automatically detect code.
 
 Features:
 
@@ -301,7 +301,7 @@ Deliverables:
 
 # Part 4 — Conversation Memory
 
-We'll transform DevPilot AI into a conversational assistant.
+We'll transform Zeba AI into a conversational assistant.
 
 Topics:
 
@@ -435,7 +435,7 @@ Deliverables:
 
 # Final Architecture
 
-By the end of Milestone 4.10, DevPilot AI will evolve into a complete context-aware assistant.
+By the end of Milestone 4.10, Zeba AI will evolve into a complete context-aware assistant.
 
 ```
 User
@@ -539,7 +539,7 @@ Popup UI
 
 # End Result
 
-After completing this milestone, DevPilot AI will no longer behave like a simple chatbot.
+After completing this milestone, Zeba AI will no longer behave like a simple chatbot.
 
 Instead, it will function as an intelligent developer assistant capable of:
 
@@ -552,7 +552,7 @@ Instead, it will function as an intelligent developer assistant capable of:
 - Understanding your development workspace
 - Generating context-aware AI responses
 
-This brings DevPilot AI much closer to modern AI development assistants such as:
+This brings Zeba AI much closer to modern AI development assistants such as:
 
 - GitHub Copilot Chat
 - Cursor AI
@@ -569,7 +569,7 @@ This brings DevPilot AI much closer to modern AI development assistants such as:
 
 # 📖 Introduction
 
-So far, DevPilot AI can communicate with the backend, stream AI responses, and support multiple AI providers.
+So far, Zeba AI can communicate with the backend, stream AI responses, and support multiple AI providers.
 
 However, every request still depends entirely on what the user manually types into the prompt.
 
@@ -1079,7 +1079,7 @@ LLM
 
 # Browser Context Object
 
-By the end of this part, DevPilot AI will collect a structured browser context similar to:
+By the end of this part, Zeba AI will collect a structured browser context similar to:
 
 ```ts
 {
@@ -1913,7 +1913,7 @@ The next milestone introduces intelligent webpage understanding.
 
 ### Learning Outcome
 
-By completing the next milestone, DevPilot AI will understand the complete structure of webpages instead of relying only on selected text, enabling advanced features such as intelligent summarization, semantic search, Retrieval-Augmented Generation (RAG), and workspace awareness.
+By completing the next milestone, Zeba AI will understand the complete structure of webpages instead of relying only on selected text, enabling advanced features such as intelligent summarization, semantic search, Retrieval-Augmented Generation (RAG), and workspace awareness.
 
 ---
 
@@ -2522,7 +2522,7 @@ By the end of **Part 2**, you will have successfully implemented:
 
 # 📖 Introduction
 
-So far, DevPilot AI has evolved significantly.
+So far, Zeba AI has evolved significantly.
 
 It can now:
 
@@ -2562,7 +2562,7 @@ Instead, they continuously retrieve relevant knowledge from:
 
 This capability is known as **Retrieval-Augmented Generation (RAG).**
 
-In this part, we'll build the complete RAG pipeline that gives DevPilot AI long-term memory and knowledge retrieval capabilities.
+In this part, we'll build the complete RAG pipeline that gives Zeba AI long-term memory and knowledge retrieval capabilities.
 
 ---
 
@@ -2667,7 +2667,7 @@ This makes responses:
 
 # Long-Term Conversation Memory
 
-We'll implement persistent memory so that DevPilot AI remembers previous interactions.
+We'll implement persistent memory so that Zeba AI remembers previous interactions.
 
 Instead of:
 
@@ -2772,7 +2772,7 @@ For this course, we'll focus on **local-first vector databases** to keep the pro
 
 # Local Document Indexing
 
-DevPilot AI will automatically index local resources such as:
+Zeba AI will automatically index local resources such as:
 
 - Markdown files
 - PDFs
@@ -3017,7 +3017,7 @@ Save Conversation
 
 # 🧪 What You'll Build
 
-By the end of this part, DevPilot AI will support:
+By the end of this part, Zeba AI will support:
 
 - ✅ Long-term conversation memory
 - ✅ Semantic document chunking
@@ -3034,7 +3034,7 @@ By the end of this part, DevPilot AI will support:
 
 # Real-World Benefits
 
-After implementing RAG, DevPilot AI will be able to:
+After implementing RAG, Zeba AI will be able to:
 
 - Answer questions from your project documentation
 - Search your own codebase
@@ -3045,7 +3045,7 @@ After implementing RAG, DevPilot AI will be able to:
 - Reduce AI hallucinations
 - Provide more accurate, project-specific answers
 
-This transforms DevPilot AI from a general chatbot into a true knowledge-aware development assistant.
+This transforms Zeba AI from a general chatbot into a true knowledge-aware development assistant.
 
 ---
 # What Comes Next
@@ -3056,7 +3056,7 @@ This transforms DevPilot AI from a general chatbot into a true knowledge-aware d
 
 # 📖 Introduction
 
-So far, DevPilot AI has evolved into a powerful AI assistant capable of understanding browser context, maintaining long-term memory, and retrieving knowledge using Retrieval-Augmented Generation (RAG).
+So far, Zeba AI has evolved into a powerful AI assistant capable of understanding browser context, maintaining long-term memory, and retrieving knowledge using Retrieval-Augmented Generation (RAG).
 
 It can now:
 
@@ -3068,7 +3068,7 @@ It can now:
 - Use embeddings and vector databases
 - Generate context-aware AI responses
 
-However, despite these capabilities, DevPilot AI still behaves like a traditional AI assistant—it can answer questions but cannot **take actions**.
+However, despite these capabilities, Zeba AI still behaves like a traditional AI assistant—it can answer questions but cannot **take actions**.
 
 Modern AI coding assistants such as:
 
@@ -3094,7 +3094,7 @@ They can:
 
 The technology enabling these capabilities is the **Model Context Protocol (MCP)**.
 
-In this part, we'll transform DevPilot AI into a true AI agent capable of interacting with tools, workspaces, and development environments.
+In this part, we'll transform Zeba AI into a true AI agent capable of interacting with tools, workspaces, and development environments.
 
 ---
 
@@ -3194,7 +3194,7 @@ User
 
 ↓
 
-DevPilot AI
+Zeba AI
 
 ↓
 
@@ -3264,7 +3264,7 @@ Each server advertises the tools it supports using a common protocol.
 
 # Tool Registration & Discovery
 
-Instead of hardcoding tools, DevPilot AI will discover them dynamically.
+Instead of hardcoding tools, Zeba AI will discover them dynamically.
 
 Example workflow:
 
@@ -3360,7 +3360,7 @@ This enables reliable and repeatable tool execution.
 
 # File System Access
 
-DevPilot AI will gain controlled access to project files.
+Zeba AI will gain controlled access to project files.
 
 Supported operations:
 
@@ -3395,7 +3395,7 @@ Security controls will ensure access is limited to approved workspace directorie
 
 # Workspace Awareness
 
-Rather than relying on isolated files, DevPilot AI will understand the entire project.
+Rather than relying on isolated files, Zeba AI will understand the entire project.
 
 It will recognize:
 
@@ -3431,7 +3431,7 @@ kubectl get pods
 git status
 ```
 
-DevPilot AI will execute approved commands through an MCP Terminal Server and return the results.
+Zeba AI will execute approved commands through an MCP Terminal Server and return the results.
 
 ---
 
@@ -3456,7 +3456,7 @@ The AI can inspect repository history, explain changes, and assist with version 
 
 # Project-Wide Code Understanding
 
-Instead of analyzing one file at a time, DevPilot AI will reason across the entire workspace.
+Instead of analyzing one file at a time, Zeba AI will reason across the entire workspace.
 
 Example:
 
@@ -3548,7 +3548,7 @@ Collect Results
 Generate Final Response
 ```
 
-This planning process allows DevPilot AI to solve multi-step development tasks efficiently.
+This planning process allows Zeba AI to solve multi-step development tasks efficiently.
 
 ---
 
@@ -3708,7 +3708,7 @@ Streaming Response
 
 # 🧪 What You'll Build
 
-By the end of this part, DevPilot AI will support:
+By the end of this part, Zeba AI will support:
 
 - ✅ Model Context Protocol (MCP)
 - ✅ MCP Client implementation
@@ -3729,7 +3729,7 @@ By the end of this part, DevPilot AI will support:
 
 # Real-World Benefits
 
-After completing this part, DevPilot AI will be capable of:
+After completing this part, Zeba AI will be capable of:
 
 - Reading and understanding project files
 - Searching entire workspaces
@@ -3741,7 +3741,7 @@ After completing this part, DevPilot AI will be capable of:
 - Automating repetitive development tasks
 - Integrating seamlessly with local development environments
 
-These capabilities bring DevPilot AI much closer to modern AI development assistants such as Cursor AI, Claude Code, GitHub Copilot Workspace, and Windsurf.
+These capabilities bring Zeba AI much closer to modern AI development assistants such as Cursor AI, Claude Code, GitHub Copilot Workspace, and Windsurf.
 
 ---
 # What Comes Next
@@ -3752,7 +3752,7 @@ These capabilities bring DevPilot AI much closer to modern AI development assist
 
 # 📖 Introduction
 
-Throughout this course, DevPilot AI has steadily evolved from a simple Chrome Extension into a sophisticated AI-powered developer platform.
+Throughout this course, Zeba AI has steadily evolved from a simple Chrome Extension into a sophisticated AI-powered developer platform.
 
 So far, we have successfully built:
 
@@ -3771,13 +3771,13 @@ So far, we have successfully built:
 - Terminal Integration
 - Git Integration
 
-At this stage, DevPilot AI has become an intelligent development assistant capable of understanding projects and interacting with development tools.
+At this stage, Zeba AI has become an intelligent development assistant capable of understanding projects and interacting with development tools.
 
 However, modern AI systems are rapidly moving beyond assistants.
 
 Instead of waiting for user instructions, they are becoming **autonomous software agents** capable of planning, reasoning, collaborating, and executing complex workflows independently.
 
-This next milestone focuses on transforming DevPilot AI into an autonomous AI development platform.
+This next milestone focuses on transforming Zeba AI into an autonomous AI development platform.
 
 ---
 
@@ -4127,7 +4127,7 @@ These workflows significantly reduce manual effort.
 
 Some AI tasks take several minutes to complete.
 
-Instead of blocking the user interface, DevPilot AI will execute them asynchronously.
+Instead of blocking the user interface, Zeba AI will execute them asynchronously.
 
 ```text
 User Request
@@ -4153,7 +4153,7 @@ This enables long-running tasks without affecting responsiveness.
 
 Failures are inevitable in complex systems.
 
-DevPilot AI will automatically recover from many common failures.
+Zeba AI will automatically recover from many common failures.
 
 Example:
 
@@ -4240,7 +4240,7 @@ This improves scalability and performance.
 
 Real-world software engineering often requires coordinating many tools and systems.
 
-DevPilot AI will automate workflows such as:
+Zeba AI will automate workflows such as:
 
 - Feature implementation
 - Code review
@@ -4297,7 +4297,7 @@ The AI becomes an active participant in the software delivery process.
 
 # Cloud Deployment Strategies
 
-DevPilot AI will support deployment across modern cloud platforms.
+Zeba AI will support deployment across modern cloud platforms.
 
 Examples include:
 
@@ -4318,7 +4318,7 @@ This prepares the platform for enterprise-scale deployments.
 
 Autonomous systems require continuous monitoring.
 
-DevPilot AI will collect:
+Zeba AI will collect:
 
 - Logs
 - Metrics
@@ -4501,7 +4501,7 @@ User
 
 # 🧪 What You'll Build
 
-By the end of this milestone, DevPilot AI will include:
+By the end of this milestone, Zeba AI will include:
 
 - ✅ Autonomous AI agents
 - ✅ Multi-agent collaboration
@@ -4524,7 +4524,7 @@ By the end of this milestone, DevPilot AI will include:
 
 # Real-World Benefits
 
-After completing this milestone, DevPilot AI will be capable of:
+After completing this milestone, Zeba AI will be capable of:
 
 - Planning software engineering tasks
 - Coordinating multiple AI agents
@@ -4536,13 +4536,13 @@ After completing this milestone, DevPilot AI will be capable of:
 - Monitoring production systems
 - Acting as an autonomous software engineering platform
 
-These capabilities position DevPilot AI alongside the most advanced AI engineering platforms, bringing it closer to the vision of an AI-native development environment capable of assisting throughout the entire software development lifecycle.
+These capabilities position Zeba AI alongside the most advanced AI engineering platforms, bringing it closer to the vision of an AI-native development environment capable of assisting throughout the entire software development lifecycle.
 
 ---
 
 # Course Completion
 
-With this milestone, DevPilot AI evolves into a comprehensive, enterprise-grade AI platform that demonstrates expertise across:
+With this milestone, Zeba AI evolves into a comprehensive, enterprise-grade AI platform that demonstrates expertise across:
 
 - React & TypeScript
 - Chrome Extensions (Manifest V3)
@@ -4576,15 +4576,15 @@ This project serves not only as an exceptional portfolio piece but also as a pra
 
 # 📖 Introduction
 
-In the previous parts of Milestone 4.10, DevPilot AI learned how to understand browser context, analyze webpages, retrieve long-term knowledge using RAG, and interact with external tools through the Model Context Protocol (MCP).
+In the previous parts of Milestone 4.10, Zeba AI learned how to understand browser context, analyze webpages, retrieve long-term knowledge using RAG, and interact with external tools through the Model Context Protocol (MCP).
 
 However, modern AI assistants such as **Cursor AI**, **GitHub Copilot Chat**, **Claude Code**, and **Windsurf** don't simply search documents using keywords. They understand the **meaning** behind documents, source code, conversations, and project files.
 
 This capability is powered by **Embeddings** and **Vector Databases**.
 
-In this part, we will build the semantic memory layer of DevPilot AI by converting text into high-dimensional vectors and storing them in a vector database. Instead of matching exact words, our assistant will retrieve information based on semantic similarity, enabling much more intelligent document search and context retrieval.
+In this part, we will build the semantic memory layer of Zeba AI by converting text into high-dimensional vectors and storing them in a vector database. Instead of matching exact words, our assistant will retrieve information based on semantic similarity, enabling much more intelligent document search and context retrieval.
 
-By the end of this part, DevPilot AI will be capable of semantic document search, forming the foundation for enterprise-grade Retrieval-Augmented Generation (RAG).
+By the end of this part, Zeba AI will be capable of semantic document search, forming the foundation for enterprise-grade Retrieval-Augmented Generation (RAG).
 
 ---
 
@@ -4599,7 +4599,7 @@ By the end of this part, you will learn how to:
 - Perform semantic similarity search
 - Build a semantic knowledge base
 - Integrate embeddings into the RAG pipeline
-- Prepare DevPilot AI for scalable enterprise knowledge retrieval
+- Prepare Zeba AI for scalable enterprise knowledge retrieval
 
 ---
 
@@ -4778,7 +4778,7 @@ Common embedding models include:
 
 # Local Embeddings
 
-For DevPilot AI, we will use local embedding models via Ollama.
+For Zeba AI, we will use local embedding models via Ollama.
 
 Advantages:
 
@@ -4893,7 +4893,7 @@ Ideal for enterprise-scale semantic search systems.
 
 # Why Use ChromaDB First?
 
-For DevPilot AI, ChromaDB provides:
+For Zeba AI, ChromaDB provides:
 
 - Simple setup
 - Persistent local storage
@@ -4998,7 +4998,7 @@ LLM
 
 ---
 
-# DevPilot AI Semantic Memory
+# Zeba AI Semantic Memory
 
 Our assistant will gradually build a knowledge base containing:
 
@@ -5078,7 +5078,7 @@ src/
 
 # Real-World Use Cases
 
-DevPilot AI will be able to:
+Zeba AI will be able to:
 
 - Search project documentation semantically
 - Find similar code examples
@@ -5106,9 +5106,9 @@ By the end of this part, you will have:
 
 # Summary
 
-In this part, we designed the semantic memory layer of DevPilot AI by introducing embeddings and vector databases. We explored how embedding models transform text into numerical vectors, why semantic search is superior to keyword matching, and how vector databases such as ChromaDB and FAISS enable efficient similarity search.
+In this part, we designed the semantic memory layer of Zeba AI by introducing embeddings and vector databases. We explored how embedding models transform text into numerical vectors, why semantic search is superior to keyword matching, and how vector databases such as ChromaDB and FAISS enable efficient similarity search.
 
-This knowledge base becomes the foundation of Retrieval-Augmented Generation (RAG), allowing DevPilot AI to retrieve relevant information from documentation, source code, browser content, and conversations before generating responses.
+This knowledge base becomes the foundation of Retrieval-Augmented Generation (RAG), allowing Zeba AI to retrieve relevant information from documentation, source code, browser content, and conversations before generating responses.
 
 The next part will build on this foundation by implementing the complete embedding pipeline, including document chunking, embedding generation, indexing, and semantic retrieval using a production-ready vector database.
 
@@ -5117,7 +5117,7 @@ The next part will build on this foundation by implementing the complete embeddi
 
 ---
 
-# Building an Offline Knowledge Search Engine for DevPilot AI
+# Building an Offline Knowledge Search Engine for Zeba AI
 
 ---
 
@@ -5141,7 +5141,7 @@ Instead of depending only on the LLM's pretrained knowledge, they retrieve relev
 
 This approach is known as **Local Knowledge Retrieval**, allowing the assistant to answer questions using your own project data while keeping everything private and available offline.
 
-In this part, we will build a complete Local Document Search system that enables DevPilot AI to retrieve information from Markdown files, PDFs, text documents, API documentation, and project notes before sending requests to the language model.
+In this part, we will build a complete Local Document Search system that enables Zeba AI to retrieve information from Markdown files, PDFs, text documents, API documentation, and project notes before sending requests to the language model.
 
 ---
 
@@ -5202,7 +5202,7 @@ Local search enables the AI to:
 
 # Supported Document Types
 
-DevPilot AI will support multiple document formats.
+Zeba AI will support multiple document formats.
 
 ---
 
@@ -5736,7 +5736,7 @@ models/
 
 # What You'll Build
 
-By the end of this part, DevPilot AI will support:
+By the end of this part, Zeba AI will support:
 
 - ✅ Markdown document search
 - ✅ PDF document search
@@ -5766,7 +5766,7 @@ By the end of this part, DevPilot AI will support:
 
 # Summary
 
-In this part, we transformed DevPilot AI into a knowledge-aware assistant capable of searching local project documentation before generating responses. By integrating support for Markdown, PDFs, text files, API references, and project notes, the assistant can provide highly accurate, project-specific answers while maintaining privacy and offline functionality.
+In this part, we transformed Zeba AI into a knowledge-aware assistant capable of searching local project documentation before generating responses. By integrating support for Markdown, PDFs, text files, API references, and project notes, the assistant can provide highly accurate, project-specific answers while maintaining privacy and offline functionality.
 
 This lays the foundation for a truly enterprise-grade AI coding assistant that combines Retrieval-Augmented Generation (RAG), embeddings, vector search, and local knowledge retrieval to deliver contextual and trustworthy responses.
 
@@ -5791,14 +5791,14 @@ In the next part, we will automate the process of building and maintaining the l
 - Duplicate detection
 - Production-ready ingestion pipeline
 
-By the end of Part 8, DevPilot AI will continuously monitor your project, automatically index new or modified documents, regenerate embeddings when needed, and keep the knowledge base synchronized without requiring manual intervention—bringing it even closer to the experience offered by enterprise AI development platforms.
+By the end of Part 8, Zeba AI will continuously monitor your project, automatically index new or modified documents, regenerate embeddings when needed, and keep the knowledge base synchronized without requiring manual intervention—bringing it even closer to the experience offered by enterprise AI development platforms.
 
 
 # 📘 Milestone 4.10 – Context-Aware AI Assistant
 
 # 📄 Part 8 — Knowledge Ingestion Pipeline & Automatic Indexing
 
-> **Course:** Build DevPilot AI – AI Powered Full Stack Developer Assistant  
+> **Course:** Build Zeba AI – AI Powered Full Stack Developer Assistant  
 > **Milestone:** 4.10 – Context-Aware AI Assistant  
 > **Part:** 8 – Knowledge Ingestion Pipeline & Automatic Indexing
 
@@ -6015,7 +6015,7 @@ indexDocument("README.md")
 
 ```
 
-DevPilot AI will automatically discover every supported document inside a workspace.
+Zeba AI will automatically discover every supported document inside a workspace.
 
 Supported folders include:
 
@@ -6580,7 +6580,7 @@ Developer
 
 # Benefits
 
-By implementing this ingestion pipeline, DevPilot AI will gain:
+By implementing this ingestion pipeline, Zeba AI will gain:
 
 - Automatic indexing
 - Continuous synchronization
@@ -6629,11 +6629,11 @@ By the end of this part, you will have implemented:
 
 ## Milestone Overview
 
-In the previous milestone, DevPilot AI learned how to automatically discover, preprocess, chunk, embed, and index documents into a local vector database. While this provides a solid knowledge foundation, retrieval quality is just as important as indexing quality.
+In the previous milestone, Zeba AI learned how to automatically discover, preprocess, chunk, embed, and index documents into a local vector database. While this provides a solid knowledge foundation, retrieval quality is just as important as indexing quality.
 
-In this milestone, we will significantly enhance the retrieval pipeline by introducing advanced search optimization techniques. Instead of relying solely on vector similarity, DevPilot AI will combine semantic understanding with keyword search, intelligently rewrite user queries, re-rank retrieved documents, compress context to fit model token limits, and generate citations with confidence scores.
+In this milestone, we will significantly enhance the retrieval pipeline by introducing advanced search optimization techniques. Instead of relying solely on vector similarity, Zeba AI will combine semantic understanding with keyword search, intelligently rewrite user queries, re-rank retrieved documents, compress context to fit model token limits, and generate citations with confidence scores.
 
-These enhancements will transform DevPilot AI into a production-grade retrieval engine capable of delivering highly relevant, efficient, and trustworthy responses—comparable to modern enterprise AI assistants such as Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
+These enhancements will transform Zeba AI into a production-grade retrieval engine capable of delivering highly relevant, efficient, and trustworthy responses—comparable to modern enterprise AI assistants such as Cursor AI, Claude Code, GitHub Copilot Chat, and Windsurf.
 
 ---
 
@@ -6682,7 +6682,7 @@ Instead of searching:
 
 > "Explain authentication"
 
-DevPilot AI rewrites it into:
+Zeba AI rewrites it into:
 
 > "Explain JWT authentication implementation in the authentication service"
 
@@ -6723,7 +6723,7 @@ Instead of sending:
 
 20 full documents
 
-DevPilot AI sends:
+Zeba AI sends:
 
 - Relevant paragraphs
 - Important code snippets
@@ -6761,7 +6761,7 @@ The retrieval pipeline dynamically:
 
 ## Multi-Document Retrieval
 
-Instead of relying on a single source, DevPilot AI retrieves knowledge from multiple documents simultaneously.
+Instead of relying on a single source, Zeba AI retrieves knowledge from multiple documents simultaneously.
 
 Supported sources include:
 
@@ -6824,7 +6824,7 @@ This helps determine whether the AI should answer directly or request additional
 
 ## Search Analytics
 
-To continuously improve retrieval quality, DevPilot AI records search metrics such as:
+To continuously improve retrieval quality, Zeba AI records search metrics such as:
 
 - Retrieval latency
 - Query frequency
@@ -6907,7 +6907,7 @@ retrieval/
 
 # 🚀 Deliverables
 
-By the end of this milestone, DevPilot AI will support:
+By the end of this milestone, Zeba AI will support:
 
 - ✅ Hybrid keyword + semantic retrieval
 - ✅ Intelligent query rewriting
@@ -6956,7 +6956,7 @@ The techniques implemented in this milestone are widely used in modern AI-powere
 
 # 🎯 Milestone Outcome
 
-After completing Part 9, DevPilot AI will evolve from a basic Retrieval-Augmented Generation pipeline into a highly optimized semantic retrieval platform capable of delivering accurate, context-rich, and explainable responses.
+After completing Part 9, Zeba AI will evolve from a basic Retrieval-Augmented Generation pipeline into a highly optimized semantic retrieval platform capable of delivering accurate, context-rich, and explainable responses.
 
 With hybrid retrieval, intelligent re-ranking, context compression, citation generation, confidence scoring, and search analytics, the assistant will provide a production-ready search experience suitable for enterprise AI applications and comparable to modern AI development platforms.
 
@@ -6965,7 +6965,7 @@ With hybrid retrieval, intelligent re-ranking, context compression, citation gen
 
 ## 📄 Part 10 — Production RAG Pipeline, Evaluation & Enterprise Deployment
 
-In the next part, we will transform DevPilot AI's Retrieval-Augmented Generation (RAG) system into a production-ready platform by designing, implementing, and evaluating every stage of the retrieval and generation pipeline.
+In the next part, we will transform Zeba AI's Retrieval-Augmented Generation (RAG) system into a production-ready platform by designing, implementing, and evaluating every stage of the retrieval and generation pipeline.
 
 Rather than focusing only on retrieving documents, we'll build an enterprise-grade architecture capable of measuring retrieval quality, improving response accuracy, reducing hallucinations, scaling across distributed infrastructure, and supporting real-world software engineering workflows.
 
@@ -7149,7 +7149,7 @@ Topics include:
 
 ## 🔹 Enterprise Deployment Architecture
 
-Deploy DevPilot AI as a scalable enterprise platform.
+Deploy Zeba AI as a scalable enterprise platform.
 
 Topics include:
 
@@ -7184,12 +7184,12 @@ By the end of this part, you'll build:
 
 # 🎯 Outcome
 
-After completing Part 10, DevPilot AI will feature a fully production-ready Retrieval-Augmented Generation platform capable of delivering accurate, grounded, scalable, and enterprise-grade AI responses.
+After completing Part 10, Zeba AI will feature a fully production-ready Retrieval-Augmented Generation platform capable of delivering accurate, grounded, scalable, and enterprise-grade AI responses.
 
-The system will include measurable retrieval quality, automated evaluation, hallucination detection, scalable infrastructure, and secure deployment practices—bringing DevPilot AI to the level expected of modern enterprise AI development platforms.
+The system will include measurable retrieval quality, automated evaluation, hallucination detection, scalable infrastructure, and secure deployment practices—bringing Zeba AI to the level expected of modern enterprise AI development platforms.
 
 ---
 
 # ⏭️ Coming Up Next
 
-With the production RAG platform complete, the next stage of the course will move beyond knowledge retrieval into intelligent agent systems, advanced reasoning, autonomous workflows, and enterprise AI automation—where DevPilot AI evolves from a retrieval assistant into a fully capable AI engineering platform.
+With the production RAG platform complete, the next stage of the course will move beyond knowledge retrieval into intelligent agent systems, advanced reasoning, autonomous workflows, and enterprise AI automation—where Zeba AI evolves from a retrieval assistant into a fully capable AI engineering platform.

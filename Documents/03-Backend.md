@@ -2,7 +2,7 @@
 
 ## 🎯 Chapter Objective
 
-In this chapter, we will build the backend API for the **DevPilot AI Chrome Extension**. The backend will act as the communication layer between the Chrome Extension and AI providers such as **Ollama**, **OpenAI**, **Gemini**, and **Claude**.
+In this chapter, we will build the backend API for the **Zeba AI Chrome Extension**. The backend will act as the communication layer between the Chrome Extension and AI providers such as **Ollama**, **OpenAI**, **Gemini**, and **Claude**.
 
 Unlike Chapter 2, where we focused on building the Chrome Extension foundation, this chapter focuses on creating a scalable, production-ready backend using **Node.js**, **Express**, and **TypeScript**.
 

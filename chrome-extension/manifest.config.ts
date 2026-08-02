@@ -5,6 +5,8 @@ export default defineManifest({
 
     "name": "Zeba AI",
 
+    "short_name": "Z-AI",
+
     "description": "AI-powered Full Stack Developer Assistant",
 
     "version": "1.0.0",

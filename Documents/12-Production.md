@@ -1,6 +1,6 @@
 # Chapter 12 - Production Deployment, GitHub Integration & AI Code Intelligence
 
-> **Deploy DevPilot AI for production and integrate GitHub with AI-powered code intelligence, repository chat, pull request reviews, and automated developer workflows.**
+> **Deploy Zeba AI for production and integrate GitHub with AI-powered code intelligence, repository chat, pull request reviews, and automated developer workflows.**
 
 ---
 
@@ -8,7 +8,7 @@
 
 Congratulations!
 
-At this stage, DevPilot AI has evolved into a complete AI Developer Platform.
+At this stage, Zeba AI has evolved into a complete AI Developer Platform.
 
 We have built:
 
@@ -23,7 +23,7 @@ We have built:
 - Docker & Kubernetes
 - Jenkins CI/CD
 
-Now it's time to make DevPilot AI production-ready and integrate deeply with GitHub so developers can interact with repositories using AI.
+Now it's time to make Zeba AI production-ready and integrate deeply with GitHub so developers can interact with repositories using AI.
 
 By the end of this chapter, users will be able to:
 
@@ -53,7 +53,7 @@ After completing this chapter, you will be able to:
 - Build AI Code Review
 - Review Pull Requests
 - Generate documentation
-- Deploy DevPilot AI in production
+- Deploy Zeba AI in production
 
 ---
 
@@ -201,7 +201,7 @@ Benefits:
 
 # 📁 Repository Browser
 
-Users can browse repositories directly from DevPilot AI.
+Users can browse repositories directly from Zeba AI.
 
 Information displayed:
 
@@ -778,13 +778,13 @@ git push origin develop
 
 # 📖 Summary
 
-In this chapter, we completed the transformation of DevPilot AI into a production-ready AI engineering platform. We integrated GitHub for authentication and repository management, implemented AI-powered code intelligence using RAG and MCP, added repository chat, pull request reviews, semantic code search, automated documentation, and commit message generation. Finally, we prepared the application for secure, scalable production deployment using Kubernetes and modern DevOps best practices.
+In this chapter, we completed the transformation of Zeba AI into a production-ready AI engineering platform. We integrated GitHub for authentication and repository management, implemented AI-powered code intelligence using RAG and MCP, added repository chat, pull request reviews, semantic code search, automated documentation, and commit message generation. Finally, we prepared the application for secure, scalable production deployment using Kubernetes and modern DevOps best practices.
 
 ---
 
 # 🎉 Course Completion
 
-Congratulations! You have now built **DevPilot AI**, a full-stack, enterprise-grade AI Developer Assistant featuring:
+Congratulations! You have now built **Zeba AI**, a full-stack, enterprise-grade AI Developer Assistant featuring:
 
 - ✅ Chrome Extension (Manifest V3)
 - ✅ React Dashboard

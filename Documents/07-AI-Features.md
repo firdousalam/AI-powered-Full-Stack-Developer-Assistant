@@ -1,6 +1,6 @@
 # Chapter 7 - AI Productivity Features
 
-> **Transform DevPilot AI into a complete AI-powered Developer Assistant with productivity tools for coding, documentation, DevOps, interview preparation, resume analysis, and daily development workflows.**
+> **Transform Zeba AI into a complete AI-powered Developer Assistant with productivity tools for coding, documentation, DevOps, interview preparation, resume analysis, and daily development workflows.**
 
 ---
 
@@ -16,7 +16,7 @@ In the previous chapters, we built the core platform:
 
 Now it's time to build the actual **AI Features** that developers will use every day.
 
-Instead of being just another AI chatbot, DevPilot AI will become an intelligent engineering assistant capable of:
+Instead of being just another AI chatbot, Zeba AI will become an intelligent engineering assistant capable of:
 
 - Writing code
 - Reviewing code
@@ -767,7 +767,7 @@ git push origin develop
 
 # 📖 Summary
 
-In this chapter, we transformed DevPilot AI into a comprehensive AI productivity platform. We designed and implemented modules for AI chat, reusable prompt libraries, chat history, bookmarks, favorites, resume review, job description analysis, interview preparation, code review, documentation generation, architecture generation, and personal notes. These features work together with the AI Router, MCP Gateway, and RAG pipeline to provide accurate, context-aware assistance for everyday software development tasks.
+In this chapter, we transformed Zeba AI into a comprehensive AI productivity platform. We designed and implemented modules for AI chat, reusable prompt libraries, chat history, bookmarks, favorites, resume review, job description analysis, interview preparation, code review, documentation generation, architecture generation, and personal notes. These features work together with the AI Router, MCP Gateway, and RAG pipeline to provide accurate, context-aware assistance for everyday software development tasks.
 
 ---
 
@@ -775,7 +775,7 @@ In this chapter, we transformed DevPilot AI into a comprehensive AI productivity
 
 ## Chapter 8 – OCR, Voice & File Processing
 
-In the next chapter, we will extend DevPilot AI with multimodal capabilities by implementing:
+In the next chapter, we will extend Zeba AI with multimodal capabilities by implementing:
 
 - OCR using Tesseract
 - Image Upload and Analysis
@@ -788,4 +788,4 @@ In the next chapter, we will extend DevPilot AI with multimodal capabilities by 
 - Code Syntax Highlighting
 - Image-to-Text AI Workflows
 
-These features will allow developers to interact with DevPilot AI using images, documents, and voice, creating a more natural and powerful user experience.
+These features will allow developers to interact with Zeba AI using images, documents, and voice, creating a more natural and powerful user experience.

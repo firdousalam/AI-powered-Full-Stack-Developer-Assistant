@@ -4,7 +4,7 @@ export default function SidePanel() {
 
     return <>
         <div style={{ padding: "20px" }}>
-            <h1>DevPilot AI</h1>
+            <h1>Zeba AI</h1>
 
             <p>Side Panel Working 🚀</p>
         </div>

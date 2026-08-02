@@ -10,7 +10,7 @@
 
 # 📖 Chapter Overview
 
-In this milestone, we will implement the Chrome Storage API for DevPilot AI.
+In this milestone, we will implement the Chrome Storage API for Zeba AI.
 
 Until now, our Chrome extension could:
 
@@ -854,7 +854,7 @@ git push origin develop
 
 In this milestone, we implemented Chrome's Storage API to persist user preferences and application data. We learned how to use `chrome.storage.local` for local persistence and `chrome.storage.sync` for synchronized settings. We also created a reusable storage service and a custom React hook, making our code more modular and maintainable.
 
-The DevPilot AI extension can now remember user preferences such as theme, AI model, prompts, and recent chats even after Chrome is restarted, providing a much better user experience.
+The Zeba AI extension can now remember user preferences such as theme, AI model, prompts, and recent chats even after Chrome is restarted, providing a much better user experience.
 
 The next milestone will build on this foundation by implementing Runtime Messaging so the Popup, Background Service Worker, Content Script, and Side Panel can communicate seamlessly.
 

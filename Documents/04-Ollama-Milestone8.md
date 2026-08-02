@@ -863,7 +863,7 @@ After completing this part, you will be able to:
 - Create reusable provider implementations
 - Build a Provider Factory
 - Select AI providers dynamically
-- Prepare DevPilot AI for hybrid AI deployments
+- Prepare Zeba AI for hybrid AI deployments
 
 ---
 
@@ -1395,7 +1395,7 @@ In this part, we extended the AI provider architecture beyond Ollama by introduc
 
 # Part 3 – Integrating Provider Factory with AI Service
 
-> **Integrate the Provider Factory into the AI workflow to dynamically select AI providers, support fallback strategies, and prepare DevPilot AI for hybrid local and cloud deployments.**
+> **Integrate the Provider Factory into the AI workflow to dynamically select AI providers, support fallback strategies, and prepare Zeba AI for hybrid local and cloud deployments.**
 
 ---
 
@@ -2202,7 +2202,7 @@ git push origin develop
 
 # 📖 Part Summary
 
-In this part, we fully integrated the Provider Factory into the AI Service, allowing DevPilot AI to dynamically select the configured AI provider at runtime. We introduced environment-based configuration, implemented provider fallback strategies, and ensured that both standard and streaming requests use the same provider abstraction. This architecture completely decouples business logic from provider implementations, making it easy to switch between Ollama, OpenAI, Gemini, Claude, or future providers without changing the application's core logic.
+In this part, we fully integrated the Provider Factory into the AI Service, allowing Zeba AI to dynamically select the configured AI provider at runtime. We introduced environment-based configuration, implemented provider fallback strategies, and ensured that both standard and streaming requests use the same provider abstraction. This architecture completely decouples business logic from provider implementations, making it easy to switch between Ollama, OpenAI, Gemini, Claude, or future providers without changing the application's core logic.
 
 ---
 # Chapter 4 – Ollama Integration & AI Router
@@ -2211,13 +2211,13 @@ In this part, we fully integrated the Provider Factory into the AI Service, allo
 
 # Part 4 – Multi-Provider Strategy & Production Architecture
 
-> **Implement intelligent provider selection strategies, automatic failover, health monitoring, retry mechanisms, and design a production-ready hybrid AI architecture for DevPilot AI.**
+> **Implement intelligent provider selection strategies, automatic failover, health monitoring, retry mechanisms, and design a production-ready hybrid AI architecture for Zeba AI.**
 
 ---
 
 # 📖 Overview
 
-In the previous part, we integrated the Provider Factory into the AI Service, allowing DevPilot AI to dynamically switch between AI providers such as Ollama, OpenAI, Gemini, and Claude.
+In the previous part, we integrated the Provider Factory into the AI Service, allowing Zeba AI to dynamically switch between AI providers such as Ollama, OpenAI, Gemini, and Claude.
 
 However, the application still relies on a manually configured provider.
 
@@ -2247,7 +2247,7 @@ After completing this part, you will be able to:
 - Retry failed requests
 - Automatically switch providers
 - Design enterprise AI architecture
-- Prepare DevPilot AI for production deployments
+- Prepare Zeba AI for production deployments
 
 ---
 
@@ -3182,13 +3182,13 @@ git push origin develop
 
 # 📖 Part Summary
 
-In this part, we transformed DevPilot AI into a production-ready multi-provider platform by introducing a Provider Strategy Engine, cost-aware routing, provider health monitoring, retry mechanisms, and automatic failover. Instead of relying on a single configured provider, the backend now intelligently selects the most suitable AI provider based on the user's request and system conditions. This architecture enables hybrid deployments that combine local models such as Ollama with cloud providers like OpenAI, Gemini, and Claude, delivering higher reliability, scalability, and flexibility for enterprise AI applications.
+In this part, we transformed Zeba AI into a production-ready multi-provider platform by introducing a Provider Strategy Engine, cost-aware routing, provider health monitoring, retry mechanisms, and automatic failover. Instead of relying on a single configured provider, the backend now intelligently selects the most suitable AI provider based on the user's request and system conditions. This architecture enables hybrid deployments that combine local models such as Ollama with cloud providers like OpenAI, Gemini, and Claude, delivering higher reliability, scalability, and flexibility for enterprise AI applications.
 
 ---
 
 # 🎉 Milestone 4.8 Completed
 
-Congratulations! You have successfully prepared DevPilot AI for hybrid local and cloud AI deployments.
+Congratulations! You have successfully prepared Zeba AI for hybrid local and cloud AI deployments.
 
 Your backend now supports:
 
@@ -3205,4 +3205,4 @@ Your backend now supports:
 - ✅ Health Monitoring
 - ✅ Production-ready Hybrid AI Architecture
 
-DevPilot AI is now architected to support multiple AI providers and is ready for future enterprise-scale enhancements.
+Zeba AI is now architected to support multiple AI providers and is ready for future enterprise-scale enhancements.

@@ -6,7 +6,7 @@
 
 # 📖 Overview
 
-In the previous milestones, DevPilot AI was capable of communicating with the backend, streaming AI responses, supporting multiple AI providers, and maintaining a production-ready architecture.
+In the previous milestones, Zeba AI was capable of communicating with the backend, streaming AI responses, supporting multiple AI providers, and maintaining a production-ready architecture.
 
 However, one major limitation still existed.
 
@@ -33,7 +33,7 @@ These assistants automatically understand:
 
 This automatic collection of contextual information is known as **Browser Context Collection**.
 
-This chapter explains the complete architecture that powers this feature inside DevPilot AI.
+This chapter explains the complete architecture that powers this feature inside Zeba AI.
 
 ---
 
@@ -445,7 +445,7 @@ Instead of sending:
 Explain this.
 ```
 
-DevPilot AI now sends:
+Zeba AI now sends:
 
 ```
 Browser Context
@@ -677,7 +677,7 @@ By the end of this chapter you should understand:
 - Content Scripts collect webpage-specific information.
 - A structured Browser Context Object is created for every AI request.
 - The backend enriches prompts using browser context before sending them to the LLM.
-- This architecture prepares DevPilot AI for advanced capabilities such as RAG, MCP, Workspace Awareness, and Autonomous AI Agents.
+- This architecture prepares Zeba AI for advanced capabilities such as RAG, MCP, Workspace Awareness, and Autonomous AI Agents.
 
 ---
 
@@ -694,4 +694,4 @@ You will learn how to:
 - Configure Chrome extension permissions
 - Build a reusable Browser Context Service
 
-This will be the first implementation step toward making DevPilot AI truly context-aware.
+This will be the first implementation step toward making Zeba AI truly context-aware.

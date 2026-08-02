@@ -1,12 +1,12 @@
 # Chapter 11 - Jenkins CI/CD Pipeline
 
-> **Automate the complete DevPilot AI build, test, Docker image creation, and Kubernetes deployment using Jenkins, GitHub, Docker, Helm, and Kubernetes.**
+> **Automate the complete Zeba AI build, test, Docker image creation, and Kubernetes deployment using Jenkins, GitHub, Docker, Helm, and Kubernetes.**
 
 ---
 
 # 📖 Chapter Overview
 
-In the previous chapter, we successfully containerized DevPilot AI and deployed it to Kubernetes.
+In the previous chapter, we successfully containerized Zeba AI and deployed it to Kubernetes.
 
 Deploying manually every time is inefficient and error-prone.
 
@@ -680,7 +680,7 @@ git push origin develop
 
 # 📖 Summary
 
-In this chapter, we automated the complete DevPilot AI delivery process using Jenkins. The pipeline now performs source checkout, dependency installation, code quality checks, testing, application builds, Docker image creation, image publishing, Helm-based Kubernetes deployment, and deployment verification. This CI/CD workflow provides a reliable and repeatable deployment process that closely mirrors enterprise software development practices.
+In this chapter, we automated the complete Zeba AI delivery process using Jenkins. The pipeline now performs source checkout, dependency installation, code quality checks, testing, application builds, Docker image creation, image publishing, Helm-based Kubernetes deployment, and deployment verification. This CI/CD workflow provides a reliable and repeatable deployment process that closely mirrors enterprise software development practices.
 
 ---
 
@@ -688,7 +688,7 @@ In this chapter, we automated the complete DevPilot AI delivery process using Je
 
 ## Chapter 12 – GitHub Integration & AI Code Intelligence
 
-In the next chapter, we will extend DevPilot AI with GitHub-powered features, including:
+In the next chapter, we will extend Zeba AI with GitHub-powered features, including:
 
 - GitHub OAuth Authentication
 - Repository Browser
