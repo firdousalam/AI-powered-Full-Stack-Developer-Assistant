@@ -1,51 +1,22 @@
-
 import { Router } from "express";
 
 import { validate } from "../middlewares/validate.middleware";
-
 import { chatSchema } from "../schemas/ai.schema";
 
-import {
-
-    chat,
-
-    generate,
-
-    streamChat
-
-} from "../controllers/ai.controller";
+import AIController from "../controllers/ai.controller";
 
 const router = Router();
 
 router.post(
-
     "/chat",
-
     validate(chatSchema),
-
-    chat
-
+    AIController.chat
 );
 
 router.post(
-
-    "/generate",
-
-
-    generate
-
-);
-
-router.post(
-
     "/chat/stream",
-
     validate(chatSchema),
-
-    streamChat
-
+    AIController.streamChat
 );
 
 export default router;
-
-

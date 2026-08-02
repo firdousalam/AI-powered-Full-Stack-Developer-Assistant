@@ -4,6 +4,7 @@ export const MESSAGE_TYPES = {
 
     SELECTED_TEXT: "SELECTED_TEXT",
 
-    PING: "PING"
+    PING: "PING",
+
 
 };
