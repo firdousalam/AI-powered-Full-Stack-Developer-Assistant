@@ -1,4 +1,17 @@
-import { useEffect, useState } from "react";
+/// <reference types="chrome" />
+
+import { useEffect, useState, useCallback } from "react";
+
+import BrowserContextCard from "./components/BrowserContextCard";
+import PromptInput from "./components/PromptInput";
+import ChatWindow from "./components/ChatWindow";
+import LoadingIndicator from "./components/LoadingIndicator";
+import ErrorMessage from "./components/ErrorMessage";
+import type { ChatMessage } from "../types/chat.types";
+
+import browserContextService from "../services/browserContext.service";
+
+import type { BrowserContext } from "../types/browser.types";
 
 import {
     ASK_AI_STREAM,
@@ -7,53 +20,192 @@ import {
     AI_STREAM_ERROR
 } from "../constants/message.types";
 
-/**
- * Runtime message received from Background Service Worker
- */
-interface RuntimeMessage {
-    type: string;
-    token?: string;
-    error?: string;
-}
 
-function Popup() {
 
-    const [prompt, setPrompt] = useState("");
-
-    const [response, setResponse] = useState("");
-
-    const [loading, setLoading] = useState(false);
-
-    const [error, setError] = useState("");
+export default function Popup() {
 
     /**
-     * ============================================
-     * Listen for Background Messages
-     * ============================================
+     * ===========================
+     * Browser Context
+     * ===========================
      */
+
+    const [
+
+        browserContext,
+
+        setBrowserContext
+
+    ] = useState<BrowserContext | null>(null);
+
+    /**
+     * ===========================
+     * Chat Messages
+     * ===========================
+     */
+
+    const [
+
+        messages,
+
+        setMessages
+
+    ] = useState<ChatMessage[]>([]);
+
+    /**
+     * ===========================
+     * Current Streaming Response
+     * ===========================
+     */
+
+    const [
+
+        streamingResponse,
+
+        setStreamingResponse
+
+    ] = useState("");
+
+    /**
+     * ===========================
+     * Loading State
+     * ===========================
+     */
+
+    const [
+
+        loading,
+
+        setLoading
+
+    ] = useState(false);
+
+    /**
+     * ===========================
+     * Error
+     * ===========================
+     */
+
+    const [
+
+        error,
+
+        setError
+
+    ] = useState("");
+
+    /**
+     * ===========================
+     * Selected AI Model
+     * ===========================
+     */
+
+    const [
+
+        model,
+
+        setModel
+
+    ] = useState("llama3.2:3b");
+
+    /**
+     * ===========================
+     * Load Browser Context
+     * ===========================
+     */
+
+    const loadBrowserContext = useCallback(
+
+        async () => {
+
+            try {
+
+                const context =
+
+                    await browserContextService
+                        .getBrowserContext();
+
+                setBrowserContext(context);
+
+            }
+
+            catch (err) {
+
+                console.error(err);
+
+                setError(
+
+                    "Unable to load browser context."
+
+                );
+
+            }
+
+        },
+
+        []
+
+    );
+
+    /**
+     * ===========================
+     * Load Context on Startup
+     * ===========================
+     */
+
+    useEffect(() => {
+
+        loadBrowserContext();
+
+    }, [loadBrowserContext]);
+
+    /**
+     * ==================================
+     * Runtime Listener
+     * ==================================
+     */
+
     useEffect(() => {
 
         const listener = (
-            message: RuntimeMessage,
-            sender: chrome.runtime.MessageSender
-        ) => {
 
-            console.log("Popup Received:", message);
-            console.log("Sender:", sender);
+            message: any
+
+        ) => {
 
             switch (message.type) {
 
                 case AI_STREAM:
 
-                    if (message.token) {
-                        setResponse(prev => prev + message.token);
-                    }
+                    setStreamingResponse(
+
+                        previous =>
+
+                            previous + message.token
+
+                    );
 
                     break;
 
                 case AI_STREAM_END:
 
-                    console.log("Streaming Finished");
+                    setMessages(previous => [
+
+                        ...previous,
+
+                        {
+
+                            id: Date.now().toString(),
+
+                            role: "assistant",
+
+                            content: streamingResponse
+
+                        }
+
+                    ]);
+
+                    setStreamingResponse("");
 
                     setLoading(false);
 
@@ -61,11 +213,15 @@ function Popup() {
 
                 case AI_STREAM_ERROR:
 
-                    console.error(message.error);
-
                     setLoading(false);
 
-                    setError(message.error ?? "Unknown Error");
+                    setError(
+
+                        message.error ??
+
+                        "Streaming failed."
+
+                    );
 
                     break;
             }
@@ -79,135 +235,232 @@ function Popup() {
 
         };
 
-    }, []);
+    }, [streamingResponse]);
 
     /**
-     * ============================================
+     * ===========================
      * Send Prompt
-     * ============================================
+     * ===========================
      */
-    const sendPrompt = () => {
+
+    const handleSendPrompt = (
+
+        prompt: string
+
+    ) => {
 
         if (!prompt.trim()) {
 
-            setError("Please enter a prompt.");
-
             return;
-        }
 
-        setResponse("");
+        }
 
         setError("");
 
         setLoading(true);
 
-        chrome.runtime.sendMessage(
+        setStreamingResponse("");
+
+        setMessages(previous => [
+
+            ...previous,
+
             {
-                type: ASK_AI_STREAM,
-                prompt,
-                model: "llama3.2:3b"
-            },
-            () => {
 
-                if (chrome.runtime.lastError) {
+                id: Date.now().toString(),
 
-                    console.error(
-                        chrome.runtime.lastError.message
-                    );
+                role: "user",
 
-                    setLoading(false);
+                content: prompt
 
-                    setError(chrome.runtime.lastError.message ?? "Unknown Error");
-                }
             }
-        );
+
+        ]);
+
+        chrome.runtime.sendMessage({
+
+            type: ASK_AI_STREAM,
+
+            prompt,
+
+            model
+
+        });
+
     };
 
     /**
-     * ============================================
-     * UI
-     * ============================================
+     * ===========================
+     * Clear Chat
+     * ===========================
      */
+
+    const clearChat = () => {
+
+        setMessages([]);
+
+        setStreamingResponse("");
+
+        setError("");
+
+    };
+
+    /**
+     * ===========================
+     * Refresh Browser Context
+     * ===========================
+     */
+
+    const refreshContext = async () => {
+
+        await loadBrowserContext();
+
+    };
+
+    /**
+     * ===========================
+     * Render
+     * ===========================
+     */
+
     return (
 
-        <div
-            style={{
-                width: 420,
-                padding: 20,
-                fontFamily: "Arial"
-            }}
-        >
+        <div className="popup-container">
 
-            <h2>🚀 Zeba AI</h2>
+            <header className="popup-header">
 
-            <textarea
-                rows={6}
-                style={{
-                    width: "100%",
-                    padding: 10,
-                    resize: "vertical"
-                }}
-                placeholder="Ask anything..."
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                <h2>
+
+                    DevPilot AI
+
+                </h2>
+
+            </header>
+
+            {
+
+                browserContext && (
+
+                    <BrowserContextCard
+
+                        context={browserContext}
+
+                    />
+
+                )
+
+            }
+
+            {
+
+                error && (
+
+                    <ErrorMessage
+
+                        message={error}
+
+                    />
+
+                )
+
+            }
+
+            {
+
+                loading && (
+
+                    <LoadingIndicator
+
+                        message="AI is thinking..."
+
+                    />
+
+                )
+
+            }
+
+            <ChatWindow
+
+                messages={messages}
+
+                streamingMessage={streamingResponse}
+
             />
 
-            <button
-                onClick={sendPrompt}
-                disabled={loading}
-                style={{
-                    width: "100%",
-                    marginTop: 15,
-                    padding: 10,
-                    cursor: loading ? "not-allowed" : "pointer"
-                }}
+            <PromptInput
+
+                onSubmit={handleSendPrompt}
+
+                loading={loading}
+
+            />
+
+            <footer
+
+                className="popup-footer"
+
             >
-                {loading ? "Thinking..." : "Ask AI"}
-            </button>
 
-            {loading && (
+                <button
 
-                <p
-                    style={{
-                        marginTop: 15,
-                        color: "#1976d2"
-                    }}
+                    onClick={refreshContext}
+
                 >
-                    🤖 AI is typing...
-                </p>
 
-            )}
+                    Refresh Context
 
-            {error && (
+                </button>
 
-                <p
-                    style={{
-                        color: "red",
-                        marginTop: 15
-                    }}
+                <button
+
+                    onClick={clearChat}
+
                 >
-                    {error}
-                </p>
 
-            )}
+                    Clear Chat
 
-            <div
-                style={{
-                    marginTop: 20,
-                    minHeight: 180,
-                    border: "1px solid #ddd",
-                    borderRadius: 6,
-                    padding: 12,
-                    whiteSpace: "pre-wrap",
-                    overflowY: "auto"
-                }}
-            >
-                {response}
-            </div>
+                </button>
+
+                <select
+
+                    value={model}
+
+                    onChange={e =>
+
+                        setModel(
+
+                            e.target.value
+
+                        )
+
+                    }
+
+                >
+
+                    <option>
+
+                        llama3.2:3b
+
+                    </option>
+
+                    <option>
+
+                        qwen3:4b
+
+                    </option>
+
+                    <option>
+
+                        mistral
+
+                    </option>
+
+                </select>
+
+            </footer>
 
         </div>
 
     );
-}
 
-export default Popup;
+}

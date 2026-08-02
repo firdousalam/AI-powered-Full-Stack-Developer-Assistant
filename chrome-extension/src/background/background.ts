@@ -13,8 +13,7 @@ import {
     AI_STREAM_ERROR
 } from "../constants/message.types";
 
-import getBrowserContext
-    from "../services/browserContext.service";
+
 import browserContextService from "../services/browserContext.service";
 
 console.log("🚀 Background Service Worker Started");
@@ -39,7 +38,8 @@ chrome.runtime.onMessage.addListener(
 
                 const browserContext = await browserContextService.getBrowserContext();
 
-                console.log(browserContext);
+                console.log("browserContext = ", browserContext)
+                console.log("sender = ", sender)
 
                 const result =
                     await chatWithAI(
@@ -96,6 +96,8 @@ chrome.runtime.onMessage.addListener(
                 console.log("Collecting Browser Context...");
 
                 const browserContext = await browserContextService.getBrowserContext();
+                console.log("browserContext = ", browserContext)
+                console.log("sender = ", sender)
 
                 await streamChat(
 
