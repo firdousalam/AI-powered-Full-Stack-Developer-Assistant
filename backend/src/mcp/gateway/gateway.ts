@@ -1,17 +1,11 @@
-export class MCPGateway {
+class MCPGateway {
 
-    async executeTool(
-        server: string,
-        tool: string,
-        args: unknown
-    ) {
+    connect() { }
 
-        // Locate the requested MCP Server
+    disconnect() { }
 
-        // Execute the tool
+    registerServer() { }
 
-        // Return the response
-
-    }
+    executeTool() { }
 
 }
