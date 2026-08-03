@@ -2,15 +2,35 @@ import app from "./app";
 import { env } from "./config/env";
 import { logger } from "./utils/logger";
 import dotenv from "dotenv";
-dotenv.config();
+import { bootstrap } from "./mcp/bootstrap";
 
-console.log(process.env.PORT);
+dotenv.config();
 
 const PORT = env.PORT || 3000;
 
-app.listen(PORT, () => {
+async function startServer(): Promise<void> {
 
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    logger("Server Started");
+    try {
 
-});
+        await bootstrap.initialize();
+
+        app.listen(PORT, () => {
+
+            console.log(`🚀 Server running on http://localhost:${PORT}`);
+
+            logger("Server Started");
+
+        });
+
+    }
+    catch (error) {
+
+        console.error("Failed to initialize MCP Infrastructure.", error);
+
+        process.exit(1);
+
+    }
+
+}
+
+startServer();

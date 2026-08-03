@@ -29,6 +29,10 @@ export interface MCPTool {
      */
     description: string;
 
+    execute(
+        args?: Record<string, unknown>
+    ): Promise<unknown>;
+
 }
 
 export interface MCPServer {
