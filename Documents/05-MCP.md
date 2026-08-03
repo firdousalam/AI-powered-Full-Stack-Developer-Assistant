@@ -996,6 +996,8 @@ This sequence fits your Zeba AI project well:
 
 
 
+
+
 Each milestone builds on the previous one, gradually evolving the backend into a production-ready AI developer platform.
 
 ---
@@ -1014,3 +1016,18 @@ In **Milestone 5.1 – Introduction to MCP**, we will explore:
 - Security model
 
 Once we understand these fundamentals, we will begin implementing the **MCP Gateway** and our first **Filesystem MCP Server**, enabling Zeba AI to interact with real project files and developer tools.
+
+
+## updated 
+
+Since you're building this as a production-quality project and YouTube course, I recommend this progression:
+
+5.1 – Introduction to MCP (documentation only)
+5.2 – MCP Gateway & Infrastructure (infrastructure only)
+5.3 – Filesystem MCP Server (first working MCP server)
+5.4 – Custom Filesystem Tools (developer-focused tools)
+5.5 – GitHub MCP Server
+5.6 – Docker MCP Server
+5.7 – Kubernetes MCP Server
+5.8 – Database MCP Servers (MongoDB/PostgreSQL/Redis)
+5.9 – Multi-Server Tool Orchestration & AI Agent Integration
