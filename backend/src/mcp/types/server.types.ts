@@ -1,3 +1,5 @@
+import { ToolRequest, ToolResponse } from "./tool.types";
+
 export enum ServerStatus {
 
     CREATED = "created",
@@ -16,11 +18,29 @@ export enum ServerStatus {
 
 }
 
+// export interface MCPTool {
+
+//     /**
+//      * Tool Name
+//      * Example: readFile
+//      */
+//     name: string;
+
+//     /**
+//      * Tool Description
+//      */
+//     description: string;
+
+//     execute(
+//         args?: Record<string, unknown>
+//     ): Promise<unknown>;
+
+// }
+
 export interface MCPTool {
 
     /**
      * Tool Name
-     * Example: readFile
      */
     name: string;
 
@@ -29,42 +49,75 @@ export interface MCPTool {
      */
     description: string;
 
+    /**
+     * JSON Schema describing tool input.
+     */
+    inputSchema?: {
+        type: string;
+        properties: Record<string, unknown>;
+        required?: string[];
+    };
+
+    /**
+     * Execute the tool.
+     */
     execute(
         args?: Record<string, unknown>
     ): Promise<unknown>;
 
 }
 
+// export interface MCPServer {
+
+//     /**
+//      * Unique Server Id
+//      */
+//     id: string;
+
+//     /**
+//      * Display Name
+//      */
+//     name: string;
+
+//     /**
+//      * Server Version
+//      */
+//     version: string;
+
+//     /**
+//      * Transport Type
+//      */
+//     transport: string;
+
+//     /**
+//      * Current Status
+//      */
+//     status: ServerStatus;
+
+//     /**
+//      * Registered Tools
+//      */
+//     tools: MCPTool[];
+
+// }
 export interface MCPServer {
 
-    /**
-     * Unique Server Id
-     */
     id: string;
 
-    /**
-     * Display Name
-     */
     name: string;
 
-    /**
-     * Server Version
-     */
     version: string;
 
-    /**
-     * Transport Type
-     */
-    transport: string;
-
-    /**
-     * Current Status
-     */
     status: ServerStatus;
 
-    /**
-     * Registered Tools
-     */
-    tools: MCPTool[];
+    connect(): Promise<void>;
+
+    disconnect(): Promise<void>;
+
+    executeTool(request: ToolRequest): Promise<ToolResponse>;
+
+    discoverTools(): MCPTool[];
+
+    healthCheck(): Promise<any>;
 
 }
