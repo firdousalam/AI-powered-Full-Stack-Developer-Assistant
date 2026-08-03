@@ -612,3 +612,388 @@ These agents will collaborate through orchestration to solve complex software en
 # 📖 Chapter Summary
 
 In this chapter, we will transform Zeba AI into a true **AI Developer Agent** by integrating the **Model Context Protocol (MCP)**. We will build an MCP Gateway, connect multiple MCP servers, discover available tools dynamically, and enable the AI to interact with developer environments including the filesystem, GitHub, Docker, Kubernetes, and Git repositories. By the end of this chapter, Zeba AI will be capable of intelligently selecting and executing external tools, laying the foundation for advanced Retrieval-Augmented Generation (RAG), Multi-Agent systems, and production-ready AI development workflows.
+
+
+
+# new doc
+
+
+# 🚀 Chapter 5 – Model Context Protocol (MCP)
+
+<div align="center">
+
+![MCP](https://img.shields.io/badge/Model%20Context%20Protocol-MCP-blue)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
+![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-yellow)
+![AI](https://img.shields.io/badge/AI-Ollama-red)
+
+**Building an Enterprise AI Developer Assistant using the Model Context Protocol (MCP)**
+
+</div>
+
+---
+
+# 📖 Overview
+
+Welcome to **Chapter 5** of the **AI-powered Full Stack Developer Assistant** series.
+
+In the previous chapters, we successfully built the foundation of our AI assistant.
+
+Our application can now:
+
+- ✅ Capture Browser Context from any webpage
+- ✅ Communicate with our Express.js backend
+- ✅ Stream responses from Ollama
+- ✅ Maintain conversational interactions
+- ✅ Build prompts dynamically
+- ✅ Support multiple AI models
+
+Although our assistant is already capable of answering questions based on browser content, it still has one major limitation:
+
+> **It cannot access external developer tools or the user's local development environment.**
+
+For example, if a developer asks:
+
+- Explain my `package.json`
+- Read my `Dockerfile`
+- Analyze my Kubernetes deployment
+- Search my project for TODO comments
+- Review my Git history
+- Explain my React application
+
+The AI model cannot answer accurately because it has no direct access to those resources.
+
+This chapter solves that problem using the **Model Context Protocol (MCP).**
+
+---
+
+# 🎯 Chapter Goals
+
+By the end of this chapter, we will transform our backend into an intelligent orchestration platform capable of communicating with external developer tools.
+
+Our assistant will learn how to:
+
+- Read local project files
+- Search folders
+- Access GitHub repositories
+- Work with Docker
+- Deploy to Kubernetes
+- Query databases
+- Execute developer tools
+- Build reusable AI workflows
+
+---
+
+# 🏗 Current Architecture
+
+Before introducing MCP, our application architecture looks like this.
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Controller
+        │
+        ▼
+AI Service
+        │
+        ▼
+Ollama
+        │
+        ▼
+AI Response
+```
+
+This architecture is simple and effective for browser-based AI assistance.
+
+However, the AI has no visibility into the developer's local project or external tools.
+
+---
+
+# 🚨 Why MCP?
+
+Modern AI applications are no longer limited to generating text.
+
+They can:
+
+- Execute tools
+- Read files
+- Query databases
+- Deploy applications
+- Analyze repositories
+- Control containers
+- Automate DevOps workflows
+
+To achieve this securely and consistently, we use the **Model Context Protocol (MCP)**.
+
+MCP provides a standardized way for AI applications to communicate with external systems without tightly coupling the language model to specific tools.
+
+Instead of writing custom integrations for every service, we expose capabilities through MCP Servers.
+
+---
+
+# 🏛 Architecture After MCP
+
+```text
+                 Chrome Extension
+                         │
+                         ▼
+                 Express Backend
+                         │
+                         ▼
+                   AI Controller
+                         │
+                         ▼
+                     AI Service
+                         │
+                         ▼
+                    MCP Gateway
+                         │
+         ┌───────────────┼────────────────┐
+         ▼               ▼                ▼
+Filesystem MCP     GitHub MCP      Docker MCP
+         │               │                │
+         ▼               ▼                ▼
+ Local Files      Git Repositories   Containers
+```
+
+The AI Service no longer communicates directly with external tools.
+
+Instead, it delegates all tool execution to the MCP Gateway.
+
+---
+
+# 📚 Learning Objectives
+
+After completing this chapter, you will understand:
+
+- What the Model Context Protocol (MCP) is
+- Why AI systems require external tools
+- How MCP Clients communicate with MCP Servers
+- The Gateway Pattern
+- JSON-RPC communication
+- stdio transport
+- Dynamic tool discovery
+- Server registration
+- Health monitoring
+- Secure tool execution
+- Building production-ready MCP integrations
+
+---
+
+# 📂 Chapter Structure
+
+This chapter is divided into multiple milestones.
+
+| Milestone | Topic |
+|-----------|-------|
+| **5.1** | Introduction to MCP |
+| **5.2** | MCP Gateway |
+| **5.3** | Filesystem MCP Server |
+| **5.4** | MCP Client |
+| **5.5** | MCP Tool Registry |
+| **5.6** | Connecting Multiple MCP Servers |
+| **5.7** | MCP Health Monitoring |
+| **5.8** | MCP Security |
+| **5.9** | Integrating MCP with Zeba AI |
+| **5.10** | GitHub, Docker & Kubernetes MCP Servers |
+
+---
+
+# 📁 Project Structure
+
+By the end of this chapter, our backend will include a dedicated MCP module.
+
+```text
+backend
+│
+├── src
+│
+├── controllers
+│
+├── routes
+│
+├── services
+│
+├── ai
+│
+├── mcp
+│   │
+│   ├── gateway
+│   │
+│   ├── registry
+│   │
+│   ├── client
+│   │
+│   ├── servers
+│   │
+│   ├── tools
+│   │
+│   ├── config
+│   │
+│   ├── security
+│   │
+│   └── health
+│
+├── app.ts
+│
+└── server.ts
+```
+
+This modular structure makes it easy to add new MCP Servers without affecting the rest of the application.
+
+---
+
+# 🏗 What We Will Build
+
+Throughout this chapter, we will progressively build an enterprise-ready MCP platform.
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Controller
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Server Registry
+        │
+ ┌──────┼────────────┬────────────┬─────────────┐
+ ▼      ▼            ▼            ▼             ▼
+Filesystem GitHub Docker Kubernetes PostgreSQL
+```
+
+The MCP Gateway becomes the single entry point for all external tool communication.
+
+---
+
+# 📦 Technologies Used
+
+| Component | Technology |
+|-----------|------------|
+| Frontend | React + Vite |
+| Extension | Chrome Extension (Manifest V3) |
+| Backend | Node.js + Express |
+| Language | TypeScript |
+| AI Model | Ollama |
+| Protocol | Model Context Protocol (MCP) |
+| SDK | `@modelcontextprotocol/sdk` |
+| Communication | JSON-RPC |
+| Transport | stdio |
+
+---
+
+# 🎯 Expected Outcomes
+
+By the end of Chapter 5, your AI assistant will be capable of:
+
+- ✅ Reading project files
+- ✅ Listing directories
+- ✅ Searching source code
+- ✅ Explaining project configuration
+- ✅ Working with Git repositories
+- ✅ Managing Docker containers
+- ✅ Interacting with Kubernetes clusters
+- ✅ Querying databases
+- ✅ Executing developer tools through MCP
+- ✅ Providing accurate, context-aware responses
+
+---
+
+# 📈 Skills You'll Gain
+
+Completing this chapter will help you understand:
+
+- Enterprise backend architecture
+- AI tool integration
+- MCP design patterns
+- TypeScript architecture
+- Gateway Pattern
+- Registry Pattern
+- JSON-RPC
+- stdio communication
+- Secure tool execution
+- AI orchestration
+- Developer productivity automation
+
+These are valuable skills for building modern AI-powered developer platforms.
+
+---
+
+# 🚀 Final Architecture
+
+By the end of this chapter, our application architecture will look like this:
+
+```text
+                        Chrome Extension
+                               │
+                               ▼
+                        Express Backend
+                               │
+                               ▼
+                         AI Controller
+                               │
+                               ▼
+                           AI Service
+                               │
+                               ▼
+                          MCP Gateway
+                               │
+                     ┌─────────┼──────────┐
+                     ▼         ▼          ▼
+               Server Registry Health Monitor Security
+                               │
+          ┌──────────┬──────────┬──────────┬──────────┐
+          ▼          ▼          ▼          ▼          ▼
+     Filesystem   GitHub     Docker   Kubernetes  PostgreSQL
+```
+
+This architecture is modular, scalable, and ready for future integrations such as Redis, MongoDB, AWS, Azure, Terraform, Jira, and many more.
+
+---
+
+# 📖 Recommended Learning Path
+
+Follow the milestones in order:
+
+1. **05.1 – Introduction to MCP**
+2. **05.2 – MCP Gateway**
+3. **05.3 – Filesystem MCP Server**
+4. **05.4 – MCP Client**
+5. **05.5 – MCP Tool Registry**
+6. **05.6 – Connecting Multiple MCP Servers**
+7. **05.7 – MCP Health Monitoring**
+8. **05.8 – MCP Security**
+9. **05.9 – Integrating MCP with Zeba AI**
+10. **05.10 – GitHub, Docker & Kubernetes MCP Servers**
+
+Each milestone builds on the previous one, gradually evolving the backend into a production-ready AI developer platform.
+
+---
+
+# 🎉 What's Next?
+
+In **Milestone 5.1 – Introduction to MCP**, we will explore:
+
+- What is MCP?
+- Why it was created
+- MCP architecture
+- Clients vs Servers
+- JSON-RPC
+- Transport layers
+- Tool execution flow
+- Security model
+
+Once we understand these fundamentals, we will begin implementing the **MCP Gateway** and our first **Filesystem MCP Server**, enabling Zeba AI to interact with real project files and developer tools.
