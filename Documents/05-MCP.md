@@ -979,6 +979,23 @@ Follow the milestones in order:
 9. **05.9 – Integrating MCP with Zeba AI**
 10. **05.10 – GitHub, Docker & Kubernetes MCP Servers**
 
+My suggested roadmap
+
+This sequence fits your Zeba AI project well:
+
+5.1 – Introduction to MCP ✅
+5.2 – MCP Gateway & Infrastructure
+5.3 – Filesystem MCP Server
+5.4 – MCP Client (JSON-RPC + stdio)
+5.5 – Integrate Filesystem Server with Zeba AI
+5.6 – Build Custom Filesystem Tools
+5.7 – GitHub MCP Server
+5.8 – Docker MCP Server
+5.9 – Kubernetes MCP Server
+5.10 – Intelligent Tool Selection & AI Agent
+
+
+
 Each milestone builds on the previous one, gradually evolving the backend into a production-ready AI developer platform.
 
 ---
