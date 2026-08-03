@@ -1,0 +1,9552 @@
+# 🎯 Next Milestone – 5.3 Filesystem MCP Server
+
+With the **MCP Gateway** and supporting infrastructure now in place, we are ready to build our **first real MCP Server**.
+
+In this milestone, we will implement a **Filesystem MCP Server** that enables our AI-powered Full Stack Developer Assistant to securely interact with files and folders on the local machine.
+
+Until now, our AI assistant has relied primarily on browser context and the language model's knowledge. After completing this milestone, it will be able to work with actual project files, making its responses significantly more accurate and context-aware.
+
+---
+
+# 📌 Goal
+
+Build a production-ready **Filesystem MCP Server** and connect it to our existing MCP Gateway.
+
+The Filesystem MCP Server will expose a set of tools that allow the AI assistant to safely access local project files while following the Model Context Protocol (MCP).
+
+---
+
+# 🏗 What We Will Build
+
+By the end of this milestone, we will have:
+
+- A fully functional **Filesystem MCP Server**
+- Integration with the existing **MCP Gateway**
+- Secure communication between the backend and the Filesystem Server
+- A set of reusable filesystem tools
+- End-to-end tool execution using MCP
+
+---
+
+# 📂 Filesystem MCP Server Capabilities
+
+Initially, the server will provide the following tools:
+
+### 📄 Read Project Files
+
+Allow the AI assistant to read the contents of files such as:
+
+- `README.md`
+- `package.json`
+- `tsconfig.json`
+- `.env.example`
+- `Dockerfile`
+- `docker-compose.yml`
+- `vite.config.ts`
+- `Jenkinsfile`
+- `kubernetes.yaml`
+
+Instead of guessing file contents, the AI will analyze the actual project files.
+
+---
+
+### 📁 List Directories
+
+The AI assistant will be able to browse the project structure by listing files and folders.
+
+Example:
+
+```text
+project/
+│
+├── src/
+├── public/
+├── docs/
+├── package.json
+├── README.md
+└── tsconfig.json
+```
+
+This helps the AI understand how the project is organized before answering development-related questions.
+
+---
+
+### 🗂 Inspect Project Structure
+
+The Filesystem MCP Server will allow the AI to explore the overall layout of a project.
+
+For example, it will be able to identify:
+
+- Source code folders
+- Configuration files
+- Build scripts
+- Documentation
+- Assets
+- Test directories
+
+This enables the AI to provide more meaningful and project-specific guidance.
+
+---
+
+### ⚙ Explain Configuration Files
+
+The AI assistant will be able to read and explain common configuration files, including:
+
+- `package.json`
+- `tsconfig.json`
+- `vite.config.ts`
+- `webpack.config.js`
+- `docker-compose.yml`
+- `nginx.conf`
+- Kubernetes manifests
+
+Rather than providing generic explanations, the AI will explain the actual configuration used in the current project.
+
+---
+
+### 🤖 Context-Aware AI Responses
+
+Once the Filesystem MCP Server is connected, the AI will generate responses based on real project data.
+
+For example, when a user asks:
+
+> **"Explain my package.json"**
+
+The execution flow will be:
+
+```text
+User
+        │
+        ▼
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Read package.json
+        │
+        ▼
+Return File Content
+        │
+        ▼
+AI Generates Explanation
+```
+
+Instead of making assumptions, the AI will analyze the actual file before responding.
+
+---
+
+# 🎯 Learning Objectives
+
+By completing this milestone, you will learn how to:
+
+- Build an MCP Server using the official MCP SDK
+- Register tools with an MCP Server
+- Expose filesystem operations through MCP
+- Connect the Filesystem MCP Server to the MCP Gateway
+- Execute MCP tool calls from the backend
+- Return structured responses to the AI Service
+- Build secure and reusable developer tools
+
+---
+
+# ✅ Deliverables
+
+By the end of this milestone, you will have:
+
+- ✅ Filesystem MCP Server created
+- ✅ MCP tools registered
+- ✅ Read File tool implemented
+- ✅ List Directory tool implemented
+- ✅ Project structure inspection support
+- ✅ Configuration file analysis
+- ✅ End-to-end communication through the MCP Gateway
+- ✅ AI capable of answering questions using real project files
+
+---
+
+# 🚀 What's Next?
+
+After completing the Filesystem MCP Server, we will begin creating **custom developer tools** that make our AI assistant even more powerful.
+
+These tools will include:
+
+- 🔍 Search project files
+- 📌 Find TODO comments
+- 📦 Analyze dependencies
+- 📄 Read source code
+- 🧠 Generate project summaries
+- 🏗 Detect project architecture
+- 🛠 Explain configuration files
+- 🌐 Identify frameworks and technologies
+
+These capabilities will transform our AI-powered Full Stack Developer Assistant into a practical development companion capable of understanding and working with real-world software projects.
+
+# 🚀 What's Next?
+
+With the **Filesystem MCP Server** successfully integrated, our AI assistant can now interact with real project files. However, simply reading files is only the beginning.
+
+In the next milestone, we will build a collection of **custom MCP developer tools** that will enable our AI-powered Full Stack Developer Assistant to understand, analyze, and reason about software projects much like an experienced developer.
+
+Rather than exposing only generic filesystem operations, we will create intelligent tools specifically designed for software development workflows.
+
+---
+
+# 🛠 Custom Developer Tools
+
+We will implement the following MCP tools:
+
+### 🔍 Search Project Files
+
+Quickly locate files by name or pattern anywhere within the project.
+
+Example queries:
+
+- Find all React components
+- Locate Dockerfiles
+- Search for Kubernetes manifests
+- Find environment files
+
+---
+
+### 📌 Find TODO Comments
+
+Automatically scan the project for unfinished work.
+
+Example:
+
+```text
+// TODO: Add authentication
+
+// FIXME: Improve validation
+
+// HACK: Temporary workaround
+```
+
+This helps developers identify pending tasks and technical debt.
+
+---
+
+### 📦 Analyze Dependencies
+
+Read project dependency files such as:
+
+- package.json
+- package-lock.json
+- pnpm-lock.yaml
+- yarn.lock
+
+The AI will be able to:
+
+- Explain installed packages
+- Detect outdated libraries
+- Identify unused dependencies
+- Recommend upgrades
+- Highlight security concerns
+
+---
+
+### 📄 Read Source Code
+
+Instead of reading only configuration files, the AI will analyze actual application code.
+
+Examples include:
+
+- React Components
+- Express Controllers
+- NestJS Modules
+- Services
+- Routes
+- Middleware
+- Utility Functions
+
+This enables the AI to explain how the application's code works.
+
+---
+
+### 🧠 Generate Project Summaries
+
+The AI will automatically analyze the project and generate a high-level overview.
+
+Example summary:
+
+- Project type
+- Programming language
+- Frameworks used
+- Folder structure
+- Build tools
+- Testing framework
+- Database
+- Deployment strategy
+
+This is especially useful when exploring unfamiliar codebases.
+
+---
+
+### 🏗 Detect Project Architecture
+
+The AI will inspect the project structure to identify architectural patterns.
+
+Examples include:
+
+- MVC
+- Microservices
+- Monorepo
+- Clean Architecture
+- Hexagonal Architecture
+- Layered Architecture
+
+Understanding the architecture helps the AI provide more accurate development guidance.
+
+---
+
+### 🛠 Explain Configuration Files
+
+The assistant will explain the purpose and impact of common configuration files such as:
+
+- package.json
+- tsconfig.json
+- vite.config.ts
+- webpack.config.js
+- docker-compose.yml
+- nginx.conf
+- Kubernetes manifests
+
+Rather than providing generic explanations, it will analyze the actual configuration used in the project.
+
+---
+
+### 🌐 Identify Frameworks and Technologies
+
+By analyzing the project structure and dependencies, the AI will automatically detect technologies such as:
+
+- React
+- Angular
+- Vue
+- Next.js
+- Node.js
+- Express
+- NestJS
+- MongoDB
+- PostgreSQL
+- Docker
+- Kubernetes
+
+This allows the AI to tailor its responses to the specific technology stack being used.
+
+---
+
+# 🎯 Goal of the Next Milestone
+
+By the end of the next milestone, our AI assistant will move beyond simple file access and begin understanding the entire software project.
+
+It will be able to:
+
+- Navigate project structures intelligently
+- Analyze source code
+- Explain application architecture
+- Detect frameworks automatically
+- Understand project dependencies
+- Provide accurate, context-aware development assistance
+
+These capabilities will transform our **AI-powered Full Stack Developer Assistant** from a general-purpose chatbot into a practical development companion capable of understanding and working with real-world software projects.
+
+# 🎯 Goal of the Next Milestone
+
+With the **Filesystem MCP Server** in place, our AI assistant will no longer be limited to simply reading files. In the next milestone, we will build a collection of **custom MCP developer tools** that enable the assistant to understand the structure, technologies, and architecture of an entire software project.
+
+Rather than treating each file in isolation, the AI will analyze the project as a whole, allowing it to provide smarter, more accurate, and context-aware responses.
+
+By the end of the next milestone, our AI-powered Full Stack Developer Assistant will be able to:
+
+---
+
+## 📂 Navigate Project Structures Intelligently
+
+The AI will automatically explore the project's folder hierarchy and understand how different components are organized.
+
+It will identify:
+
+- Source code directories
+- Configuration files
+- Documentation
+- Assets
+- Test folders
+- Build scripts
+
+This gives the AI a high-level understanding of the project before answering development-related questions.
+
+---
+
+## 💻 Analyze Source Code
+
+Instead of only reading configuration files, the AI will inspect actual application code.
+
+It will be able to analyze:
+
+- Controllers
+- Services
+- Components
+- Routes
+- APIs
+- Utility functions
+- Middleware
+- Models
+
+This enables the assistant to explain how the application works using the real source code rather than relying on assumptions.
+
+---
+
+## 🏗 Explain Application Architecture
+
+By examining the project structure and source code, the AI will recognize common architectural patterns such as:
+
+- MVC (Model-View-Controller)
+- Microservices
+- Clean Architecture
+- Layered Architecture
+- Monorepo
+- Hexagonal Architecture
+
+Understanding the project's architecture allows the assistant to provide more relevant design recommendations and debugging guidance.
+
+---
+
+## 🌐 Detect Frameworks and Technologies Automatically
+
+The AI will inspect project files and dependencies to determine which technologies are being used.
+
+Examples include:
+
+- React
+- Angular
+- Vue.js
+- Next.js
+- Node.js
+- Express.js
+- NestJS
+- MongoDB
+- PostgreSQL
+- Docker
+- Kubernetes
+
+By recognizing the project's technology stack, the assistant can tailor its responses and recommendations accordingly.
+
+---
+
+## 📦 Understand Project Dependencies
+
+The AI will examine dependency and configuration files such as:
+
+- `package.json`
+- `package-lock.json`
+- `pnpm-lock.yaml`
+- `yarn.lock`
+
+This enables it to:
+
+- Explain installed packages
+- Identify important libraries
+- Detect outdated dependencies
+- Suggest upgrades
+- Highlight potential issues
+
+---
+
+## 🤖 Provide Context-Aware Development Assistance
+
+With a complete understanding of the project's structure, source code, architecture, and dependencies, the AI will be able to deliver responses that are specific to the current project instead of generic programming advice.
+
+Developers will be able to ask questions such as:
+
+- Explain this project structure.
+- How does authentication work?
+- Which framework is this application using?
+- Where is the database configuration located?
+- Why is this API failing?
+- Which files should I modify to add a new feature?
+
+The assistant will answer these questions by analyzing the actual project through MCP tools.
+
+---
+
+# 🚀 Expected Outcome
+
+After completing the next milestone, our **AI-powered Full Stack Developer Assistant** will evolve from a tool that simply reads files into an intelligent software engineering assistant capable of understanding complete software projects.
+
+This marks a major step toward building a production-ready AI development platform that can assist with code exploration, debugging, architecture analysis, project documentation, and everyday software development tasks using real project context.
+
+
+# 📂 Milestone 5.3 – Filesystem MCP Server
+
+## 🎥 Episode 5.3
+
+---
+
+# 📌 Goal
+
+In the previous milestone, we built the **MCP Gateway** and the supporting infrastructure required to manage multiple MCP Servers.
+
+In this milestone, we will develop our first **fully functional MCP Server** — the **Filesystem MCP Server**.
+
+This server will expose filesystem operations as MCP tools, allowing our AI-powered Full Stack Developer Assistant to securely interact with local project files.
+
+By the end of this milestone, our backend will be capable of reading project files, listing directories, and providing real project context to the AI model.
+
+---
+
+# 📚 Topics Covered
+
+- Introduction to the Filesystem MCP Server
+- Understanding Filesystem Tools
+- Creating an MCP Server using the MCP SDK
+- Registering MCP Tools
+- Tool Metadata
+- Tool Input & Output Schemas
+- Connecting the Filesystem Server to the MCP Gateway
+- Executing MCP Tool Calls
+- Reading Project Files
+- Listing Directories
+- Error Handling
+- Security Best Practices
+- End-to-End Testing
+
+---
+
+# 🏗 Architecture
+
+```text
+                    Chrome Extension
+                           │
+                           ▼
+                    Express Backend
+                           │
+                           ▼
+                       AI Service
+                           │
+                           ▼
+                      MCP Gateway
+                           │
+                           ▼
+                Filesystem MCP Server
+                           │
+        ┌──────────────────┼──────────────────┐
+        ▼                  ▼                  ▼
+     Read File       List Directory      File Exists
+                           │
+                           ▼
+                    Local Project Files
+```
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this milestone, you will understand:
+
+- How to create an MCP Server
+- How to expose tools using the MCP SDK
+- How MCP tool registration works
+- How tool requests are executed
+- How the Gateway communicates with an MCP Server
+- How to safely access local project files
+- How to return structured responses to the AI Service
+
+---
+
+# 🛠 MCP Tools
+
+We will implement the following tools:
+
+## 📄 Read File
+
+Reads the contents of a file.
+
+Examples:
+
+- README.md
+- package.json
+- tsconfig.json
+- Dockerfile
+
+---
+
+## 📂 List Directory
+
+Returns all files and folders inside a directory.
+
+Example:
+
+```text
+src/
+├── controllers
+├── services
+├── routes
+└── app.ts
+```
+
+---
+
+## ✅ File Exists
+
+Checks whether a file exists before attempting to read it.
+
+Useful for:
+
+- README.md
+- package.json
+- .env.example
+
+---
+
+## 📊 File Metadata
+
+Returns information about a file.
+
+Examples:
+
+- File size
+- Extension
+- Last modified
+- Created date
+
+---
+
+# 🔄 Request Flow
+
+```text
+User
+      │
+      ▼
+Chrome Extension
+      │
+      ▼
+Express Backend
+      │
+      ▼
+AI Service
+      │
+      ▼
+MCP Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Execute Tool
+      │
+      ▼
+Return Result
+      │
+      ▼
+AI Response
+```
+
+---
+
+# 📁 Project Structure
+
+```text
+src/
+
+├── mcp/
+│
+├── gateway/
+│
+├── registry/
+│
+├── servers/
+│   │
+│   └── filesystem/
+│       │
+│       ├── filesystem.server.ts
+│       ├── filesystem.tools.ts
+│       ├── filesystem.service.ts
+│       ├── filesystem.types.ts
+│       └── index.ts
+│
+├── config/
+│
+└── health/
+```
+
+---
+
+# 🔒 Security Considerations
+
+The Filesystem MCP Server should never allow unrestricted access to the host machine.
+
+We will implement safeguards such as:
+
+- Allowed project root directory
+- Path validation
+- Directory traversal protection
+- Read-only access
+- File size limits
+- Error handling
+- Permission checks
+
+---
+
+# ✅ Deliverables
+
+By the end of this milestone, you will have:
+
+- ✅ Working Filesystem MCP Server
+- ✅ MCP tools registered
+- ✅ Read File tool
+- ✅ List Directory tool
+- ✅ File Exists tool
+- ✅ File Metadata tool
+- ✅ Gateway integration
+- ✅ End-to-end MCP communication
+- ✅ AI capable of reading real project files
+
+---
+
+
+I also recommend splitting Milestone 5.3 into 4 episodes for your GitHub repo and YouTube series:
+5.3.1 – Building the Filesystem MCP Server
+
+# 📂 Milestone 5.3.1 – Building the Filesystem MCP Server
+
+## 🎥 Episode 5.3.1
+
+---
+
+# 📌 Goal
+
+In the previous milestone, we built the **MCP Gateway** and the supporting infrastructure required to manage multiple MCP Servers.
+
+In this milestone, we will build our **first MCP Server** using the official **Model Context Protocol (MCP) SDK**.
+
+Rather than implementing developer tools immediately, our focus will be on creating a production-ready Filesystem MCP Server that can communicate with the MCP Gateway.
+
+By the end of this episode, we will have a running MCP Server capable of accepting client connections and ready to expose filesystem tools in the next episode.
+
+---
+
+# 📚 Topics Covered
+
+- Introduction to the Filesystem MCP Server
+- Understanding MCP Servers
+- Installing the MCP SDK
+- Creating the Filesystem MCP Server
+- Understanding the MCP Server Lifecycle
+- Server Metadata
+- Server Capabilities
+- JSON-RPC Communication
+- stdio Transport
+- Registering the Server with the MCP Gateway
+- Verifying Server Connectivity
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this episode, you will understand:
+
+- What an MCP Server is
+- How an MCP Server communicates with clients
+- How to create an MCP Server using the official SDK
+- How stdio transport works
+- How the Filesystem MCP Server integrates with the MCP Gateway
+- How to prepare the server for tool registration
+
+---
+
+# 🏗 Architecture
+
+```text
+                 Chrome Extension
+                        │
+                        ▼
+                 Express Backend
+                        │
+                        ▼
+                    AI Service
+                        │
+                        ▼
+                   MCP Gateway
+                        │
+                        ▼
+             Filesystem MCP Server
+                        │
+                        ▼
+                 Waiting for Requests
+```
+
+At this stage, the Filesystem MCP Server is running and connected to the Gateway but does not yet expose any tools.
+
+---
+
+# 📂 Project Structure
+
+```text
+backend/
+│
+├── src/
+│
+├── mcp/
+│   │
+│   ├── gateway/
+│   │
+│   ├── registry/
+│   │
+│   ├── servers/
+│   │   │
+│   │   └── filesystem/
+│   │       │
+│   │       ├── filesystem.server.ts
+│   │       ├── filesystem.types.ts
+│   │       ├── filesystem.constants.ts
+│   │       ├── filesystem.config.ts
+│   │       └── index.ts
+│   │
+│   └── ...
+│
+└── server.ts
+```
+
+---
+
+# 🧩 What We Will Build
+
+During this episode, we will:
+
+- Install the official MCP SDK
+- Create the Filesystem MCP Server
+- Configure stdio transport
+- Define server metadata
+- Configure server capabilities
+- Start the server
+- Register the server with the MCP Gateway
+- Verify communication between the Gateway and the Server
+
+No filesystem operations will be implemented yet.
+
+---
+
+# 🔄 Communication Flow
+
+```text
+Application Starts
+        │
+        ▼
+Initialize MCP Gateway
+        │
+        ▼
+Start Filesystem MCP Server
+        │
+        ▼
+Register Server
+        │
+        ▼
+Gateway Connection Established
+        │
+        ▼
+Server Ready
+```
+
+---
+
+# 🔒 Security Considerations
+
+Even before exposing filesystem tools, we will design the server with security in mind.
+
+Our Filesystem MCP Server will be built to support:
+
+- Read-only operations by default
+- Restricted project directories
+- Path validation
+- Structured error handling
+- Safe communication through MCP
+
+These safeguards will help prevent unauthorized file access in future milestones.
+
+---
+
+# ✅ Deliverables
+
+By the end of this episode, you will have:
+
+- ✅ MCP SDK installed
+- ✅ Filesystem MCP Server created
+- ✅ Server metadata configured
+- ✅ stdio transport configured
+- ✅ Server connected to the MCP Gateway
+- ✅ End-to-end server connectivity verified
+- ✅ Foundation ready for filesystem tool implementation
+
+---
+
+# 🚀 Next Episode
+
+## Milestone 5.3.2 – Implementing Filesystem MCP Tools
+
+In the next episode, we will begin exposing real filesystem functionality through the Filesystem MCP Server.
+
+We will implement tools such as:
+
+- 📄 Read File
+- 📂 List Directory
+- ✅ File Exists
+- 📊 File Metadata
+
+These tools will enable our AI-powered Full Stack Developer Assistant to access and analyze real project files through the Model Context Protocol.
+
+
+5.3.2 – Implementing Filesystem Tools
+
+# 📂 Milestone 5.3.2 – Implementing Filesystem MCP Tools
+
+## 🎥 Episode 5.3.2
+
+---
+
+# 📌 Goal
+
+In the previous episode, we built our first **Filesystem MCP Server** and connected it to the MCP Gateway. Although the server was running successfully, it did not expose any functionality.
+
+In this episode, we will implement the first set of **Filesystem MCP Tools** that allow our AI-powered Full Stack Developer Assistant to securely interact with local project files.
+
+These tools form the foundation for all future project analysis and enable the AI to work with real project data instead of relying solely on the language model.
+
+---
+
+# 📚 Topics Covered
+
+- Understanding MCP Tools
+- Tool Registration
+- Tool Metadata
+- Tool Input Schema
+- Tool Output Schema
+- Tool Validation
+- Implementing Filesystem Tools
+- Error Handling
+- Security Best Practices
+- Testing MCP Tools
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this episode, you will understand:
+
+- What MCP Tools are
+- How tools are registered with an MCP Server
+- How tool schemas are defined
+- How tool requests are validated
+- How tools return structured responses
+- How to implement secure filesystem operations
+- Best practices for exposing filesystem capabilities
+
+---
+
+# 🏗 Architecture
+
+```text
+                    Chrome Extension
+                           │
+                           ▼
+                    Express Backend
+                           │
+                           ▼
+                       AI Service
+                           │
+                           ▼
+                      MCP Gateway
+                           │
+                           ▼
+                Filesystem MCP Server
+                           │
+     ┌───────────────┬───────────────┬───────────────┐
+     ▼               ▼               ▼               ▼
+ Read File     List Directory    File Exists   File Metadata
+                           │
+                           ▼
+                  Local Project Files
+```
+
+The Filesystem MCP Server now exposes a collection of reusable tools that can be invoked through the MCP Gateway.
+
+---
+
+# 🧰 Filesystem Tools
+
+## 📄 Read File
+
+Reads the contents of a specified file.
+
+Example use cases:
+
+- Read `README.md`
+- Read `package.json`
+- Read `tsconfig.json`
+- Read `Dockerfile`
+- Read `docker-compose.yml`
+
+This tool allows the AI to analyze actual project files instead of making assumptions.
+
+---
+
+## 📂 List Directory
+
+Returns the files and folders within a specified directory.
+
+Example:
+
+```text
+src/
+├── controllers/
+├── routes/
+├── services/
+├── middleware/
+├── app.ts
+└── server.ts
+```
+
+This enables the AI to understand the project's structure.
+
+---
+
+## ✅ File Exists
+
+Checks whether a file or directory exists before attempting to access it.
+
+Typical examples:
+
+- README.md
+- package.json
+- .env.example
+- Dockerfile
+- Jenkinsfile
+
+This improves reliability and prevents unnecessary errors.
+
+---
+
+## 📊 File Metadata
+
+Returns useful information about a file.
+
+Example metadata:
+
+- File name
+- Extension
+- Size
+- Last modified date
+- Created date
+- Absolute path
+
+This information can be used by the AI to better understand project assets.
+
+---
+
+# 🔄 Tool Execution Flow
+
+```text
+AI Service
+      │
+      ▼
+MCP Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Validate Tool Request
+      │
+      ▼
+Execute Tool
+      │
+      ▼
+Return Structured Result
+      │
+      ▼
+Gateway
+      │
+      ▼
+AI Service
+```
+
+Every tool follows the same execution lifecycle, making it easy to add additional tools in future milestones.
+
+---
+
+# 📂 Project Structure
+
+```text
+src/
+│
+├── mcp/
+│
+├── servers/
+│   │
+│   └── filesystem/
+│       │
+│       ├── filesystem.server.ts
+│       ├── filesystem.tools.ts
+│       ├── filesystem.service.ts
+│       ├── filesystem.validators.ts
+│       ├── filesystem.types.ts
+│       ├── filesystem.constants.ts
+│       └── index.ts
+│
+└── ...
+```
+
+Separating the implementation into dedicated files keeps the codebase modular and easier to maintain.
+
+---
+
+# 🔒 Security Best Practices
+
+Filesystem access should always be restricted to protect the host machine.
+
+Our implementation will include safeguards such as:
+
+- Restrict access to the project workspace
+- Prevent directory traversal attacks (`../`)
+- Validate all file paths
+- Limit maximum file size
+- Return structured error messages
+- Use read-only operations
+- Reject unsupported file requests
+
+These measures ensure that the Filesystem MCP Server remains secure while providing useful capabilities to the AI assistant.
+
+---
+
+# 🧪 Testing the Filesystem Tools
+
+After implementing the tools, we will verify that each one behaves as expected.
+
+Test scenarios include:
+
+- Reading an existing file
+- Attempting to read a missing file
+- Listing a valid directory
+- Checking if a file exists
+- Retrieving file metadata
+- Handling invalid paths
+- Verifying structured error responses
+
+Testing ensures that every tool can be safely consumed by the MCP Gateway and AI Service.
+
+---
+
+# ✅ Deliverables
+
+By the end of this episode, you will have:
+
+- ✅ Filesystem MCP Tools implemented
+- ✅ Read File tool
+- ✅ List Directory tool
+- ✅ File Exists tool
+- ✅ File Metadata tool
+- ✅ Tool input and output validation
+- ✅ Secure filesystem access
+- ✅ Tested and reusable MCP tools
+
+---
+
+# 🚀 Next Episode
+
+## Milestone 5.3.3 – Connecting the Filesystem MCP Server to the MCP Gateway
+
+In the next episode, we will integrate the Filesystem MCP Server with the **MCP Gateway**.
+
+We will learn how to:
+
+- Register the Filesystem MCP Server
+- Discover available tools
+- Route requests through the Gateway
+- Execute tools using the MCP Client
+- Handle responses and errors
+- Verify end-to-end communication between the AI Service and the Filesystem MCP Server
+
+After completing the next episode, our backend will be capable of executing real filesystem operations through the MCP Gateway, preparing the AI assistant for full project analysis.
+
+
+5.3.3 – Connecting the Filesystem Server to the MCP Gateway
+
+# 📂 Milestone 5.3.3 – Connecting the Filesystem MCP Server to the MCP Gateway
+
+## 🎥 Episode 5.3.3
+
+---
+
+# 📌 Goal
+
+In the previous episode, we built the **Filesystem MCP Server** and implemented its first set of filesystem tools. Although the server is fully functional, it is not yet integrated with our application's MCP infrastructure.
+
+In this episode, we will connect the **Filesystem MCP Server** to the **MCP Gateway**, allowing our backend to discover available tools, route requests, execute tool calls, and return results to the AI Service.
+
+By the end of this episode, our AI-powered Full Stack Developer Assistant will have a complete end-to-end communication pipeline between the AI Service, the MCP Gateway, and the Filesystem MCP Server.
+
+---
+
+# 📚 Topics Covered
+
+- Connecting the Filesystem MCP Server
+- Registering the Server with the Gateway
+- MCP Client Initialization
+- Server Discovery
+- Tool Discovery
+- Request Routing
+- Tool Execution
+- Response Handling
+- Error Handling
+- Connection Lifecycle
+- End-to-End Communication
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this episode, you will understand:
+
+- How the MCP Gateway communicates with MCP Servers
+- How to register an MCP Server
+- How the Gateway discovers available tools
+- How tool requests are routed
+- How responses are returned to the AI Service
+- How connection failures are handled
+- How to build a scalable multi-server architecture
+
+---
+
+# 🏗 Updated Architecture
+
+```text
+                    Chrome Extension
+                           │
+                           ▼
+                    Express Backend
+                           │
+                           ▼
+                      AI Controller
+                           │
+                           ▼
+                       AI Service
+                           │
+                           ▼
+                      MCP Gateway
+                           │
+                    MCP Client Layer
+                           │
+                           ▼
+                Filesystem MCP Server
+                           │
+     ┌───────────────┬───────────────┬───────────────┐
+     ▼               ▼               ▼               ▼
+ Read File     List Directory    File Exists   File Metadata
+                           │
+                           ▼
+                  Local Project Files
+```
+
+The MCP Gateway is now responsible for managing communication between the AI Service and the Filesystem MCP Server.
+
+---
+
+# 🔗 Registering the Filesystem MCP Server
+
+The first step is to register the Filesystem MCP Server with the Gateway.
+
+During application startup:
+
+1. The Filesystem MCP Server starts.
+2. The Gateway creates an MCP Client.
+3. The client establishes a connection.
+4. The Gateway stores the server in the Server Registry.
+5. The server becomes available for tool execution.
+
+```text
+Application Starts
+        │
+        ▼
+Initialize Gateway
+        │
+        ▼
+Start Filesystem Server
+        │
+        ▼
+Create MCP Client
+        │
+        ▼
+Register Server
+        │
+        ▼
+Gateway Ready
+```
+
+This registration process allows the Gateway to manage the server throughout its lifecycle.
+
+---
+
+# 🔍 Tool Discovery
+
+After the connection is established, the Gateway retrieves the list of tools exposed by the Filesystem MCP Server.
+
+Example tools:
+
+- Read File
+- List Directory
+- File Exists
+- File Metadata
+
+The Gateway stores this information in the **Server Registry**, enabling it to determine which server should handle a specific request.
+
+---
+
+# 🔄 Request Routing
+
+Whenever the AI Service needs external information, it sends the request to the Gateway.
+
+The Gateway:
+
+- Identifies the appropriate MCP Server
+- Selects the requested tool
+- Sends the tool request
+- Waits for the result
+- Returns the response to the AI Service
+
+```text
+AI Service
+      │
+      ▼
+MCP Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Execute Tool
+      │
+      ▼
+Return Result
+      │
+      ▼
+Gateway
+      │
+      ▼
+AI Service
+```
+
+This routing mechanism ensures that the AI Service remains independent of individual MCP Server implementations.
+
+---
+
+# 📤 Response Handling
+
+After a tool completes its work, the Filesystem MCP Server returns a structured response to the Gateway.
+
+The Gateway:
+
+- Validates the response
+- Handles any errors
+- Logs the operation
+- Returns the result to the AI Service
+
+The AI Service can then include the tool output as context when communicating with the language model.
+
+---
+
+# ⚠ Error Handling
+
+Reliable communication requires robust error handling.
+
+Common scenarios include:
+
+- Server unavailable
+- Connection timeout
+- Tool not found
+- Invalid tool arguments
+- File not found
+- Permission denied
+- Unexpected server error
+
+The Gateway will standardize these errors before returning them to the AI Service, ensuring consistent behavior across all MCP Servers.
+
+---
+
+# 🔄 Connection Lifecycle
+
+The Gateway manages the entire lifecycle of the Filesystem MCP Server.
+
+```text
+Created
+    │
+    ▼
+Connecting
+    │
+    ▼
+Connected
+    │
+    ▼
+Registered
+    │
+    ▼
+Available
+    │
+    ▼
+Disconnected
+    │
+    ▼
+Reconnect
+```
+
+This lifecycle management ensures that the server remains available and can recover from temporary failures.
+
+---
+
+# 📂 Updated Project Structure
+
+```text
+src/
+│
+├── mcp/
+│
+├── gateway/
+│   └── gateway.ts
+│
+├── registry/
+│   └── registry.ts
+│
+├── client/
+│   └── mcpClient.ts
+│
+├── servers/
+│   └── filesystem/
+│       ├── filesystem.server.ts
+│       ├── filesystem.tools.ts
+│       ├── filesystem.service.ts
+│       └── index.ts
+│
+└── ...
+```
+
+The Gateway, Client, Registry, and Filesystem Server now work together as a complete MCP communication layer.
+
+---
+
+# 🧪 End-to-End Communication
+
+With the integration complete, a typical request flows as follows:
+
+```text
+User asks:
+Explain package.json
+
+        │
+        ▼
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Read package.json
+        │
+        ▼
+Return File Content
+        │
+        ▼
+AI Service
+        │
+        ▼
+LLM Generates Response
+        │
+        ▼
+User
+```
+
+This demonstrates a complete Model Context Protocol workflow, where external tools provide real project context to the AI assistant.
+
+---
+
+# ✅ Deliverables
+
+By the end of this episode, you will have:
+
+- ✅ Filesystem MCP Server registered with the Gateway
+- ✅ MCP Client connected to the server
+- ✅ Tool discovery implemented
+- ✅ Request routing through the Gateway
+- ✅ Structured response handling
+- ✅ Centralized error handling
+- ✅ End-to-end communication between the AI Service and the Filesystem MCP Server
+
+---
+
+# 🚀 Next Episode
+
+## Milestone 5.3.4 – AI Integration & End-to-End Testing
+
+In the final episode of this milestone, we will integrate the MCP Gateway with our **AI Service** and verify the complete workflow.
+
+We will:
+
+- Connect the AI Service to the MCP Gateway
+- Invoke Filesystem MCP tools based on user prompts
+- Pass tool results to the LLM as additional context
+- Generate context-aware responses using real project data
+- Test the complete workflow from the Chrome Extension to the AI model
+
+By the end of the episode, our AI-powered Full Stack Developer Assistant will be able to analyze real project files and provide intelligent, context-aware development assistance through the Model Context Protocol.
+
+
+5.3.4 – End-to-End Testing with the AI Assistant
+
+# 📂 Milestone 5.3.4 – End-to-End Testing with the AI Assistant
+
+## 🎥 Episode 5.3.4
+
+---
+
+# 📌 Goal
+
+In the previous episodes, we:
+
+- Built the **Filesystem MCP Server**
+- Implemented filesystem tools
+- Connected the server to the **MCP Gateway**
+
+In this final episode, we will integrate everything with our **AI-powered Full Stack Developer Assistant** and perform complete end-to-end testing.
+
+The objective is to verify that a user's request can travel from the **Chrome Extension** to the **Express Backend**, through the **AI Service**, into the **MCP Gateway**, execute a tool on the **Filesystem MCP Server**, and return the result back to the user.
+
+By the end of this episode, our assistant will be capable of answering questions using **real project files** instead of relying only on the language model.
+
+---
+
+# 📚 Topics Covered
+
+- Integrating the AI Service with the MCP Gateway
+- Executing MCP Tools from AI Requests
+- Passing Tool Results to the LLM
+- Prompt Augmentation
+- End-to-End Communication
+- Error Handling
+- Logging
+- Performance Considerations
+- Demonstration and Testing
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this episode, you will understand:
+
+- How the AI Service invokes MCP tools
+- How tool results become part of the LLM prompt
+- How the MCP Gateway supports AI reasoning
+- How to test the complete MCP workflow
+- How to troubleshoot MCP communication issues
+- Best practices for integrating AI with external tools
+
+---
+
+# 🏗 Final Architecture
+
+```text
+                    Chrome Extension
+                           │
+                           ▼
+                    Express Backend
+                           │
+                           ▼
+                     AI Controller
+                           │
+                           ▼
+                       AI Service
+                           │
+                           ▼
+                      MCP Gateway
+                           │
+                           ▼
+                Filesystem MCP Server
+                           │
+     ┌───────────────┬───────────────┬───────────────┐
+     ▼               ▼               ▼               ▼
+ Read File     List Directory    File Exists   File Metadata
+                           │
+                           ▼
+                  Local Project Files
+                           │
+                           ▼
+                    Tool Response
+                           │
+                           ▼
+                      AI Service
+                           │
+                           ▼
+                        Ollama LLM
+                           │
+                           ▼
+                    Context-Aware Response
+```
+
+This completes our first end-to-end MCP integration.
+
+---
+
+# 🔄 Complete Request Flow
+
+The following diagram illustrates how a user request is processed.
+
+```text
+User
+
+│
+
+▼
+
+Chrome Extension
+
+│
+
+▼
+
+Express Backend
+
+│
+
+▼
+
+AI Controller
+
+│
+
+▼
+
+AI Service
+
+│
+
+▼
+
+Determine Required Tool
+
+│
+
+▼
+
+MCP Gateway
+
+│
+
+▼
+
+Filesystem MCP Server
+
+│
+
+▼
+
+Execute Tool
+
+│
+
+▼
+
+Return Structured Result
+
+│
+
+▼
+
+AI Service
+
+│
+
+▼
+
+Build Final Prompt
+
+│
+
+▼
+
+Ollama
+
+│
+
+▼
+
+Generate Response
+
+│
+
+▼
+
+Chrome Extension
+
+│
+
+▼
+
+User
+```
+
+---
+
+# 🤖 Prompt Augmentation
+
+Instead of sending only the user's prompt to the language model, the AI Service will enrich the prompt with information returned by the Filesystem MCP Server.
+
+Example:
+
+**User Prompt**
+
+```text
+Explain my package.json
+```
+
+The AI Service performs the following steps:
+
+1. Detect that a filesystem tool is required.
+2. Request the `Read File` tool through the MCP Gateway.
+3. Receive the contents of `package.json`.
+4. Combine the user's question with the retrieved file content.
+5. Send the enriched prompt to the LLM.
+6. Return a context-aware response.
+
+This approach significantly improves the quality and accuracy of the AI's answers.
+
+---
+
+# 🧪 End-to-End Test Scenarios
+
+We will validate the complete workflow using real-world examples.
+
+### Test 1 – Read README.md
+
+**User Prompt**
+
+```text
+Explain the README.md file.
+```
+
+Expected Result:
+
+- Filesystem MCP Server reads the file.
+- AI explains the project documentation.
+
+---
+
+### Test 2 – Explain package.json
+
+**User Prompt**
+
+```text
+Explain my package.json.
+```
+
+Expected Result:
+
+- Read File tool executes.
+- AI explains scripts, dependencies, and project metadata.
+
+---
+
+### Test 3 – List Source Files
+
+**User Prompt**
+
+```text
+Show the project structure.
+```
+
+Expected Result:
+
+- List Directory tool executes.
+- AI summarizes the project layout.
+
+---
+
+### Test 4 – Missing File
+
+**User Prompt**
+
+```text
+Explain docker-compose.yml.
+```
+
+Expected Result:
+
+- File Exists tool checks for the file.
+- If the file is missing, the AI returns a helpful message instead of failing.
+
+---
+
+### Test 5 – Invalid Path
+
+Attempt to access a restricted or invalid path.
+
+Expected Result:
+
+- Request is rejected.
+- Gateway returns a structured error.
+- AI explains that access is not permitted.
+
+---
+
+# 📊 Logging and Monitoring
+
+During testing, we will verify that each component logs useful information.
+
+Example logs include:
+
+- MCP Gateway startup
+- Filesystem Server registration
+- Tool execution
+- Request routing
+- Response time
+- Error details
+- Connection status
+
+These logs simplify debugging and help monitor the health of the MCP infrastructure.
+
+---
+
+# ⚠ Error Handling
+
+The complete workflow should gracefully handle situations such as:
+
+- MCP Server unavailable
+- Connection timeout
+- Tool execution failure
+- Invalid tool arguments
+- File not found
+- Permission denied
+- Unexpected server errors
+
+The Gateway will normalize these errors before returning them to the AI Service, ensuring consistent behavior for the user.
+
+---
+
+# 🎯 Expected Outcome
+
+After completing this episode, our AI assistant will be able to:
+
+- Read real project files
+- Explore project directories
+- Access filesystem metadata
+- Use MCP tools during conversations
+- Generate responses based on actual project data
+- Deliver significantly more accurate and context-aware assistance
+
+This represents the first major step toward transforming our assistant into an intelligent software development companion.
+
+---
+
+# ✅ Deliverables
+
+By the end of this episode, you will have:
+
+- ✅ AI Service integrated with the MCP Gateway
+- ✅ Filesystem MCP tools invoked automatically
+- ✅ Tool results included in LLM prompts
+- ✅ End-to-end communication verified
+- ✅ Comprehensive testing completed
+- ✅ Logging and error handling validated
+- ✅ Production-ready MCP workflow for filesystem operations
+
+---
+
+# 🗺️ Roadmap for Building the MCP Integration
+
+Instead of simply following the official MCP examples, we will design and implement a **production-ready architecture** tailored to our **AI-powered Full Stack Developer Assistant**.
+
+Our goal is to build a scalable MCP infrastructure that can easily integrate multiple developer tools without requiring changes to the AI Service.
+
+---
+
+# 🏗️ High-Level Architecture
+
+```text
+Chrome Extension
+        │
+        ▼
+Express API
+        │
+        ▼
+AI Controller
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+ ┌──────┼───────────────┐
+ ▼      ▼               ▼
+
+Filesystem    GitHub    Docker
+        │
+        ▼
+Local Project
+```
+
+This architecture enables us to integrate additional MCP Servers such as:
+
+- GitHub
+- Docker
+- Kubernetes
+- PostgreSQL
+- MongoDB
+- Redis
+- AWS
+- Azure
+
+without modifying the **AI Service**.
+
+---
+
+# 🚀 Complete Milestone 5.3
+
+Throughout this milestone, we will implement approximately **2,000–2,500 lines of production-quality TypeScript**, building a complete MCP infrastructure that integrates seamlessly with our existing backend.
+
+---
+
+# 📦 Part 1 – Foundation
+
+The first step is to build the core MCP infrastructure.
+
+We will:
+
+- Install the MCP SDK
+- Create the `mcp/` module
+- Implement the MCP Gateway
+- Build the Server Registry
+- Add centralized configuration
+- Define shared types
+- Create a logging module
+- Implement a Health Monitor
+
+These components form the foundation for all future MCP integrations.
+
+---
+
+# 🔗 Part 2 – MCP Client
+
+Next, we will implement the MCP Client responsible for communicating with MCP Servers.
+
+Features include:
+
+- MCP Client
+- Connection Manager
+- Server Discovery
+- Tool Discovery
+- Automatic Reconnection
+- Timeout Handling
+
+This layer abstracts communication with external MCP Servers.
+
+---
+
+# 📂 Part 3 – Filesystem MCP Server
+
+We will then build our first production-ready MCP Server.
+
+Files include:
+
+```text
+filesystem.server.ts
+
+filesystem.service.ts
+
+filesystem.types.ts
+
+filesystem.constants.ts
+
+index.ts
+```
+
+This server will expose filesystem capabilities through the Model Context Protocol.
+
+---
+
+# 🛠️ Part 4 – Filesystem Tools
+
+After creating the server, we will implement the first set of developer tools.
+
+These include:
+
+- 📄 Read File
+- 📂 List Directory
+- ✅ File Exists
+- 📊 File Metadata
+- 🔍 Search Files
+- 📑 Read Multiple Files
+- 🌳 Project Tree
+
+These tools provide the AI assistant with access to real project data.
+
+---
+
+# 🔀 Part 5 – Gateway Integration
+
+Once the Filesystem MCP Server is complete, we will integrate it with the MCP Gateway.
+
+The execution flow becomes:
+
+```text
+Gateway
+    │
+    ▼
+Registry
+    │
+    ▼
+Filesystem Server
+    │
+    ▼
+Tool Execution
+```
+
+The Gateway will automatically discover registered servers and route tool requests appropriately.
+
+---
+
+# 🤖 Part 6 – AI Integration
+
+Currently, the AI Service sends user prompts directly to the language model.
+
+```typescript
+const response = await ollama.chat(prompt);
+```
+
+After integrating MCP, the workflow becomes:
+
+```text
+User Prompt
+        │
+        ▼
+AI Service
+        │
+        ▼
+Determine if MCP Tool is Required
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem Tool
+        │
+        ▼
+Tool Result
+        │
+        ▼
+Append Context to Prompt
+        │
+        ▼
+LLM (Ollama)
+        │
+        ▼
+Streaming Response
+```
+
+Instead of relying solely on the LLM, the AI Service will first retrieve relevant project information through MCP tools and include it as additional context.
+
+---
+
+# 🧪 Part 7 – End-to-End Testing
+
+Finally, we will test the complete workflow from the Chrome Extension to the MCP Server.
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Tool
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+AI Service
+        │
+        ▼
+Chrome Extension
+```
+
+This confirms that the AI assistant can successfully use MCP tools to retrieve project information and generate context-aware responses.
+
+---
+
+# 📁 Backend Refactoring
+
+To support future growth, we will refactor the backend into a modular and scalable structure.
+
+```text
+src/
+│
+├── controllers/
+├── routes/
+├── services/
+├── ai/
+├── mcp/
+│   ├── gateway/
+│   ├── registry/
+│   ├── client/
+│   ├── servers/
+│   │   └── filesystem/
+│   ├── tools/
+│   ├── types/
+│   ├── config/
+│   ├── logger/
+│   ├── health/
+│   └── utils/
+│
+└── server.ts
+```
+
+This structure allows us to add new MCP Servers without impacting the rest of the application.
+
+---
+
+# ⭐ Production Features
+
+Rather than building a basic proof of concept, we will implement a production-ready MCP infrastructure with features such as:
+
+- ✅ Singleton MCP Gateway
+- ✅ Dynamic Server Registration
+- ✅ Automatic Tool Discovery
+- ✅ Type-safe Tool Execution
+- ✅ Structured Logging
+- ✅ Health Monitoring
+- ✅ Automatic Retry Logic
+- ✅ Connection Pooling (where applicable)
+- ✅ Workspace Restrictions
+- ✅ Path Validation
+- ✅ Centralized Error Handling
+- ✅ Configuration Management
+- ✅ Environment-based Configuration
+
+These features ensure that the architecture is robust, maintainable, and ready for real-world development.
+
+---
+
+# 🔮 Future MCP Servers
+
+Once the foundation is complete, integrating a new MCP Server becomes straightforward.
+
+```text
+GitHub Server
+      │
+      ▼
+Register with Gateway
+      │
+      ▼
+Ready to Use
+```
+
+The same approach can be applied to additional servers, including:
+
+- GitHub
+- Docker
+- Kubernetes
+- PostgreSQL
+- MongoDB
+- Redis
+- AWS
+- Azure
+
+Because all communication is centralized through the MCP Gateway, **no changes will be required in the AI Service** when new MCP Servers are added.
+
+---
+
+# 🎯 Expected Outcome
+
+By the end of Milestone 5.3, we will have a fully functional, production-ready MCP integration that:
+
+- Connects our AI Service to external developer tools
+- Supports multiple MCP Servers through a centralized Gateway
+- Executes tools securely and efficiently
+- Enriches LLM prompts with real project context
+- Provides a scalable foundation for future integrations
+- Prepares our AI-powered Full Stack Developer Assistant for advanced project analysis and intelligent development workflows
+
+
+
+# 🚀 Next Milestone
+
+## 📂 Milestone 5.4 – Building Custom MCP Developer Tools
+
+With the Filesystem MCP Server successfully integrated, the next step is to build **intelligent developer-focused MCP tools**.
+
+Instead of exposing only generic filesystem operations, we will create specialized tools that understand software projects and assist developers more effectively.
+
+These tools will include:
+
+- 🔍 Search Project Files
+- 📌 Find TODO and FIXME Comments
+- 📄 Read and Explain Source Code
+- 📦 Analyze Project Dependencies
+- 🏗 Detect Project Architecture
+- 🌐 Identify Frameworks and Technologies
+- 🧠 Generate Project Summaries
+- 🛠 Explain Configuration Files
+
+By the end of the next milestone, our AI-powered Full Stack Developer Assistant will evolve from a filesystem-aware assistant into a project-aware AI capable of understanding, analyzing, and reasoning about complete software projects.
+
+This keeps each episode focused, easier to follow, and aligns well with the structure you've used in the earlier milestones.
+
+
+# 📦 Part 1 – Foundation
+
+The first step in building our **Model Context Protocol (MCP)** integration is to establish a strong and scalable foundation. Rather than jumping directly into implementing MCP Servers, we will first create the core infrastructure that will support communication between our AI Service and multiple external developer tools.
+
+This foundation is designed with production-ready architecture in mind, making it easy to add new MCP Servers such as **Filesystem**, **GitHub**, **Docker**, **Kubernetes**, **PostgreSQL**, **MongoDB**, and many others without requiring major changes to the application.
+
+By the end of this part, our backend will have all the essential building blocks required to manage MCP Servers efficiently.
+
+---
+
+## 🎯 Objectives
+
+During this phase, we will:
+
+- Install the official MCP SDK
+- Create a dedicated `mcp/` module
+- Implement the MCP Gateway
+- Build the Server Registry
+- Add centralized configuration
+- Define shared types and interfaces
+- Create a structured logging module
+- Implement a Health Monitor
+
+Together, these components form the backbone of our MCP infrastructure.
+
+---
+
+## 📦 Install the MCP SDK
+
+The first step is to install the official **Model Context Protocol SDK**, which provides the APIs required to create MCP Clients and MCP Servers.
+
+```bash
+npm install @modelcontextprotocol/sdk
+```
+
+This SDK will be used throughout the remainder of the project to establish communication between our backend and external developer tools.
+
+---
+
+## 📁 Create the MCP Module
+
+To keep the project modular and maintainable, we will create a dedicated **MCP module** inside our backend.
+
+```text
+src/
+│
+├── mcp/
+│   ├── gateway/
+│   ├── registry/
+│   ├── client/
+│   ├── config/
+│   ├── health/
+│   ├── logger/
+│   ├── servers/
+│   ├── tools/
+│   ├── types/
+│   └── utils/
+│
+└── ...
+```
+
+Keeping all MCP-related code inside a single module makes the application easier to maintain and extend as additional MCP Servers are introduced.
+
+---
+
+## 🚪 Implement the MCP Gateway
+
+The **MCP Gateway** serves as the central entry point for all MCP communication.
+
+Instead of allowing the AI Service to connect directly to individual MCP Servers, every request will pass through the Gateway.
+
+Its responsibilities include:
+
+- Managing MCP Clients
+- Routing tool requests
+- Discovering available tools
+- Selecting the appropriate MCP Server
+- Handling communication errors
+- Monitoring server status
+
+This design keeps the AI Service focused on orchestration while the Gateway manages all MCP-specific responsibilities.
+
+---
+
+## 📚 Build the Server Registry
+
+As more MCP Servers are added, the backend needs a centralized location to track them.
+
+The **Server Registry** will maintain information such as:
+
+- Registered servers
+- Connection status
+- Supported tools
+- Transport type
+- Server metadata
+- Health information
+
+Instead of hardcoding server references, the Gateway will query the Registry to discover and interact with available servers.
+
+---
+
+## ⚙️ Add Centralized Configuration
+
+Configuration should never be scattered throughout the codebase.
+
+We will introduce a centralized configuration layer responsible for managing settings such as:
+
+- Server names
+- Transport type
+- Connection timeout
+- Retry policy
+- Health check interval
+- Logging options
+- Environment-specific settings
+
+Centralized configuration simplifies deployment across development, testing, and production environments.
+
+---
+
+## 🧩 Define Shared Types
+
+Strong typing is essential for building a reliable MCP infrastructure.
+
+We will define reusable TypeScript interfaces and types for:
+
+- MCP Server
+- MCP Client
+- Gateway configuration
+- Tool definitions
+- Tool requests
+- Tool responses
+- Server metadata
+- Health status
+
+Using shared types improves consistency, reduces errors, and enhances the developer experience.
+
+---
+
+## 📝 Create a Logging Module
+
+A dedicated logging module will provide visibility into the internal behavior of the MCP infrastructure.
+
+The logger will record events such as:
+
+- Server startup
+- Server registration
+- Connection attempts
+- Tool execution
+- Request routing
+- Response times
+- Warnings
+- Errors
+
+Structured logging will make debugging and monitoring significantly easier as the system grows.
+
+---
+
+## ❤️ Implement a Health Monitor
+
+To ensure reliability, we will build a Health Monitor responsible for tracking the status of every registered MCP Server.
+
+The Health Monitor will:
+
+- Verify server availability
+- Detect disconnected servers
+- Monitor connection health
+- Trigger reconnection when necessary
+- Report server status to the Gateway
+
+Typical server states include:
+
+- 🟢 Healthy
+- 🟡 Degraded
+- 🔴 Disconnected
+- ⚫ Unavailable
+
+This allows the backend to react gracefully to failures and maintain stable communication with external tools.
+
+---
+
+## 🏗️ Foundation Architecture
+
+After completing Part 1, our backend architecture will look like this:
+
+```text
+                    Chrome Extension
+                           │
+                           ▼
+                     Express Backend
+                           │
+                           ▼
+                       AI Service
+                           │
+                           ▼
+                      MCP Gateway
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+   Server Registry     Health Monitor     Logger
+                           │
+                           ▼
+                    MCP Infrastructure
+```
+
+At this stage, the infrastructure is in place and ready to support one or more MCP Servers.
+
+---
+
+## ✅ Expected Outcome
+
+By the end of **Part 1 – Foundation**, we will have:
+
+- ✅ Official MCP SDK installed
+- ✅ Dedicated `mcp/` module created
+- ✅ Production-ready MCP Gateway
+- ✅ Server Registry implemented
+- ✅ Centralized configuration system
+- ✅ Shared TypeScript definitions
+- ✅ Structured logging module
+- ✅ Health monitoring infrastructure
+
+This foundation prepares our backend for implementing the first **Filesystem MCP Server** and makes it straightforward to add additional MCP Servers in future milestones.
+
+we'll implement Part 1
+
+We'll create a production-ready MCP infrastructure.
+
+Step 1 – Install MCP SDK
+
+Files updated:
+
+package.json
+
+Step 2 – Create the MCP Module
+src/
+└── mcp/
+    ├── config/
+    ├── gateway/
+    ├── registry/
+    ├── logger/
+    ├── health/
+    ├── types/
+    ├── utils/
+    └── index.ts
+
+Step 3 – Shared Types
+
+We'll define:
+
+MCPServer
+MCPTool
+GatewayConfig
+ServerMetadata
+ToolRequest
+ToolResponse
+HealthStatus
+
+
+# 📂 Folder Structure
+
+```text
+src/
+│
+└── mcp/
+    │
+    ├── types/
+    │   ├── gateway.types.ts
+    │   ├── server.types.ts
+    │   ├── tool.types.ts
+    │   ├── health.types.ts
+    │   ├── config.types.ts
+    │   └── index.ts
+```
+
+
+
+Step 4 – Configuration
+
+We'll centralize:
+
+Timeouts
+Retry policy
+Health check interval
+Logging
+Transport
+Default server settings
+
+# ⚙️ Step 4 – Configuration
+
+## 📌 Goal
+
+In this step, we will create a centralized configuration system for the entire MCP infrastructure.
+
+Instead of scattering configuration values throughout the codebase, all MCP-related settings will be stored in a dedicated configuration module.
+
+This makes the application easier to maintain, test, and extend as additional MCP Servers are introduced.
+
+---
+
+# 📂 Folder Structure
+
+```text
+src/
+│
+└── mcp/
+    │
+    ├── config/
+    │   ├── gateway.config.ts
+    │   ├── server.config.ts
+    │   ├── logger.config.ts
+    │   ├── transport.config.ts
+    │   └── index.ts
+```
+
+---
+
+# 1️⃣ Gateway Configuration
+
+**File**
+
+```text
+src/mcp/config/gateway.config.ts
+```
+
+```ts
+export const gatewayConfig = {
+
+    timeout: 30_000,
+
+    retryAttempts: 3,
+
+    retryDelay: 2_000,
+
+    healthCheckInterval: 30_000,
+
+    autoReconnect: true,
+
+    enableLogging: true
+
+} as const;
+```
+
+This configuration controls the overall behavior of the MCP Gateway.
+
+---
+
+# 2️⃣ Transport Configuration
+
+**File**
+
+```text
+src/mcp/config/transport.config.ts
+```
+
+```ts
+export const transportConfig = {
+
+    defaultTransport: "stdio",
+
+    supportedTransports: [
+
+        "stdio",
+
+        "http",
+
+        "websocket"
+
+    ]
+
+} as const;
+```
+
+Initially we will use **stdio**, while keeping the design ready for future HTTP or WebSocket transports.
+
+---
+
+# 3️⃣ Server Configuration
+
+**File**
+
+```text
+src/mcp/config/server.config.ts
+```
+
+```ts
+export const serverConfig = {
+
+    autoStart: true,
+
+    autoReconnect: true,
+
+    startupTimeout: 15_000,
+
+    shutdownTimeout: 5_000,
+
+    workspaceRoot: process.cwd()
+
+} as const;
+```
+
+These values define the default behavior for all registered MCP Servers.
+
+---
+
+# 4️⃣ Logger Configuration
+
+**File**
+
+```text
+src/mcp/config/logger.config.ts
+```
+
+```ts
+export const loggerConfig = {
+
+    level: "info",
+
+    enableConsole: true,
+
+    enableTimestamp: true,
+
+    enableColors: true
+
+} as const;
+```
+
+This configuration will be used by the MCP Logger.
+
+---
+
+# 5️⃣ Export Configuration
+
+**File**
+
+```text
+src/mcp/config/index.ts
+```
+
+```ts
+export * from "./gateway.config";
+
+export * from "./server.config";
+
+export * from "./transport.config";
+
+export * from "./logger.config";
+```
+
+Now every module can simply import configuration from one place.
+
+```ts
+import {
+
+    gatewayConfig,
+
+    serverConfig,
+
+    transportConfig
+
+} from "../config";
+```
+
+---
+
+# 📊 Configuration Overview
+
+| Configuration | Purpose |
+|---------------|---------|
+| `gatewayConfig` | Gateway behavior |
+| `transportConfig` | Communication transport |
+| `serverConfig` | Default server settings |
+| `loggerConfig` | Logging options |
+
+---
+
+# 🚀 Benefits
+
+This configuration layer provides:
+
+- ✅ Single source of truth
+- ✅ Easy maintenance
+- ✅ Environment-ready architecture
+- ✅ No hardcoded values
+- ✅ Consistent configuration across the MCP module
+- ✅ Simple onboarding of future MCP Servers
+
+---
+
+# ✅ Deliverables
+
+By the end of this step, you will have:
+
+- Centralized Gateway configuration
+- Centralized Server configuration
+- Transport configuration
+- Logger configuration
+- Re-exported configuration module
+
+The MCP infrastructure is now configurable and ready for implementing the Gateway, Registry, and Filesystem MCP Server.
+
+Step 5 – Logger
+
+A reusable logger with:
+
+Info
+Debug
+Warn
+Error
+
+that every MCP component uses.
+
+Here's an improved version.
+
+logger.types.ts
+export enum LogLevel {
+
+    DEBUG = "debug",
+
+    INFO = "info",
+
+    WARN = "warn",
+
+    ERROR = "error"
+
+}
+logger.config.ts
+import { LogLevel } from "../types";
+
+export const loggerConfig = {
+
+    level: LogLevel.INFO,
+
+    enableConsole: true,
+
+    enableTimestamp: true,
+
+    enableColors: true
+
+} as const;
+mcpLogger.ts
+import { loggerConfig } from "../config";
+import { LogLevel } from "../types";
+
+class MCPLogger {
+
+    private readonly logLevels: Record<LogLevel, number> = {
+
+        [LogLevel.DEBUG]: 0,
+
+        [LogLevel.INFO]: 1,
+
+        [LogLevel.WARN]: 2,
+
+        [LogLevel.ERROR]: 3
+
+    };
+
+    private shouldLog(level: LogLevel): boolean {
+
+        return this.logLevels[level] >= this.logLevels[loggerConfig.level];
+
+    }
+
+    private formatMessage(
+
+        level: LogLevel,
+
+        message: string
+
+    ): string {
+
+        const timestamp = loggerConfig.enableTimestamp
+
+            ? `[${new Date().toISOString()}] `
+
+            : "";
+
+        return `${timestamp}[${level.toUpperCase()}] ${message}`;
+
+    }
+
+    debug(message: string): void {
+
+        if (!this.shouldLog(LogLevel.DEBUG)) return;
+
+        console.debug(
+
+            this.formatMessage(
+
+                LogLevel.DEBUG,
+
+                message
+
+            )
+
+        );
+
+    }
+
+    info(message: string): void {
+
+        if (!this.shouldLog(LogLevel.INFO)) return;
+
+        console.info(
+
+            this.formatMessage(
+
+                LogLevel.INFO,
+
+                message
+
+            )
+
+        );
+
+    }
+
+    warn(message: string): void {
+
+        if (!this.shouldLog(LogLevel.WARN)) return;
+
+        console.warn(
+
+            this.formatMessage(
+
+                LogLevel.WARN,
+
+                message
+
+            )
+
+        );
+
+    }
+
+    error(
+
+        message: string,
+
+        error?: unknown
+
+    ): void {
+
+        if (!this.shouldLog(LogLevel.ERROR)) return;
+
+        console.error(
+
+            this.formatMessage(
+
+                LogLevel.ERROR,
+
+                message
+
+            ),
+
+            error
+
+        );
+
+    }
+
+}
+
+export default new MCPLogger();
+Why this version is better
+✅ Uses your shared LogLevel enum.
+✅ Properly filters logs based on the configured log level (INFO hides DEBUG, WARN hides INFO, etc.).
+✅ No hardcoded string comparisons.
+✅ Easy to extend with colors, file logging, or Winston/Pino later.
+✅ Production-ready and reusable across the entire MCP infrastructure.
+
+I also recommend enhancing it further in the next step by adding module names and request IDs, so logs
+
+Step 6 – Server Registry
+
+A registry that can:
+
+Register servers
+Remove servers
+Discover servers
+List tools
+Check server status
+
+# 📚 Step 6 – Server Registry
+
+## 📌 Goal
+
+As our AI-powered Full Stack Developer Assistant grows, it will interact with multiple MCP Servers such as:
+
+- Filesystem
+- GitHub
+- Docker
+- Kubernetes
+- PostgreSQL
+- MongoDB
+- Redis
+- AWS
+- Azure
+
+Instead of hardcoding these servers inside the Gateway, we will create a **Server Registry**.
+
+The Registry is responsible for maintaining a centralized list of all MCP Servers available to the application.
+
+It acts as the **single source of truth** for server discovery, registration, health status, and metadata.
+
+---
+
+the Server Registry, you'll need a few core types. I recommend keeping them in src/mcp/types/server.types.ts.
+
+export enum ServerStatus {
+
+    CREATED = "created",
+
+    CONNECTING = "connecting",
+
+    CONNECTED = "connected",
+
+    DISCONNECTED = "disconnected",
+
+    DEGRADED = "degraded",
+
+    UNAVAILABLE = "unavailable",
+
+    ERROR = "error"
+
+}
+
+export interface MCPTool {
+
+    /**
+     * Tool Name
+     * Example: readFile
+     */
+    name: string;
+
+    /**
+     * Tool Description
+     */
+    description: string;
+
+}
+
+export interface MCPServer {
+
+    /**
+     * Unique Server Id
+     */
+    id: string;
+
+    /**
+     * Display Name
+     */
+    name: string;
+
+    /**
+     * Server Version
+     */
+    version: string;
+
+    /**
+     * Transport Type
+     */
+    transport: string;
+
+    /**
+     * Current Status
+     */
+    status: ServerStatus;
+
+    /**
+     * Registered Tools
+     */
+    tools: MCPTool[];
+
+}
+
+# 📂 Folder Structure
+
+```text
+src/
+│
+└── mcp/
+    │
+    ├── registry/
+    │      ├── registry.ts
+    │      └── index.ts
+```
+
+---
+
+
+# registry.ts
+
+```ts
+import { logger } from "../logger";
+import {
+    MCPServer,
+    ServerStatus
+} from "../types";
+
+class MCPRegistry {
+
+    private readonly servers = new Map<string, MCPServer>();
+
+    /**
+     * Register a new MCP Server
+     */
+    register(server: MCPServer): void {
+
+        if (this.servers.has(server.id)) {
+
+            logger.warn(
+
+                `Server '${server.id}' is already registered.`
+
+            );
+
+            return;
+
+        }
+
+        this.servers.set(
+
+            server.id,
+
+            server
+
+        );
+
+        logger.info(
+
+            `Registered MCP Server: ${server.name}`
+
+        );
+
+    }
+
+    /**
+     * Remove Server
+     */
+    unregister(serverId: string): boolean {
+
+        const removed = this.servers.delete(serverId);
+
+        if (removed) {
+
+            logger.info(
+
+                `Removed MCP Server: ${serverId}`
+
+            );
+
+        }
+
+        return removed;
+
+    }
+
+    /**
+     * Get Server
+     */
+    get(serverId: string): MCPServer | undefined {
+
+        return this.servers.get(serverId);
+
+    }
+
+    /**
+     * Get All Servers
+     */
+    getAll(): MCPServer[] {
+
+        return [...this.servers.values()];
+
+    }
+
+    /**
+     * Discover Connected Servers
+     */
+    discover(): MCPServer[] {
+
+        return this.getAll().filter(
+
+            server =>
+
+                server.status === ServerStatus.CONNECTED
+
+        );
+
+    }
+
+    /**
+     * List Tools
+     */
+    getTools(serverId: string): string[] {
+
+        const server = this.get(serverId);
+
+        if (!server) {
+
+            return [];
+
+        }
+
+        return server.tools.map(
+
+            tool => tool.name
+
+        );
+
+    }
+
+    /**
+     * Check Server Status
+     */
+    getStatus(serverId: string): ServerStatus | null {
+
+        return this.get(serverId)?.status ?? null;
+
+    }
+
+    /**
+     * Update Server Status
+     */
+    updateStatus(
+
+        serverId: string,
+
+        status: ServerStatus
+
+    ): void {
+
+        const server = this.get(serverId);
+
+        if (!server) {
+
+            return;
+
+        }
+
+        server.status = status;
+
+        logger.info(
+
+            `${server.name} status → ${status}`
+
+        );
+
+    }
+
+    /**
+     * Check Registration
+     */
+    has(serverId: string): boolean {
+
+        return this.servers.has(serverId);
+
+    }
+
+    /**
+     * Remove Everything
+     */
+    clear(): void {
+
+        this.servers.clear();
+
+        logger.info(
+
+            "MCP Registry cleared."
+
+        );
+
+    }
+
+}
+
+export default new MCPRegistry();
+```
+
+---
+
+# index.ts
+
+```ts
+export { default as registry } from "./registry";
+```
+
+---
+
+# Example Usage
+
+## Register a Server
+
+```ts
+registry.register({
+
+    id: "filesystem",
+
+    name: "Filesystem",
+
+    version: "1.0.0",
+
+    transport: "stdio",
+
+    status: ServerStatus.CONNECTED,
+
+    tools: [
+
+        {
+
+            name: "readFile",
+
+            description: "Read project files"
+
+        }
+
+    ]
+
+});
+```
+
+---
+
+## Discover Servers
+
+```ts
+const servers = registry.discover();
+
+console.log(servers);
+```
+
+---
+
+## List Tools
+
+```ts
+const tools = registry.getTools(
+
+    "filesystem"
+
+);
+
+console.log(tools);
+```
+
+---
+
+## Check Status
+
+```ts
+const status = registry.getStatus(
+
+    "filesystem"
+
+);
+
+console.log(status);
+```
+
+---
+
+## Update Status
+
+```ts
+registry.updateStatus(
+
+    "filesystem",
+
+    ServerStatus.DISCONNECTED
+
+);
+```
+
+---
+
+# Architecture
+
+```text
+                   MCP Gateway
+                        │
+                        ▼
+                 MCP Registry
+                        │
+      ┌─────────────────┼─────────────────┐
+      ▼                 ▼                 ▼
+ Filesystem         GitHub            Docker
+      │                 │                 │
+      ▼                 ▼                 ▼
+   Registered       Registered       Registered
+```
+
+---
+
+# Responsibilities
+
+The MCP Registry is responsible for:
+
+- Registering MCP Servers
+- Removing Servers
+- Discovering Connected Servers
+- Maintaining Server Metadata
+- Listing Available Tools
+- Tracking Connection Status
+- Updating Health Information
+- Providing Server Lookup
+
+It does **not** execute tools or communicate directly with MCP Servers. Those responsibilities belong to the **MCP Gateway**.
+
+---
+
+# Deliverables
+
+By the end of this step, you will have:
+
+- ✅ Server Registry
+- ✅ Dynamic Server Registration
+- ✅ Server Discovery
+- ✅ Tool Discovery
+- ✅ Server Status Management
+- ✅ Metadata Lookup
+- ✅ Singleton Registry
+- ✅ Production-ready foundation for managing multiple MCP Servers
+
+Step 7 – MCP Gateway
+
+The Gateway will expose methods such as:
+
+registerServer()
+connect()
+disconnect()
+executeTool()
+discoverTools()
+healthCheck()
+
+Initially, these methods will provide the framework for later implementation.
+
+# 🚪 Step 7 – MCP Gateway
+
+## 📌 Goal
+
+The MCP Gateway acts as the single entry point for all communication between the AI Service and MCP Servers.
+
+Instead of interacting directly with Filesystem, GitHub, Docker, or Kubernetes servers, the AI Service communicates only with the Gateway.
+
+The Gateway is responsible for:
+
+- Registering servers
+- Connecting servers
+- Disconnecting servers
+- Executing tools
+- Discovering available tools
+- Monitoring server health
+
+---
+
+# 📂 Folder Structure
+
+```text
+src/
+└── mcp/
+    ├── gateway/
+    │     ├── gateway.ts
+    │     └── index.ts
+```
+
+---
+
+# gateway.ts
+
+```ts
+import registry from "../registry";
+
+import { logger } from "../logger";
+
+import {
+
+    MCPServer,
+
+    MCPTool,
+
+    ServerStatus,
+
+    ToolRequest,
+
+    ToolResponse
+
+} from "../types";
+
+class MCPGateway {
+
+    /**
+     * Register a new MCP Server
+     */
+    registerServer(
+
+        server: MCPServer
+
+    ): void {
+
+        registry.register(server);
+
+        logger.info(
+
+            `Gateway registered server: ${server.name}`
+
+        );
+
+    }
+
+    /**
+     * Connect Server
+     */
+    async connect(
+
+        serverId: string
+
+    ): Promise<boolean> {
+
+        const server = registry.get(serverId);
+
+        if (!server) {
+
+            logger.error(
+
+                `Server '${serverId}' not found.`
+
+            );
+
+            return false;
+
+        }
+
+        server.status = ServerStatus.CONNECTED;
+
+        logger.info(
+
+            `${server.name} connected.`
+
+        );
+
+        return true;
+
+    }
+
+    /**
+     * Disconnect Server
+     */
+    async disconnect(
+
+        serverId: string
+
+    ): Promise<boolean> {
+
+        const server = registry.get(serverId);
+
+        if (!server) {
+
+            return false;
+
+        }
+
+        server.status =
+
+            ServerStatus.DISCONNECTED;
+
+        logger.warn(
+
+            `${server.name} disconnected.`
+
+        );
+
+        return true;
+
+    }
+
+    /**
+     * Execute Tool
+     */
+    async executeTool(
+
+        request: ToolRequest
+
+    ): Promise<ToolResponse> {
+
+        const server = registry.get(
+
+            request.serverId
+
+        );
+
+        if (!server) {
+
+            return {
+
+                success: false,
+
+                error: "Server not found."
+
+            };
+
+        }
+
+        const tool = server.tools.find(
+
+            tool =>
+
+                tool.name === request.toolName
+
+        );
+
+        if (!tool) {
+
+            return {
+
+                success: false,
+
+                error: "Tool not found."
+
+            };
+
+        }
+
+        logger.info(
+
+            `Executing ${tool.name} on ${server.name}`
+
+        );
+
+        const result = await tool.execute(
+
+            request.arguments
+
+        );
+
+        return {
+
+            success: true,
+
+            data: result
+
+        };
+
+    }
+
+    /**
+     * Discover All Tools
+     */
+    discoverTools(): MCPTool[] {
+
+        return registry
+
+            .getAll()
+
+            .flatMap(
+
+                server => server.tools
+
+            );
+
+    }
+
+    /**
+     * Health Check
+     */
+    healthCheck() {
+
+        return registry
+
+            .getAll()
+
+            .map(server => ({
+
+                id: server.id,
+
+                name: server.name,
+
+                status: server.status
+
+            }));
+
+    }
+
+}
+
+export default new MCPGateway();
+```
+
+---
+
+# index.ts
+
+```ts
+export { default as gateway } from "./gateway";
+```
+
+---
+
+# Example Usage
+
+## Register a Server
+
+```ts
+gateway.registerServer(filesystemServer);
+```
+
+---
+
+## Connect
+
+```ts
+await gateway.connect(
+
+    "filesystem"
+
+);
+```
+
+---
+
+## Execute Tool
+
+```ts
+const response = await gateway.executeTool({
+
+    serverId: "filesystem",
+
+    toolName: "readFile",
+
+    arguments: {
+
+        path: "README.md"
+
+    }
+
+});
+```
+
+---
+
+## Discover Tools
+
+```ts
+const tools =
+
+    gateway.discoverTools();
+```
+
+---
+
+## Health Check
+
+```ts
+const health =
+
+    gateway.healthCheck();
+
+console.table(health);
+```
+
+---
+
+# Request Flow
+
+```text
+User
+ │
+ ▼
+Chrome Extension
+ │
+ ▼
+Express API
+ │
+ ▼
+AI Controller
+ │
+ ▼
+AI Service
+ │
+ ▼
+MCP Gateway
+ │
+ ├──────────────┐
+ ▼              ▼
+Registry   Health Monitor
+ │
+ ▼
+Filesystem MCP Server
+ │
+ ▼
+Tool Execution
+ │
+ ▼
+Gateway
+ │
+ ▼
+AI Service
+ │
+ ▼
+LLM
+ │
+ ▼
+Streaming Response
+```
+
+---
+
+# Responsibilities
+
+The MCP Gateway is responsible for:
+
+- Registering MCP Servers
+- Managing server connections
+- Discovering available tools
+- Executing tools
+- Monitoring server status
+- Forwarding requests
+- Logging Gateway activity
+
+The Gateway does **not** implement individual tools. Tool implementations remain inside their respective MCP Servers.
+
+---
+
+# Deliverables
+
+By the end of this step, you will have:
+
+- ✅ MCP Gateway
+- ✅ Server Registration
+- ✅ Connection Management
+- ✅ Tool Execution
+- ✅ Tool Discovery
+- ✅ Health Monitoring
+- ✅ Production-ready entry point for all MCP communication
+
+Recommended Improvement
+
+For your project, I recommend enhancing the Gateway in the next milestone by introducing dependency injection instead of directly importing the Registry:
+
+constructor(
+
+    private readonly registry: MCPRegistry,
+
+    private readonly logger: MCPLogger
+
+) {}
+
+This makes the Gateway easier to test, mock, and extend, especially as you integrate Filesystem, GitHub, Docker, Kubernetes, and additional MCP Servers. It's a common pattern in production-grade Node.js applications.
+
+
+
+Step 8 – Health Monitor
+
+We'll implement a monitor capable of:
+
+Tracking server status
+Running periodic health checks
+Detecting disconnects
+Preparing for automatic reconnection
+
+# ❤️ Step 8 – Health Monitor
+
+## 📌 Goal
+
+The Health Monitor is responsible for monitoring the health of all registered MCP Servers.
+
+As more MCP Servers are integrated into our AI-powered Full Stack Developer Assistant, we need a centralized mechanism to:
+
+- Track server status
+- Perform periodic health checks
+- Detect disconnected servers
+- Prepare for automatic reconnection
+
+Rather than every server monitoring itself, the Health Monitor provides a single service responsible for maintaining the health of the entire MCP ecosystem.
+
+---
+
+# 📂 Folder Structure
+
+```text
+src/
+└── mcp/
+    │
+    ├── health/
+    │     ├── healthMonitor.ts
+    │     └── index.ts
+```
+
+---
+
+# healthMonitor.ts
+
+```ts
+import registry from "../registry";
+import { logger } from "../logger";
+import {
+    gatewayConfig
+} from "../config";
+
+import {
+    ServerStatus
+} from "../types";
+
+class HealthMonitor {
+
+    private timer?: NodeJS.Timeout;
+
+    /**
+     * Start monitoring
+     */
+    start(): void {
+
+        if (this.timer) {
+
+            return;
+
+        }
+
+        logger.info(
+
+            "Health Monitor started."
+
+        );
+
+        this.timer = setInterval(
+
+            () => this.checkAllServers(),
+
+            gatewayConfig.healthCheckInterval
+
+        );
+
+    }
+
+    /**
+     * Stop monitoring
+     */
+    stop(): void {
+
+        if (!this.timer) {
+
+            return;
+
+        }
+
+        clearInterval(this.timer);
+
+        this.timer = undefined;
+
+        logger.info(
+
+            "Health Monitor stopped."
+
+        );
+
+    }
+
+    /**
+     * Check every registered server
+     */
+    private checkAllServers(): void {
+
+        const servers = registry.getAll();
+
+        for (const server of servers) {
+
+            this.checkServer(server.id);
+
+        }
+
+    }
+
+    /**
+     * Check a single server
+     */
+    private checkServer(
+
+        serverId: string
+
+    ): void {
+
+        const server = registry.get(serverId);
+
+        if (!server) {
+
+            return;
+
+        }
+
+        /**
+         * Future:
+         * Call the actual MCP ping/health endpoint.
+         */
+
+        const healthy =
+
+            server.status === ServerStatus.CONNECTED;
+
+        if (healthy) {
+
+            logger.debug(
+
+                `${server.name} is healthy.`
+
+            );
+
+            return;
+
+        }
+
+        logger.warn(
+
+            `${server.name} is disconnected.`
+
+        );
+
+        registry.updateStatus(
+
+            server.id,
+
+            ServerStatus.DISCONNECTED
+
+        );
+
+        if (gatewayConfig.autoReconnect) {
+
+            logger.info(
+
+                `Reconnect scheduled for ${server.name}`
+
+            );
+
+            /**
+             * Automatic reconnect
+             * will be implemented
+             * in a future milestone.
+             */
+        }
+
+    }
+
+}
+export default new HealthMonitor();
+```
+
+---
+
+# index.ts
+
+```ts
+export { default as healthMonitor } from "./healthMonitor";
+```
+
+---
+
+# Starting the Monitor
+
+```ts
+import { healthMonitor } from "./mcp/health";
+
+healthMonitor.start();
+```
+
+---
+
+# Stopping the Monitor
+
+```ts
+healthMonitor.stop();
+```
+
+---
+
+# Monitoring Flow
+
+```text
+Health Monitor
+
+        │
+
+        ▼
+
+Registry
+
+        │
+
+        ▼
+
+All Registered Servers
+
+        │
+
+        ▼
+
+Check Status
+
+        │
+
+ ┌──────┴──────────┐
+
+ ▼                 ▼
+
+Healthy      Disconnected
+
+ │                 │
+
+ ▼                 ▼
+
+Log OK      Update Status
+
+                  │
+
+                  ▼
+
+         Schedule Reconnect
+```
+
+---
+
+# Responsibilities
+
+The Health Monitor is responsible for:
+
+- Monitoring registered MCP Servers
+- Performing periodic health checks
+- Updating server status
+- Detecting disconnects
+- Logging server health
+- Preparing automatic reconnection
+
+It is **not** responsible for:
+
+- Executing MCP tools
+- Registering servers
+- Managing Gateway requests
+
+Those responsibilities belong to the Gateway and Registry.
+
+---
+
+# Deliverables
+
+By the end of this step, you will have:
+
+- ✅ Health Monitor
+- ✅ Periodic server monitoring
+- ✅ Status tracking
+- ✅ Disconnect detection
+- ✅ Auto-reconnect foundation
+- ✅ Production-ready monitoring infrastructure
+
+
+
+
+Step 9 – Bootstrap
+
+# 🚀 Step 9 – Bootstrap
+
+## 📌 Goal
+
+Now that we have implemented the core MCP infrastructure, we need a single place to initialize it.
+
+Instead of manually creating and wiring together the Gateway, Registry, Health Monitor, and future MCP Servers throughout the application, we will create an **MCP Bootstrap** module.
+
+The Bootstrap is responsible for:
+
+- Initializing the MCP infrastructure
+- Registering MCP Servers
+- Starting the Health Monitor
+- Preparing the Gateway
+- Managing application startup and shutdown
+
+This ensures the MCP module is fully initialized before it is used by the AI Service.
+
+---
+
+# 📂 Folder Structure
+
+```text
+src/
+└── mcp/
+    │
+    ├── bootstrap/
+    │     ├── bootstrap.ts
+    │     └── index.ts
+```
+
+---
+
+# bootstrap.ts
+
+```ts
+import gateway from "../gateway";
+import registry from "../registry";
+import healthMonitor from "../health";
+
+import { logger } from "../logger";
+
+class MCPBootstrap {
+
+    /**
+     * Initialize MCP Infrastructure
+     */
+    async initialize(): Promise<void> {
+
+        logger.info(
+
+            "Initializing MCP Infrastructure..."
+
+        );
+
+        /**
+         * Future:
+         * Register Filesystem Server
+         * Register GitHub Server
+         * Register Docker Server
+         */
+
+        logger.info(
+
+            `Registered Servers: ${registry.getAll().length}`
+
+        );
+
+        healthMonitor.start();
+
+        logger.info(
+
+            "MCP Infrastructure Ready."
+
+        );
+
+    }
+
+    /**
+     * Gracefully Shutdown
+     */
+    async shutdown(): Promise<void> {
+
+        logger.info(
+
+            "Stopping MCP Infrastructure..."
+
+        );
+
+        healthMonitor.stop();
+
+        logger.info(
+
+            "MCP Infrastructure Stopped."
+
+        );
+
+    }
+
+}
+
+export default new MCPBootstrap();
+```
+
+---
+
+# index.ts
+
+```ts
+export { default as bootstrap } from "./bootstrap";
+```
+
+---
+
+# Application Startup
+
+Example:
+
+```ts
+import express from "express";
+
+import bootstrap from "./mcp/bootstrap";
+
+const app = express();
+
+(async () => {
+
+    await bootstrap.initialize();
+
+    app.listen(
+
+        3000,
+
+        () => {
+
+            console.log(
+
+                "Server Started"
+
+            );
+
+        }
+
+    );
+
+})();
+```
+
+---
+
+# Graceful Shutdown
+
+```ts
+process.on(
+
+    "SIGINT",
+
+    async () => {
+
+        await bootstrap.shutdown();
+
+        process.exit(0);
+
+    }
+
+);
+
+process.on(
+
+    "SIGTERM",
+
+    async () => {
+
+        await bootstrap.shutdown();
+
+        process.exit(0);
+
+    }
+
+);
+```
+
+---
+
+# Startup Flow
+
+```text
+Application Starts
+        │
+        ▼
+MCP Bootstrap
+        │
+        ▼
+Initialize Gateway
+        │
+        ▼
+Initialize Registry
+        │
+        ▼
+Register MCP Servers
+        │
+        ▼
+Start Health Monitor
+        │
+        ▼
+Backend Ready
+```
+
+---
+
+# Responsibilities
+
+The Bootstrap is responsible for:
+
+- Initializing the MCP infrastructure
+- Starting background services
+- Registering MCP Servers
+- Starting the Health Monitor
+- Handling graceful shutdown
+
+It is **not** responsible for:
+
+- Executing MCP tools
+- Managing server metadata
+- Routing AI requests
+
+Those responsibilities belong to the Gateway and Registry.
+
+---
+
+# Deliverables
+
+By the end of this step, you will have:
+
+- ✅ MCP Bootstrap module
+- ✅ Centralized initialization
+- ✅ Health Monitor startup
+- ✅ Graceful shutdown support
+- ✅ Foundation for registering Filesystem, GitHub, Docker, and future MCP Servers
+
+We'll initialize the MCP infrastructure during backend startup so it's ready before any MCP servers are registered.
+
+
+Milestone 5.3 – Filesystem MCP Server
+🎯 Goal
+
+Build the first working MCP Server that enables the AI-powered Full Stack Developer Assistant to interact with local project files through the MCP Gateway.
+
+📚 Part 1 – Filesystem MCP Server Foundation
+
+We'll build the core server infrastructure.
+
+Files
+src/mcp/servers/filesystem/
+
+├── filesystem.server.ts
+├── filesystem.service.ts
+├── filesystem.tools.ts
+├── filesystem.constants.ts
+├── filesystem.types.ts
+├── index.ts
+Topics
+Filesystem Server
+Workspace restrictions
+Path validation
+Tool registration
+Server metadata
+Security
+
+# 📁 Part 1 – Filesystem MCP Server Foundation
+
+## 🎯 Goal
+
+In this part, we will build the foundation of our first **Model Context Protocol (MCP) Server**.
+
+This server will provide secure access to the local project workspace, allowing our AI-powered Full Stack Developer Assistant to retrieve real project information instead of relying solely on the Large Language Model (LLM).
+
+Rather than exposing the entire operating system, the Filesystem MCP Server will operate within a controlled workspace and expose a collection of developer-focused tools.
+
+---
+
+# 🏗 What We Will Build
+
+The Filesystem MCP Server will act as a bridge between our backend and the local file system.
+
+The architecture will look like this:
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Local Project Workspace
+```
+
+Whenever the AI assistant needs information about the project, it will request it through the MCP Gateway, which will forward the request to the Filesystem MCP Server.
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this part, you will understand:
+
+- How to build a custom MCP Server
+- How to organize the Filesystem MCP module
+- How MCP Servers expose developer tools
+- How to secure filesystem access
+- How workspace restrictions improve security
+- How path validation prevents unauthorized access
+- How tools are registered with an MCP Server
+- How server metadata is managed
+- How the Filesystem Server integrates with the MCP Gateway
+
+---
+
+# 📂 Folder Structure
+
+We will create a dedicated module for the Filesystem MCP Server.
+
+```text
+src/
+│
+└── mcp/
+    │
+    └── servers/
+        │
+        └── filesystem/
+            │
+            ├── filesystem.server.ts
+            ├── filesystem.service.ts
+            ├── filesystem.tools.ts
+            ├── filesystem.constants.ts
+            ├── filesystem.types.ts
+            └── index.ts
+```
+
+Each file has a single responsibility, making the implementation easier to maintain and extend.
+
+---
+
+# 📄 filesystem.server.ts
+
+This file represents the actual **Filesystem MCP Server**.
+
+Its responsibilities include:
+
+- Initializing the server
+- Registering available tools
+- Receiving tool execution requests
+- Validating incoming requests
+- Forwarding requests to the service layer
+- Returning tool responses
+- Logging execution
+
+This file acts as the public entry point for the Filesystem MCP module.
+
+```ts
+
+// src/mcp/servers/filesystem/filesystem.server.ts
+
+import { FilesystemService } from "./filesystem.service";
+import { FilesystemTools } from "./filesystem.tools";
+
+import {
+    MCPServer,
+    MCPTool,
+    ServerStatus,
+    ToolRequest,
+    ToolResponse
+} from "../../types";
+
+import { MCPLogger } from "../../logger/mcpLogger";
+
+export class FilesystemServer implements MCPServer {
+
+    public readonly id = "filesystem-server";
+
+    public readonly name = "Filesystem MCP Server";
+
+    public readonly version = "1.0.0";
+
+    public readonly transport = "local";
+
+    public status: ServerStatus = ServerStatus.DISCONNECTED;
+
+    private readonly tools = new Map<string, MCPTool>();
+
+    constructor(
+        private readonly filesystemService: FilesystemService,
+        private readonly filesystemTools: FilesystemTools
+    ) { }
+
+    /**
+     * Connect the server.
+     */
+    public async connect(): Promise<void> {
+
+        if (this.status === ServerStatus.CONNECTED) {
+            return;
+        }
+
+        this.status = ServerStatus.CONNECTING;
+
+        MCPLogger.info(
+            "Connecting Filesystem MCP Server..."
+        );
+
+        this.registerTools();
+
+        this.status = ServerStatus.CONNECTED;
+
+        MCPLogger.info(
+            "Filesystem MCP Server connected."
+        );
+    }
+
+    /**
+     * Disconnect the server.
+     */
+    public async disconnect(): Promise<void> {
+
+        this.tools.clear();
+
+        await this.filesystemService.dispose();
+
+        this.status = ServerStatus.DISCONNECTED;
+
+        MCPLogger.info(
+            "Filesystem MCP Server disconnected."
+        );
+    }
+
+    /**
+     * Register all filesystem tools.
+     */
+    private registerTools(): void {
+
+        const tools =
+            this.filesystemTools.getTools();
+
+        for (const tool of tools) {
+
+            this.tools.set(tool.name, tool);
+
+            MCPLogger.info(
+                `Registered MCP Tool: ${tool.name}`
+            );
+
+        }
+
+    }
+
+    /**
+     * Execute a tool.
+     */
+    public async executeTool(
+        request: ToolRequest
+    ): Promise<ToolResponse> {
+
+        const tool =
+            this.tools.get(request.tool);
+
+        if (!tool) {
+
+            return {
+
+                success: false,
+
+                error: `Unknown tool '${request.tool}'`
+
+            };
+
+        }
+
+        try {
+
+            MCPLogger.info(
+                `Executing Tool: ${tool.name}`
+            );
+
+            const result =
+                await tool.execute(request.arguments);
+
+            return {
+
+                success: true,
+
+                result
+
+            };
+
+        } catch (error) {
+
+            MCPLogger.error(
+
+                `Tool ${tool.name} failed`,
+
+                error
+
+            );
+
+            return {
+
+                success: false,
+
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Unknown error"
+
+            };
+
+        }
+
+    }
+
+    /**
+     * Discover all tools.
+     */
+    public discoverTools(): MCPTool[] {
+
+        return [...this.tools.values()];
+
+    }
+
+    /**
+     * Return server metadata.
+     */
+    public getMetadata() {
+
+        return {
+
+            id: this.id,
+
+            name: this.name,
+
+            version: this.version,
+
+            transport: this.transport,
+
+            status: this.status,
+
+            toolCount: this.tools.size,
+
+            workspace:
+                this.filesystemService.getWorkspaceRoot()
+
+        };
+
+    }
+
+    /**
+     * Health check.
+     */
+    public async healthCheck() {
+
+        return this.filesystemService.health();
+
+    }
+
+    /**
+     * Whether server is connected.
+     */
+    public isConnected(): boolean {
+
+        return this.status === ServerStatus.CONNECTED;
+
+    }
+
+    /**
+     * Tool existence.
+     */
+    public hasTool(
+        toolName: string
+    ): boolean {
+
+        return this.tools.has(toolName);
+
+    }
+
+    /**
+     * Get tool by name.
+     */
+    public getTool(
+        toolName: string
+    ): MCPTool | undefined {
+
+        return this.tools.get(toolName);
+
+    }
+
+    /**
+     * List tool names.
+     */
+    public listTools(): string[] {
+
+        return [...this.tools.keys()];
+
+    }
+
+    /**
+     * Initialize server.
+     */
+    public async initialize(): Promise<void> {
+
+        await this.connect();
+
+    }
+
+    /**
+     * Shutdown server.
+     */
+    public async shutdown(): Promise<void> {
+
+        await this.disconnect();
+
+    }
+
+}
+
+```
+
+---
+
+# 📄 filesystem.service.ts
+
+The service layer contains all business logic related to filesystem operations.
+
+Instead of placing filesystem logic directly inside the server, it is isolated within a dedicated service.
+
+Responsibilities include:
+
+- Reading files
+- Listing directories
+- Retrieving file metadata
+- Validating paths
+- Restricting workspace access
+- Handling filesystem errors
+
+This separation follows the **Single Responsibility Principle (SRP)** and makes the code easier to test.
+
+equential parts that together form one complete file:
+
+Part 1 – Foundation
+Part 2 – Core Operations
+Part 3 – Advanced Operations
+Part 4 – Helper Methods
+
+Each part is pure TypeScript code (no markdown), and when concatenated they become the complete filesystem.service.ts.
+
+Part 1 – Foundation
+```ts
+import fs from "fs";
+import path from "path";
+import { promisify } from "util";
+
+import {
+    DEFAULT_ENCODING,
+    WORKSPACE_ROOT,
+    MAX_FILE_SIZE,
+    INCLUDE_HIDDEN_FILES,
+    SUPPORTED_TEXT_EXTENSIONS,
+    BINARY_EXTENSIONS,
+    IGNORED_DIRECTORIES,
+    IGNORED_FILES
+} from "./filesystem.constants";
+
+import {
+    FileContent,
+    FileMetadata,
+    DirectoryEntry,
+    DirectoryInfo,
+    PathValidationResult,
+    FilesystemServerConfig,
+    FilesystemLogContext
+} from "./filesystem.types";
+
+import { MCPLogger } from "../../logger/mcpLogger";
+
+const stat = promisify(fs.stat);
+const readdir = promisify(fs.readdir);
+const readFile = promisify(fs.readFile);
+const access = promisify(fs.access);
+
+export class FilesystemService {
+
+    private readonly workspaceRoot: string;
+
+    private readonly config: FilesystemServerConfig;
+
+    constructor(config?: Partial<FilesystemServerConfig>) {
+
+        this.workspaceRoot = path.resolve(
+            config?.workspaceRoot ?? WORKSPACE_ROOT
+        );
+
+        this.config = {
+            workspaceRoot: this.workspaceRoot,
+            readOnly: config?.readOnly ?? true,
+            maxFileSize: config?.maxFileSize ?? MAX_FILE_SIZE,
+            defaultEncoding:
+                config?.defaultEncoding ?? DEFAULT_ENCODING,
+            allowHiddenFiles:
+                config?.allowHiddenFiles ?? INCLUDE_HIDDEN_FILES,
+            validatePaths:
+                config?.validatePaths ?? true
+        };
+
+        this.initializeWorkspace();
+    }
+
+    /**
+     * Initialize workspace.
+     */
+    private initializeWorkspace(): void {
+
+        if (!fs.existsSync(this.workspaceRoot)) {
+
+            throw new Error(
+                `Workspace does not exist: ${this.workspaceRoot}`
+            );
+
+        }
+
+        MCPLogger.info(
+            `Filesystem workspace initialized: ${this.workspaceRoot}`
+        );
+    }
+
+    /**
+     * Returns workspace root.
+     */
+    public getWorkspaceRoot(): string {
+
+        return this.workspaceRoot;
+
+    }
+
+    /**
+     * Returns service configuration.
+     */
+    public getConfiguration(): FilesystemServerConfig {
+
+        return this.config;
+
+    }
+
+    /**
+     * Normalize incoming path.
+     */
+    public normalizePath(filePath: string): string {
+
+        if (!filePath) {
+
+            throw new Error("Path cannot be empty.");
+
+        }
+
+        const normalized = path.normalize(filePath.trim());
+
+        return normalized.replace(/\\/g, path.sep);
+
+    }
+
+    /**
+     * Convert relative path
+     * to workspace absolute path.
+     */
+    public resolvePath(filePath: string): string {
+
+        const normalized = this.normalizePath(filePath);
+
+        if (path.isAbsolute(normalized)) {
+
+            return path.resolve(normalized);
+
+        }
+
+        return path.resolve(
+            this.workspaceRoot,
+            normalized
+        );
+
+    }
+
+    /**
+     * Validate path.
+     */
+    public validatePath(filePath: string): PathValidationResult {
+
+        try {
+
+            const absolutePath =
+                this.resolvePath(filePath);
+
+            if (this.config.validatePaths) {
+
+                if (
+                    !absolutePath.startsWith(this.workspaceRoot)
+                ) {
+
+                    return {
+
+                        valid: false,
+
+                        error:
+                            "Access outside workspace is not permitted."
+
+                    };
+
+                }
+
+            }
+
+            return {
+
+                valid: true,
+
+                absolutePath
+
+            };
+
+        } catch (error) {
+
+            return {
+
+                valid: false,
+
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Invalid path"
+
+            };
+
+        }
+
+    }
+
+    /**
+     * Ensure workspace restriction.
+     */
+    public ensureWorkspace(filePath: string): string {
+
+        const validation =
+            this.validatePath(filePath);
+
+        if (!validation.valid || !validation.absolutePath) {
+
+            throw new Error(
+                validation.error ??
+                "Workspace validation failed."
+            );
+
+        }
+
+        return validation.absolutePath;
+
+    }
+
+    /**
+     * Verify file exists.
+     */
+    protected async verifyExists(
+        absolutePath: string
+    ): Promise<void> {
+
+        await access(
+            absolutePath,
+            fs.constants.F_OK
+        );
+
+    }
+
+    /**
+     * Verify read access.
+     */
+    protected async verifyReadable(
+        absolutePath: string
+    ): Promise<void> {
+
+        await access(
+            absolutePath,
+            fs.constants.R_OK
+        );
+
+    }
+
+    /**
+     * Verify maximum file size.
+     */
+    protected async verifyFileSize(
+        absolutePath: string
+    ): Promise<void> {
+
+        const info = await stat(absolutePath);
+
+        if (info.size > this.config.maxFileSize) {
+
+            throw new Error(
+                `Maximum file size exceeded (${this.config.maxFileSize} bytes).`
+            );
+
+        }
+
+    }
+
+    /**
+     * Ignore hidden files.
+     */
+    protected isHidden(name: string): boolean {
+
+        if (this.config.allowHiddenFiles) {
+
+            return false;
+
+        }
+
+        return name.startsWith(".");
+
+    }
+
+    /**
+     * Ignore configured directories.
+     */
+    protected isIgnoredDirectory(
+        directory: string
+    ): boolean {
+
+        return IGNORED_DIRECTORIES.includes(
+            directory as any
+        );
+
+    }
+
+    /**
+     * Ignore configured files.
+     */
+    protected isIgnoredFile(
+        fileName: string
+    ): boolean {
+
+        return IGNORED_FILES.includes(
+            fileName as any
+        );
+
+    }
+
+    /**
+     * Detect binary file.
+     */
+    protected isBinaryFile(
+        absolutePath: string
+    ): boolean {
+
+        const extension =
+            path.extname(absolutePath).toLowerCase();
+
+        return BINARY_EXTENSIONS.includes(
+            extension as any
+        );
+
+    }
+
+    /**
+     * Validate readable extension.
+     */
+    protected isSupportedExtension(
+        absolutePath: string
+    ): boolean {
+
+        const extension =
+            path.extname(absolutePath).toLowerCase();
+
+        if (extension === "") {
+
+            return true;
+
+        }
+
+        return SUPPORTED_TEXT_EXTENSIONS.includes(
+            extension as any
+        );
+
+    }
+
+    /**
+     * Log operation.
+     */
+    protected log(
+        context: FilesystemLogContext
+    ): void {
+
+        if (context.success) {
+
+            MCPLogger.info(
+                `[Filesystem] ${context.tool} ${context.path ?? ""}`
+            );
+
+        } else {
+
+            MCPLogger.error(
+                `[Filesystem] ${context.tool} failed ${context.path ?? ""}`
+            );
+
+        }
+
+    }
+
+    /**
+     * Build file metadata.
+     */
+    protected async buildMetadata(
+        absolutePath: string
+    ): Promise<FileMetadata> {
+
+        const stats = await stat(absolutePath);
+
+        return {
+
+            name: path.basename(absolutePath),
+
+            path: path.relative(
+                this.workspaceRoot,
+                absolutePath
+            ),
+
+            extension: path.extname(absolutePath),
+
+            size: stats.size,
+
+            createdAt: stats.birthtime,
+
+            modifiedAt: stats.mtime,
+
+            accessedAt: stats.atime,
+
+            isFile: stats.isFile(),
+
+            isDirectory: stats.isDirectory(),
+
+            stats
+
+        };
+
+    }
+
+}
+```
+
+Part 2 – Core Operations
+
+```ts
+    /**
+     * Read a file from the workspace.
+     */
+    public async readFile(
+        filePath: string,
+        encoding: BufferEncoding = this.config.defaultEncoding
+    ): Promise<FileContent> {
+
+        const start = Date.now();
+
+        const absolutePath = this.ensureWorkspace(filePath);
+
+        await this.verifyExists(absolutePath);
+        await this.verifyReadable(absolutePath);
+        await this.verifyFileSize(absolutePath);
+
+        if (this.isBinaryFile(absolutePath)) {
+            throw new Error("Binary files are not supported.");
+        }
+
+        if (!this.isSupportedExtension(absolutePath)) {
+            throw new Error("Unsupported file extension.");
+        }
+
+        const metadata = await this.buildMetadata(absolutePath);
+
+        const content = await readFile(
+            absolutePath,
+            encoding
+        );
+
+        this.log({
+            tool: "readFile",
+            path: filePath,
+            duration: Date.now() - start,
+            success: true
+        });
+
+        return {
+            name: metadata.name,
+            path: metadata.path,
+            absolutePath,
+            extension: metadata.extension,
+            size: metadata.size,
+            isFile: metadata.isFile,
+            isDirectory: metadata.isDirectory,
+            createdAt: metadata.createdAt,
+            updatedAt: metadata.modifiedAt,
+            content,
+            encoding
+        };
+    }
+
+    /**
+     * Check whether a file exists.
+     */
+    public async fileExists(
+        filePath: string
+    ): Promise<boolean> {
+
+        try {
+
+            const absolutePath =
+                this.ensureWorkspace(filePath);
+
+            await access(
+                absolutePath,
+                fs.constants.F_OK
+            );
+
+            return true;
+
+        } catch {
+
+            return false;
+
+        }
+
+    }
+
+    /**
+     * Retrieve metadata for a file.
+     */
+    public async getFileMetadata(
+        filePath: string
+    ): Promise<FileMetadata> {
+
+        const start = Date.now();
+
+        const absolutePath =
+            this.ensureWorkspace(filePath);
+
+        await this.verifyExists(absolutePath);
+
+        const metadata =
+            await this.buildMetadata(absolutePath);
+
+        this.log({
+            tool: "fileMetadata",
+            path: filePath,
+            duration: Date.now() - start,
+            success: true
+        });
+
+        return metadata;
+
+    }
+
+    /**
+     * List directory contents.
+     */
+    public async listDirectory(
+        directoryPath = "."
+    ): Promise<DirectoryInfo> {
+
+        const start = Date.now();
+
+        const absolutePath =
+            this.ensureWorkspace(directoryPath);
+
+        const directoryStats =
+            await stat(absolutePath);
+
+        if (!directoryStats.isDirectory()) {
+
+            throw new Error(
+                `${directoryPath} is not a directory.`
+            );
+
+        }
+
+        const items =
+            await readdir(absolutePath);
+
+        const entries: DirectoryEntry[] = [];
+
+        let totalFiles = 0;
+        let totalDirectories = 0;
+
+        for (const item of items) {
+
+            if (
+                this.isHidden(item) ||
+                this.isIgnoredFile(item) ||
+                this.isIgnoredDirectory(item)
+            ) {
+                continue;
+            }
+
+            const fullPath =
+                path.join(absolutePath, item);
+
+            const itemStats =
+                await stat(fullPath);
+
+            const entry: DirectoryEntry = {
+
+                name: item,
+
+                path: path.relative(
+                    this.workspaceRoot,
+                    fullPath
+                ),
+
+                isFile: itemStats.isFile(),
+
+                isDirectory:
+                    itemStats.isDirectory(),
+
+                size: itemStats.isFile()
+                    ? itemStats.size
+                    : undefined
+
+            };
+
+            if (entry.isDirectory) {
+
+                totalDirectories++;
+
+            } else {
+
+                totalFiles++;
+
+            }
+
+            entries.push(entry);
+
+        }
+
+        entries.sort((a, b) => {
+
+            if (
+                a.isDirectory &&
+                !b.isDirectory
+            ) {
+                return -1;
+            }
+
+            if (
+                !a.isDirectory &&
+                b.isDirectory
+            ) {
+                return 1;
+            }
+
+            return a.name.localeCompare(b.name);
+
+        });
+
+        this.log({
+
+            tool: "listDirectory",
+
+            path: directoryPath,
+
+            duration: Date.now() - start,
+
+            success: true
+
+        });
+
+        return {
+
+            path: path.relative(
+                this.workspaceRoot,
+                absolutePath
+            ),
+
+            totalFiles,
+
+            totalDirectories,
+
+            entries
+
+        };
+
+    }
+
+```
+Part 3 – Advanced Operations
+
+```ts
+
+    /**
+     * Read multiple files in a single request.
+     */
+    public async readMultipleFiles(
+        filePaths: string[]
+    ): Promise<FileContent[]> {
+
+        const results: FileContent[] = [];
+
+        for (const filePath of filePaths) {
+
+            try {
+
+                const file =
+                    await this.readFile(filePath);
+
+                results.push(file);
+
+            } catch (error) {
+
+                this.log({
+
+                    tool: "readMultipleFiles",
+
+                    path: filePath,
+
+                    success: false
+
+                });
+
+            }
+
+        }
+
+        return results;
+
+    }
+
+    /**
+     * Search files by name.
+     */
+    public async searchFiles(
+        query: string,
+        directory = "."
+    ): Promise<SearchResult[]> {
+
+        const absolutePath =
+            this.ensureWorkspace(directory);
+
+        const results: SearchResult[] = [];
+
+        await this.searchRecursive(
+            absolutePath,
+            query.toLowerCase(),
+            results
+        );
+
+        return results;
+
+    }
+
+    /**
+     * Recursive file search.
+     */
+    private async searchRecursive(
+        currentPath: string,
+        query: string,
+        results: SearchResult[]
+    ): Promise<void> {
+
+        const entries =
+            await readdir(currentPath);
+
+        for (const entry of entries) {
+
+            if (this.isHidden(entry)) {
+
+                continue;
+
+            }
+
+            if (this.isIgnoredDirectory(entry)) {
+
+                continue;
+
+            }
+
+            if (this.isIgnoredFile(entry)) {
+
+                continue;
+
+            }
+
+            const absolutePath =
+                path.join(currentPath, entry);
+
+            const stats =
+                await stat(absolutePath);
+
+            if (entry.toLowerCase().includes(query)) {
+
+                results.push({
+
+                    name: entry,
+
+                    path: path.relative(
+                        this.workspaceRoot,
+                        absolutePath
+                    ),
+
+                    absolutePath
+
+                });
+
+            }
+
+            if (stats.isDirectory()) {
+
+                await this.searchRecursive(
+                    absolutePath,
+                    query,
+                    results
+                );
+
+            }
+
+        }
+
+    }
+
+    /**
+     * Build project directory tree.
+     */
+    public async buildProjectTree(
+        directory = "."
+    ): Promise<ProjectTree> {
+
+        const absolutePath =
+            this.ensureWorkspace(directory);
+
+        const nodes =
+            await this.buildTree(absolutePath);
+
+        return {
+
+            root: path.relative(
+                this.workspaceRoot,
+                absolutePath
+            ),
+
+            nodes
+
+        };
+
+    }
+
+    /**
+     * Recursive tree builder.
+     */
+    private async buildTree(
+        directory: string
+    ): Promise<ProjectTreeNode[]> {
+
+        const entries =
+            await readdir(directory);
+
+        const nodes: ProjectTreeNode[] = [];
+
+        for (const entry of entries) {
+
+            if (this.isHidden(entry)) {
+
+                continue;
+
+            }
+
+            if (this.isIgnoredDirectory(entry)) {
+
+                continue;
+
+            }
+
+            if (this.isIgnoredFile(entry)) {
+
+                continue;
+
+            }
+
+            const absolutePath =
+                path.join(directory, entry);
+
+            const stats =
+                await stat(absolutePath);
+
+            if (stats.isDirectory()) {
+
+                nodes.push({
+
+                    name: entry,
+
+                    path: path.relative(
+                        this.workspaceRoot,
+                        absolutePath
+                    ),
+
+                    type: "directory",
+
+                    children:
+                        await this.buildTree(
+                            absolutePath
+                        )
+
+                });
+
+            } else {
+
+                nodes.push({
+
+                    name: entry,
+
+                    path: path.relative(
+                        this.workspaceRoot,
+                        absolutePath
+                    ),
+
+                    type: "file"
+
+                });
+
+            }
+
+        }
+
+        nodes.sort((a, b) => {
+
+            if (
+                a.type === "directory" &&
+                b.type === "file"
+            ) {
+
+                return -1;
+
+            }
+
+            if (
+                a.type === "file" &&
+                b.type === "directory"
+            ) {
+
+                return 1;
+
+            }
+
+            return a.name.localeCompare(b.name);
+
+        });
+
+        return nodes;
+
+    }
+
+    /**
+     * Read text from multiple files and
+     * concatenate into a single string.
+     */
+    public async readFilesAsContext(
+        files: string[]
+    ): Promise<string> {
+
+        const chunks: string[] = [];
+
+        for (const file of files) {
+
+            try {
+
+                const result =
+                    await this.readFile(file);
+
+                chunks.push(
+
+                    `========== ${result.path} ==========\n`
+
+                );
+
+                chunks.push(result.content);
+
+                chunks.push("\n");
+
+            } catch {
+
+                continue;
+
+            }
+
+        }
+
+        return chunks.join("");
+
+    }
+
+    /**
+     * Find all files with a given extension.
+     */
+    public async findFilesByExtension(
+        extension: string,
+        directory = "."
+    ): Promise<SearchResult[]> {
+
+        return this.searchByExtension(
+
+            this.ensureWorkspace(directory),
+
+            extension.toLowerCase()
+
+        );
+
+    }
+
+    private async searchByExtension(
+        directory: string,
+        extension: string
+    ): Promise<SearchResult[]> {
+
+        const results: SearchResult[] = [];
+
+        const entries =
+            await readdir(directory);
+
+        for (const entry of entries) {
+
+            if (this.isHidden(entry)) {
+
+                continue;
+
+            }
+
+            const absolutePath =
+                path.join(directory, entry);
+
+            const stats =
+                await stat(absolutePath);
+
+            if (stats.isDirectory()) {
+
+                const children =
+                    await this.searchByExtension(
+                        absolutePath,
+                        extension
+                    );
+
+                results.push(...children);
+
+            } else {
+
+                if (
+                    path.extname(entry).toLowerCase() ===
+                    extension
+                ) {
+
+                    results.push({
+
+                        name: entry,
+
+                        path: path.relative(
+                            this.workspaceRoot,
+                            absolutePath
+                        ),
+
+                        absolutePath
+
+                    });
+
+                }
+
+            }
+
+        }
+
+        return results;
+
+    }
+
+```
+Part 4 – Helper Methods
+
+```ts
+    /**
+     * Determines whether a path is inside the configured workspace.
+     */
+    private isWithinWorkspace(absolutePath: string): boolean {
+
+        const normalizedWorkspace =
+            path.resolve(this.workspaceRoot);
+
+        const normalizedTarget =
+            path.resolve(absolutePath);
+
+        return normalizedTarget.startsWith(
+            normalizedWorkspace
+        );
+
+    }
+
+    /**
+     * Convert an absolute path to a workspace-relative path.
+     */
+    private toRelativePath(
+        absolutePath: string
+    ): string {
+
+        return path.relative(
+            this.workspaceRoot,
+            absolutePath
+        );
+
+    }
+
+    /**
+     * Returns the extension in lowercase.
+     */
+    private getExtension(
+        filePath: string
+    ): string {
+
+        return path.extname(filePath).toLowerCase();
+
+    }
+
+    /**
+     * Determine whether the supplied path
+     * represents a supported text file.
+     */
+    private isTextFile(
+        filePath: string
+    ): boolean {
+
+        const extension =
+            this.getExtension(filePath);
+
+        if (!extension) {
+
+            return true;
+
+        }
+
+        return SUPPORTED_TEXT_EXTENSIONS.includes(
+            extension as any
+        );
+
+    }
+
+    /**
+     * Determine whether a file should be ignored.
+     */
+    private shouldIgnore(
+        fileName: string
+    ): boolean {
+
+        if (this.isHidden(fileName)) {
+
+            return true;
+
+        }
+
+        if (this.isIgnoredFile(fileName)) {
+
+            return true;
+
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Safely read fs.Stats.
+     */
+    private async getStats(
+        absolutePath: string
+    ): Promise<fs.Stats | null> {
+
+        try {
+
+            return await stat(absolutePath);
+
+        } catch {
+
+            return null;
+
+        }
+
+    }
+
+    /**
+     * Check whether the path is a directory.
+     */
+    private async isDirectory(
+        absolutePath: string
+    ): Promise<boolean> {
+
+        const stats =
+            await this.getStats(absolutePath);
+
+        return stats?.isDirectory() ?? false;
+
+    }
+
+    /**
+     * Check whether the path is a file.
+     */
+    private async isFile(
+        absolutePath: string
+    ): Promise<boolean> {
+
+        const stats =
+            await this.getStats(absolutePath);
+
+        return stats?.isFile() ?? false;
+
+    }
+
+    /**
+     * Standardized error logging.
+     */
+    private logError(
+        tool: string,
+        error: unknown,
+        filePath?: string
+    ): void {
+
+        MCPLogger.error(
+
+            `[Filesystem] ${tool}`,
+
+            {
+
+                path: filePath,
+
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : error
+
+            }
+
+        );
+
+    }
+
+    /**
+     * Standardized success logging.
+     */
+    private logSuccess(
+        tool: string,
+        filePath?: string
+    ): void {
+
+        MCPLogger.info(
+
+            `[Filesystem] ${tool}`,
+
+            {
+
+                path: filePath
+
+            }
+
+        );
+
+    }
+
+    /**
+     * Wrap async operations with
+     * common logging and error handling.
+     */
+    protected async execute<T>(
+        tool: string,
+        operation: () => Promise<T>,
+        filePath?: string
+    ): Promise<T> {
+
+        const started = Date.now();
+
+        try {
+
+            const result =
+                await operation();
+
+            MCPLogger.info(
+
+                `[Filesystem] ${tool} completed`,
+
+                {
+
+                    path: filePath,
+
+                    duration:
+                        Date.now() - started
+
+                }
+
+            );
+
+            return result;
+
+        } catch (error) {
+
+            MCPLogger.error(
+
+                `[Filesystem] ${tool} failed`,
+
+                {
+
+                    path: filePath,
+
+                    duration:
+                        Date.now() - started,
+
+                    error:
+                        error instanceof Error
+                            ? error.message
+                            : error
+
+                }
+
+            );
+
+            throw error;
+
+        }
+
+    }
+
+    /**
+     * Returns server health information.
+     */
+    public async health() {
+
+        try {
+
+            const exists =
+                fs.existsSync(this.workspaceRoot);
+
+            return {
+
+                status:
+                    exists
+                        ? "healthy"
+                        : "unhealthy",
+
+                workspace:
+                    this.workspaceRoot,
+
+                timestamp:
+                    new Date().toISOString()
+
+            };
+
+        } catch {
+
+            return {
+
+                status: "unhealthy",
+
+                workspace:
+                    this.workspaceRoot,
+
+                timestamp:
+                    new Date().toISOString()
+
+            };
+
+        }
+
+    }
+
+    /**
+     * Dispose resources.
+     */
+    public async dispose(): Promise<void> {
+
+        MCPLogger.info(
+
+            "FilesystemService disposed."
+
+        );
+
+    }
+
+}
+
+```
+---
+
+# 📄 filesystem.tools.ts
+
+This file defines all tools exposed by the Filesystem MCP Server.
+
+Initially, we will register tools such as:
+
+- Read File
+- List Directory
+- File Exists
+- File Metadata
+
+Future milestones will add:
+
+- Search Files
+- Read Multiple Files
+- Project Tree
+- Find TODO Comments
+- Analyze Source Code
+
+The server will register these tools during startup, making them discoverable through the MCP Gateway.
+
+```ts
+// src/mcp/servers/filesystem/filesystem.tools.ts
+
+import { FilesystemService } from "./filesystem.service";
+import { FILESYSTEM_TOOLS } from "./filesystem.constants";
+import { MCPTool } from "../../types";
+
+export class FilesystemTools {
+
+    constructor(
+        private readonly filesystemService: FilesystemService
+    ) { }
+
+    /**
+     * Returns all supported MCP tools.
+     */
+    public getTools(): MCPTool[] {
+
+        return [
+
+            {
+                name: FILESYSTEM_TOOLS.READ_FILE,
+                description: "Read the contents of a file.",
+
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        path: {
+                            type: "string",
+                            description: "Relative file path"
+                        }
+                    },
+                    required: ["path"]
+                },
+
+                execute: async (args: any) => {
+
+                    return await this.filesystemService.readFile(
+                        args.path
+                    );
+
+                }
+            },
+
+            {
+                name: FILESYSTEM_TOOLS.LIST_DIRECTORY,
+                description: "List files and folders.",
+
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        path: {
+                            type: "string"
+                        }
+                    }
+                },
+
+                execute: async (args: any) => {
+
+                    return await this.filesystemService.listDirectory(
+                        args.path ?? "."
+                    );
+
+                }
+            },
+
+            {
+                name: FILESYSTEM_TOOLS.FILE_EXISTS,
+                description: "Check whether a file exists.",
+
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        path: {
+                            type: "string"
+                        }
+                    },
+                    required: ["path"]
+                },
+
+                execute: async (args: any) => {
+
+                    return await this.filesystemService.fileExists(
+                        args.path
+                    );
+
+                }
+            },
+
+            {
+                name: FILESYSTEM_TOOLS.FILE_METADATA,
+                description: "Retrieve file metadata.",
+
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        path: {
+                            type: "string"
+                        }
+                    },
+                    required: ["path"]
+                },
+
+                execute: async (args: any) => {
+
+                    return await this.filesystemService.getFileMetadata(
+                        args.path
+                    );
+
+                }
+            },
+
+            {
+                name: FILESYSTEM_TOOLS.READ_MULTIPLE_FILES,
+                description: "Read multiple files.",
+
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        paths: {
+                            type: "array",
+                            items: {
+                                type: "string"
+                            }
+                        }
+                    },
+                    required: ["paths"]
+                },
+
+                execute: async (args: any) => {
+
+                    return await this.filesystemService.readMultipleFiles(
+                        args.paths
+                    );
+
+                }
+            },
+
+            {
+                name: FILESYSTEM_TOOLS.SEARCH_FILES,
+                description: "Search files by name.",
+
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        query: {
+                            type: "string"
+                        },
+                        directory: {
+                            type: "string"
+                        }
+                    },
+                    required: ["query"]
+                },
+
+                execute: async (args: any) => {
+
+                    return await this.filesystemService.searchFiles(
+                        args.query,
+                        args.directory
+                    );
+
+                }
+            },
+
+            {
+                name: FILESYSTEM_TOOLS.PROJECT_TREE,
+                description: "Generate project tree.",
+
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        directory: {
+                            type: "string"
+                        }
+                    }
+                },
+
+                execute: async (args: any) => {
+
+                    return await this.filesystemService.buildProjectTree(
+                        args.directory
+                    );
+
+                }
+            }
+
+        ];
+
+    }
+
+    /**
+     * Get tool by name.
+     */
+    public getTool(
+        name: string
+    ): MCPTool | undefined {
+
+        return this.getTools().find(
+
+            tool => tool.name === name
+
+        );
+
+    }
+
+    /**
+     * Check tool availability.
+     */
+    public hasTool(
+        name: string
+    ): boolean {
+
+        return this.getTools().some(
+
+            tool => tool.name === name
+
+        );
+
+    }
+
+    /**
+     * List tool names.
+     */
+    public listToolNames(): string[] {
+
+        return this.getTools().map(
+
+            tool => tool.name
+
+        );
+
+    }
+
+}
+
+```
+
+---
+
+# 📄 filesystem.constants.ts
+
+```ts
+// src/mcp/servers/filesystem/filesystem.constants.ts
+
+import path from "path";
+
+/**
+ * Root workspace that the Filesystem MCP Server
+ * is allowed to access.
+ *
+ * Change this value if you want to restrict
+ * the server to another project.
+ */
+export const WORKSPACE_ROOT =
+    process.env.WORKSPACE_ROOT ||
+    process.cwd();
+
+/**
+ * Maximum file size that can be read.
+ * (5 MB)
+ */
+export const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+/**
+ * Default text encoding.
+ */
+export const DEFAULT_ENCODING: BufferEncoding = "utf-8";
+
+/**
+ * Default timeout for filesystem operations.
+ */
+export const FILESYSTEM_TIMEOUT = 10000;
+
+/**
+ * Maximum directory depth for recursive operations.
+ */
+export const MAX_DIRECTORY_DEPTH = 10;
+
+/**
+ * Maximum number of files returned
+ * by search or directory listing.
+ */
+export const MAX_RESULTS = 1000;
+
+/**
+ * Hidden files.
+ */
+export const INCLUDE_HIDDEN_FILES = false;
+
+/**
+ * Whether symbolic links are allowed.
+ */
+export const ALLOW_SYMBOLIC_LINKS = false;
+
+/**
+ * Directories ignored during traversal.
+ */
+export const IGNORED_DIRECTORIES = [
+    ".git",
+    ".github",
+    ".husky",
+    ".vscode",
+    ".idea",
+    ".next",
+    ".nuxt",
+    ".turbo",
+    ".cache",
+    ".vercel",
+    ".output",
+    "coverage",
+    "dist",
+    "build",
+    "out",
+    "logs",
+    "tmp",
+    "temp",
+    "node_modules"
+] as const;
+
+/**
+ * Files ignored during searches.
+ */
+export const IGNORED_FILES = [
+    ".DS_Store",
+    "Thumbs.db",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml"
+] as const;
+
+/**
+ * Binary extensions that should never
+ * be returned as text.
+ */
+export const BINARY_EXTENSIONS = [
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".webp",
+    ".ico",
+    ".pdf",
+    ".zip",
+    ".rar",
+    ".7z",
+    ".exe",
+    ".dll",
+    ".so",
+    ".dylib",
+    ".jar",
+    ".class",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".mp3",
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".mkv"
+] as const;
+
+/**
+ * File extensions that are safe to read.
+ */
+export const SUPPORTED_TEXT_EXTENSIONS = [
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".json",
+    ".md",
+    ".txt",
+    ".html",
+    ".css",
+    ".scss",
+    ".sass",
+    ".less",
+    ".xml",
+    ".yaml",
+    ".yml",
+    ".env",
+    ".gitignore",
+    ".dockerignore",
+    ".editorconfig",
+    ".npmrc",
+    ".prettierrc",
+    ".eslintrc",
+    ".graphql",
+    ".sql",
+    ".sh",
+    ".bat",
+    ".ps1"
+] as const;
+
+/**
+ * Common configuration files
+ * that the AI frequently analyzes.
+ */
+export const IMPORTANT_FILES = [
+    "package.json",
+    "tsconfig.json",
+    "vite.config.ts",
+    "webpack.config.js",
+    "docker-compose.yml",
+    "Dockerfile",
+    "README.md",
+    ".env",
+    ".env.example",
+    "nest-cli.json",
+    "angular.json",
+    "next.config.js",
+    "tailwind.config.js",
+    "eslint.config.js"
+] as const;
+
+/**
+ * Filesystem Tool Names
+ */
+export const FILESYSTEM_TOOLS = {
+
+    READ_FILE: "readFile",
+
+    LIST_DIRECTORY: "listDirectory",
+
+    FILE_EXISTS: "fileExists",
+
+    FILE_METADATA: "fileMetadata",
+
+    READ_MULTIPLE_FILES: "readMultipleFiles",
+
+    SEARCH_FILES: "searchFiles",
+
+    PROJECT_TREE: "projectTree",
+
+    FIND_TODOS: "findTodos",
+
+    ANALYZE_SOURCE: "analyzeSource"
+
+} as const;
+
+/**
+ * Health Check Configuration
+ */
+export const HEALTH_CONFIG = {
+
+    enabled: true,
+
+    interval: 30000,
+
+    timeout: 5000
+
+} as const;
+
+/**
+ * Retry Configuration
+ */
+export const RETRY_CONFIG = {
+
+    attempts: 3,
+
+    delay: 1000
+
+} as const;
+
+/**
+ * Security Configuration
+ */
+export const SECURITY_CONFIG = {
+
+    restrictWorkspace: true,
+
+    validatePaths: true,
+
+    allowHiddenFiles: false,
+
+    maxFileSize: MAX_FILE_SIZE
+
+} as const;
+
+/**
+ * Helper Paths
+ */
+export const DEFAULT_PATHS = {
+
+    SRC: path.join(WORKSPACE_ROOT, "src"),
+
+    TEST: path.join(WORKSPACE_ROOT, "test"),
+
+    DOCS: path.join(WORKSPACE_ROOT, "docs"),
+
+    PUBLIC: path.join(WORKSPACE_ROOT, "public")
+
+} as const;
+
+```
+
+All constants used by the Filesystem MCP Server will be centralized here.
+
+Examples include:
+
+- Workspace root directory
+- Maximum file size
+- Default encoding
+- Ignored folders
+- Supported file extensions
+- Security limits
+
+Keeping these values in one place improves maintainability and avoids hard-coded values throughout the codebase.
+
+
+# 📄 filesystem.types.ts
+
+
+
+This file contains all shared TypeScript interfaces and type definitions used by the Filesystem MCP module.
+
+
+```ts
+// src/mcp/servers/filesystem/filesystem.types.ts
+
+import { Stats } from "fs";
+
+/* ============================================================
+ * Filesystem Server
+ * ============================================================ */
+
+export interface FilesystemServerConfig {
+    workspaceRoot: string;
+    readOnly: boolean;
+    maxFileSize: number;
+    defaultEncoding: BufferEncoding;
+    allowHiddenFiles: boolean;
+    validatePaths: boolean;
+}
+
+/* ============================================================
+ * File Information
+ * ============================================================ */
+
+export interface FileInfo {
+    name: string;
+    path: string;
+    absolutePath: string;
+    extension: string;
+    size: number;
+    isFile: boolean;
+    isDirectory: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface FileContent extends FileInfo {
+    content: string;
+    encoding: BufferEncoding;
+}
+
+/* ============================================================
+ * Directory Information
+ * ============================================================ */
+
+export interface DirectoryEntry {
+
+    name: string;
+
+    path: string;
+
+    isFile: boolean;
+
+    isDirectory: boolean;
+
+    size?: number;
+
+}
+
+export interface DirectoryInfo {
+
+    path: string;
+
+    totalFiles: number;
+
+    totalDirectories: number;
+
+    entries: DirectoryEntry[];
+
+}
+
+/* ============================================================
+ * Project Tree
+ * ============================================================ */
+
+export interface ProjectTreeNode {
+
+    name: string;
+
+    path: string;
+
+    type: "file" | "directory";
+
+    children?: ProjectTreeNode[];
+
+}
+
+export interface ProjectTree {
+
+    root: string;
+
+    nodes: ProjectTreeNode[];
+
+}
+
+/* ============================================================
+ * Metadata
+ * ============================================================ */
+
+export interface FileMetadata {
+
+    name: string;
+
+    path: string;
+
+    extension: string;
+
+    size: number;
+
+    createdAt: Date;
+
+    modifiedAt: Date;
+
+    accessedAt: Date;
+
+    isFile: boolean;
+
+    isDirectory: boolean;
+
+    stats: Stats;
+
+}
+
+/* ============================================================
+ * Search
+ * ============================================================ */
+
+export interface SearchOptions {
+
+    recursive?: boolean;
+
+    extension?: string;
+
+    includeHidden?: boolean;
+
+    maxResults?: number;
+
+}
+
+export interface SearchResult {
+
+    name: string;
+
+    path: string;
+
+    absolutePath: string;
+
+}
+
+/* ============================================================
+ * Read File Tool
+ * ============================================================ */
+
+export interface ReadFileArguments {
+
+    path: string;
+
+    encoding?: BufferEncoding;
+
+}
+
+export interface ReadFileResponse {
+
+    success: boolean;
+
+    file?: FileContent;
+
+    error?: string;
+
+}
+
+/* ============================================================
+ * List Directory Tool
+ * ============================================================ */
+
+export interface ListDirectoryArguments {
+
+    path: string;
+
+}
+
+export interface ListDirectoryResponse {
+
+    success: boolean;
+
+    directory?: DirectoryInfo;
+
+    error?: string;
+
+}
+
+/* ============================================================
+ * File Exists Tool
+ * ============================================================ */
+
+export interface FileExistsArguments {
+
+    path: string;
+
+}
+
+export interface FileExistsResponse {
+
+    success: boolean;
+
+    exists: boolean;
+
+}
+
+/* ============================================================
+ * Metadata Tool
+ * ============================================================ */
+
+export interface FileMetadataArguments {
+
+    path: string;
+
+}
+
+export interface FileMetadataResponse {
+
+    success: boolean;
+
+    metadata?: FileMetadata;
+
+    error?: string;
+
+}
+
+/* ============================================================
+ * Read Multiple Files
+ * ============================================================ */
+
+export interface ReadMultipleFilesArguments {
+
+    paths: string[];
+
+}
+
+export interface ReadMultipleFilesResponse {
+
+    success: boolean;
+
+    files: FileContent[];
+
+    failed: string[];
+
+}
+
+/* ============================================================
+ * Search Files
+ * ============================================================ */
+
+export interface SearchFilesArguments {
+
+    query: string;
+
+    options?: SearchOptions;
+
+}
+
+export interface SearchFilesResponse {
+
+    success: boolean;
+
+    results: SearchResult[];
+
+}
+
+/* ============================================================
+ * Project Tree Tool
+ * ============================================================ */
+
+export interface ProjectTreeArguments {
+
+    path?: string;
+
+}
+
+export interface ProjectTreeResponse {
+
+    success: boolean;
+
+    tree?: ProjectTree;
+
+    error?: string;
+
+}
+
+/* ============================================================
+ * Generic Tool
+ * ============================================================ */
+
+export interface ToolExecutionRequest<T = unknown> {
+
+    tool: string;
+
+    arguments: T;
+
+}
+
+export interface ToolExecutionResponse<T = unknown> {
+
+    success: boolean;
+
+    result?: T;
+
+    error?: string;
+
+}
+
+/* ============================================================
+ * Filesystem Tool Definition
+ * ============================================================ */
+
+export interface FilesystemTool {
+
+    name: string;
+
+    description: string;
+
+    inputSchema: Record<string, unknown>;
+
+}
+
+/* ============================================================
+ * Validation
+ * ============================================================ */
+
+export interface PathValidationResult {
+
+    valid: boolean;
+
+    absolutePath?: string;
+
+    error?: string;
+
+}
+
+/* ============================================================
+ * Server Health
+ * ============================================================ */
+
+export interface FilesystemHealth {
+
+    status: "healthy" | "degraded" | "unhealthy";
+
+    workspace: string;
+
+    uptime: number;
+
+    lastChecked: Date;
+
+}
+
+/* ============================================================
+ * Error Model
+ * ============================================================ */
+
+export interface FilesystemError {
+
+    code: string;
+
+    message: string;
+
+    path?: string;
+
+}
+
+/* ============================================================
+ * Logger Context
+ * ============================================================ */
+
+export interface FilesystemLogContext {
+
+    tool: string;
+
+    path?: string;
+
+    duration?: number;
+
+    success: boolean;
+
+}
+
+/* ============================================================
+ * Module Exports
+ * ============================================================ */
+
+export type FilesystemToolArguments =
+    | ReadFileArguments
+    | ListDirectoryArguments
+    | FileExistsArguments
+    | FileMetadataArguments
+    | ReadMultipleFilesArguments
+    | SearchFilesArguments
+    | ProjectTreeArguments;
+
+export type FilesystemToolResponses =
+    | ReadFileResponse
+    | ListDirectoryResponse
+    | FileExistsResponse
+    | FileMetadataResponse
+    | ReadMultipleFilesResponse
+    | SearchFilesResponse
+    | ProjectTreeResponse;
+
+```
+
+Examples include:
+
+- File Information
+- Directory Information
+- Tool Arguments
+- Tool Responses
+- File Metadata
+- Search Results
+
+Using shared types ensures consistency and type safety across the module.
+
+---
+
+# 📄 index.ts
+
+This file exports the public API of the Filesystem MCP module.
+
+Instead of importing files individually, other modules will simply import from the module root.
+
+Example:
+
+```text
+import { filesystemServer } from "./servers/filesystem";
+```
+
+```ts
+
+// src/mcp/servers/filesystem/index.ts
+
+import { FilesystemServer } from "./filesystem.server";
+import { FilesystemService } from "./filesystem.service";
+import { FilesystemTools } from "./filesystem.tools";
+
+/**
+ * Create singleton instances
+ */
+export const filesystemService = new FilesystemService();
+
+export const filesystemTools = new FilesystemTools(
+    filesystemService
+);
+
+export const filesystemServer = new FilesystemServer(
+    filesystemService,
+    filesystemTools
+);
+
+/**
+ * Module Exports
+ */
+export {
+    FilesystemServer,
+    FilesystemService,
+    FilesystemTools
+};
+
+/**
+ * Export Types
+ */
+export * from "./filesystem.types";
+
+/**
+ * Export Constants
+ */
+export * from "./filesystem.constants";
+
+/**
+ * Factory Method
+ */
+export function createFilesystemServer(): FilesystemServer {
+
+    const service = new FilesystemService();
+
+    const tools = new FilesystemTools(service);
+
+    return new FilesystemServer(
+        service,
+        tools
+    );
+
+}
+
+```
+
+This keeps imports clean and organized.
+
+---
+
+# 🔒 Workspace Restrictions
+
+Security is one of the most important aspects of any Filesystem MCP Server.
+
+The AI assistant should **never** have unrestricted access to the user's computer.
+
+Instead, the server will operate inside a predefined workspace.
+
+Example:
+
+```text
+Workspace
+
+C:/Projects/AI-powered-Full-Stack-Developer-Assistant
+```
+
+Allowed:
+
+```text
+C:/Projects/AI-powered-Full-Stack-Developer-Assistant/src/app.ts
+```
+
+Blocked:
+
+```text
+C:/Windows/System32
+```
+
+Blocked:
+
+```text
+C:/Users/Documents
+```
+
+This restriction ensures that the AI can only access files belonging to the current project.
+
+---
+
+# ✅ Path Validation
+
+Before any filesystem operation is executed, the requested path will be validated.
+
+Validation includes:
+
+- Preventing directory traversal (`../`)
+- Normalizing file paths
+- Ensuring the path is inside the workspace
+- Checking file existence
+- Rejecting invalid paths
+
+These checks prevent accidental or malicious access to files outside the project directory.
+
+---
+
+# 🛠 Tool Registration
+
+Each capability exposed by the Filesystem MCP Server is implemented as an MCP Tool.
+
+During server initialization, the tools are registered with the server.
+
+Example tools include:
+
+- Read File
+- List Directory
+- File Exists
+- File Metadata
+
+The MCP Gateway will later discover these tools and execute them on behalf of the AI Service.
+
+---
+
+# 📋 Server Metadata
+
+Every MCP Server maintains metadata describing itself.
+
+Typical metadata includes:
+
+- Server Name
+- Server ID
+- Version
+- Transport Type
+- Connection Status
+- Registered Tools
+- Workspace Root
+
+The Gateway and Registry use this information to discover available servers and route requests correctly.
+
+---
+
+# 🛡 Security Considerations
+
+The Filesystem MCP Server is designed with security as a first-class concern.
+
+Security measures include:
+
+- Workspace isolation
+- Path validation
+- Restricted file access
+- Controlled tool execution
+- Structured error handling
+- Logging of filesystem operations
+
+These safeguards ensure that the AI assistant can safely interact with project files without exposing sensitive parts of the user's system.
+
+---
+
+# 📈 Architecture Overview
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Local Project Files
+```
+
+---
+
+# ✅ Deliverables
+
+By the end of this part, you will have:
+
+- A dedicated Filesystem MCP module
+- A well-organized folder structure
+- The foundation of the Filesystem MCP Server
+- A service layer for filesystem operations
+- A tool registration mechanism
+- Shared constants and types
+- Secure workspace restrictions
+- Path validation
+- Server metadata
+- A secure, extensible foundation for implementing filesystem tools in the next part
+
+---
+
+# 🚀 Next Part
+
+In **Part 2 – Implementing Filesystem Tools**, we will begin building the first real MCP tools that enable our AI assistant to interact with the local project.
+
+We will implement tools such as:
+
+- 📄 Read File
+- 📂 List Directory
+- 📌 File Exists
+- 📑 File Metadata
+- 🔍 Search Files
+- 🌳 Project Tree
+
+These tools will become the first real capabilities exposed by our Filesystem MCP Server through the MCP Gateway.
+
+
+📚 Part 2 – Filesystem Tools
+
+Implement real developer tools.
+
+Tools
+Read File
+List Directory
+File Exists
+Read Multiple Files
+File Metadata
+Search Files
+Project Tree
+
+Each tool will be implemented as a reusable TypeScript module.
+
+# 🛠 Part 2 – Filesystem Tools
+
+## 🎯 Goal
+
+In this part, we will implement the first set of **Filesystem MCP Tools** that enable our AI-powered Full Stack Developer Assistant to interact with real project files.
+
+Instead of relying solely on the Large Language Model (LLM), the assistant will use these tools to retrieve accurate information directly from the developer's local workspace.
+
+Each capability will be exposed as an MCP Tool and executed through the **MCP Gateway**, allowing the AI to understand the project using actual source code and project structure.
+
+---
+
+# 🏗 Architecture
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Tools
+        │
+        ▼
+Local Project Files
+```
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this part, you will understand:
+
+- How MCP Tools are implemented
+- How tools interact with the Filesystem Service
+- How the MCP Server executes tools
+- How tool requests and responses are structured
+- How tools are registered with the server
+- How to build reusable developer tools
+
+---
+
+# 📂 Filesystem Tools
+
+Initially, our Filesystem MCP Server will expose the following tools.
+
+```text
+Filesystem MCP Server
+
+│
+
+├── Read File
+
+├── List Directory
+
+├── File Exists
+
+├── Read Multiple Files
+
+├── File Metadata
+
+├── Search Files
+
+└── Project Tree
+```
+
+Each tool has a single responsibility and can be executed independently by the AI assistant.
+
+---
+
+# 📄 Read File
+
+The **Read File** tool allows the AI assistant to retrieve the contents of a specific file.
+
+Typical use cases include:
+
+- Reading `README.md`
+- Explaining `package.json`
+- Understanding configuration files
+- Inspecting source code
+- Reading documentation
+
+Example request:
+
+```text
+Read package.json
+```
+
+The Filesystem Service validates the path, reads the file, and returns its contents to the AI.
+
+---
+
+# 📂 List Directory
+
+The **List Directory** tool retrieves all files and folders within a specified directory.
+
+This enables the AI to understand the project's folder structure before analyzing individual files.
+
+Example request:
+
+```text
+List src/
+```
+
+Typical output includes:
+
+- Files
+- Subdirectories
+- Relative paths
+- File types
+
+This provides the foundation for project exploration.
+
+---
+
+# 📌 File Exists
+
+Before attempting to read a file, the AI should verify that it actually exists.
+
+The **File Exists** tool performs this validation.
+
+Example request:
+
+```text
+Does package.json exist?
+```
+
+Possible responses:
+
+- Exists
+- Does not exist
+
+This avoids unnecessary errors during tool execution.
+
+---
+
+# 📑 File Metadata
+
+Sometimes the AI only needs information about a file rather than its contents.
+
+The **File Metadata** tool returns details such as:
+
+- File name
+- File size
+- Extension
+- Last modified date
+- Creation date
+- File type
+
+This information is useful when analyzing project assets or configuration files.
+
+---
+
+# 📚 Read Multiple Files
+
+Many development tasks require information from multiple files.
+
+Instead of issuing separate requests, this tool allows the AI to retrieve several files simultaneously.
+
+Example:
+
+```text
+Read:
+
+README.md
+
+package.json
+
+tsconfig.json
+```
+
+The Filesystem Server returns the contents of each file in a single response, reducing the number of tool calls.
+
+---
+
+# 🔍 Search Files
+
+The **Search Files** tool enables the AI to locate files matching a search pattern.
+
+Example requests:
+
+```text
+Find all Dockerfiles
+```
+
+```text
+Search for *.controller.ts
+```
+
+```text
+Find README files
+```
+
+This tool is especially useful in large projects where manually locating files is difficult.
+
+---
+
+# 🌳 Project Tree
+
+The **Project Tree** tool provides a hierarchical view of the project's directory structure.
+
+Example:
+
+```text
+Project
+│
+├── src
+│   ├── controllers
+│   ├── services
+│   ├── routes
+│   └── app.ts
+│
+├── package.json
+│
+└── README.md
+```
+
+This gives the AI an overall understanding of the project before analyzing individual files.
+
+---
+
+# 🔄 Tool Execution Flow
+
+Every Filesystem Tool follows the same execution pipeline.
+
+```text
+User Request
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Requested Tool
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Local Project Files
+        │
+        ▼
+Tool Result
+        │
+        ▼
+Gateway
+        │
+        ▼
+AI Service
+        │
+        ▼
+LLM Response
+```
+
+This architecture keeps tool execution separate from AI reasoning, making the system modular and easier to maintain.
+
+---
+
+# 🔒 Security
+
+Before any tool executes, the Filesystem MCP Server performs several validation steps:
+
+- Workspace validation
+- Path normalization
+- Directory traversal prevention
+- File existence checks
+- Permission verification
+- Structured error handling
+
+These checks ensure the AI can only access files within the approved project workspace.
+
+---
+
+# 💡 Benefits
+
+Implementing these Filesystem Tools enables our AI assistant to:
+
+- Read actual project files
+- Explore project structures
+- Verify file existence
+- Retrieve file metadata
+- Search for relevant files
+- Analyze multiple files efficiently
+- Build a contextual understanding of the project
+
+These capabilities provide accurate, project-specific information rather than relying on assumptions.
+
+---
+
+# ✅ Deliverables
+
+By the end of this part, you will have:
+
+- ✅ Read File tool
+- ✅ List Directory tool
+- ✅ File Exists tool
+- ✅ Read Multiple Files tool
+- ✅ File Metadata tool
+- ✅ Search Files tool
+- ✅ Project Tree tool
+- ✅ Secure tool execution through the Filesystem MCP Server
+- ✅ Integration with the Filesystem Service and MCP Gateway
+
+---
+
+# 🚀 Next Part
+
+In **Part 3 – Filesystem Service**, we will implement the business logic behind these tools.
+
+The Filesystem Service will be responsible for:
+
+- Reading files
+- Listing directories
+- Validating paths
+- Restricting access to the workspace
+- Handling filesystem errors
+- Normalizing file paths
+
+This service layer will provide the core functionality used by all Filesystem MCP Tools and prepare our AI-powered Full Stack Developer Assistant for real-world project analysis.
+
+📚 Part 3 – Filesystem Service
+
+Create a service layer responsible for interacting with the operating system.
+
+Responsibilities include:
+
+Reading files
+Listing folders
+Validating paths
+Restricting access to the workspace
+Error handling
+Normalizing file paths
+
+# 📚 Part 3 – Filesystem Service
+
+## 🎯 Goal
+
+In this part, we will build the **Filesystem Service**, which acts as the core business layer of our Filesystem MCP Server.
+
+Rather than allowing the MCP Server to interact directly with the operating system, all filesystem operations will be delegated to a dedicated service. This separation keeps the server lightweight, improves maintainability, and follows the **Single Responsibility Principle (SRP)**.
+
+The Filesystem Service will provide secure, reusable methods for reading files, listing directories, validating paths, and enforcing workspace restrictions.
+
+---
+
+# 🏗 Architecture
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Operating System
+        │
+        ▼
+Project Workspace
+```
+
+The MCP Server is responsible for handling tool requests, while the Filesystem Service performs the actual filesystem operations.
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this part, you will understand:
+
+- Why a service layer is important
+- How to separate business logic from the MCP Server
+- How to interact safely with the operating system
+- How to validate filesystem paths
+- How to restrict access to the project workspace
+- How to handle filesystem errors consistently
+- How to normalize file paths across different operating systems
+
+---
+
+# 📂 Responsibilities of the Filesystem Service
+
+The Filesystem Service acts as the central component for all filesystem interactions.
+
+Its primary responsibilities include:
+
+- Reading files
+- Listing directories
+- Validating file and directory paths
+- Restricting access to the project workspace
+- Normalizing file paths
+- Retrieving file metadata
+- Handling filesystem exceptions
+- Returning consistent responses to the MCP Server
+
+By centralizing these operations, every Filesystem Tool can reuse the same secure implementation.
+
+---
+
+# 📄 Reading Files
+
+One of the primary responsibilities of the service is reading project files.
+
+Typical examples include:
+
+- `README.md`
+- `package.json`
+- `tsconfig.json`
+- `.env.example`
+- Source code files
+- Configuration files
+
+Before reading any file, the service will:
+
+1. Normalize the path.
+2. Verify the path is inside the workspace.
+3. Check that the file exists.
+4. Ensure the file can be accessed.
+5. Read and return its contents.
+
+This guarantees secure and predictable file access.
+
+---
+
+# 📂 Listing Directories
+
+The service will provide methods to retrieve the contents of project directories.
+
+Typical information includes:
+
+- Files
+- Subdirectories
+- Relative paths
+- File types
+
+Example:
+
+```text
+src/
+
+├── controllers/
+
+├── services/
+
+├── routes/
+
+├── middleware/
+
+└── app.ts
+```
+
+This information helps the AI understand how the project is organized before analyzing individual files.
+
+---
+
+# 🔒 Path Validation
+
+Every path received from an MCP Tool must be validated before any filesystem operation is executed.
+
+Validation includes:
+
+- Converting relative paths to absolute paths
+- Removing invalid path segments
+- Preventing directory traversal attacks (`../`)
+- Checking file existence
+- Verifying access permissions
+
+Example:
+
+Allowed:
+
+```text
+workspace/src/app.ts
+```
+
+Blocked:
+
+```text
+../../Windows/System32
+```
+
+Path validation ensures the AI assistant can only access approved project files.
+
+---
+
+# 🛡 Workspace Restriction
+
+The Filesystem Service will operate inside a predefined workspace.
+
+Example:
+
+```text
+Workspace
+
+C:/Projects/AI-powered-Full-Stack-Developer-Assistant
+```
+
+Allowed:
+
+```text
+C:/Projects/AI-powered-Full-Stack-Developer-Assistant/src/server.ts
+```
+
+Blocked:
+
+```text
+C:/Users/Documents
+```
+
+Blocked:
+
+```text
+C:/Windows
+```
+
+Restricting access to the workspace protects the user's system and prevents accidental access to sensitive files.
+
+---
+
+# ⚠ Error Handling
+
+Filesystem operations can fail for many reasons.
+
+Examples include:
+
+- File not found
+- Permission denied
+- Invalid path
+- Directory does not exist
+- Unsupported file type
+
+Rather than exposing raw operating system errors, the Filesystem Service will return structured, meaningful error responses that can be handled consistently by the MCP Server and AI Service.
+
+Example:
+
+```text
+File not found:
+
+package-lock.json
+```
+
+This makes debugging easier and improves the overall developer experience.
+
+---
+
+# 🌍 Path Normalization
+
+Different operating systems use different path formats.
+
+Windows:
+
+```text
+C:\Projects\App\src\app.ts
+```
+
+Linux / macOS:
+
+```text
+/home/user/project/src/app.ts
+```
+
+The Filesystem Service will normalize all paths into a consistent format before processing them.
+
+Benefits include:
+
+- Cross-platform compatibility
+- Consistent path comparisons
+- Reliable workspace validation
+- Reduced platform-specific bugs
+
+---
+
+# 🔄 Request Flow
+
+Every filesystem request follows the same lifecycle.
+
+```text
+MCP Tool Request
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Validate Workspace
+        │
+        ▼
+Normalize Path
+        │
+        ▼
+Validate Path
+        │
+        ▼
+Execute Filesystem Operation
+        │
+        ▼
+Return Result
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Gateway
+        │
+        ▼
+AI Service
+```
+
+This layered architecture keeps responsibilities clearly separated and simplifies future enhancements.
+
+---
+
+# 💡 Benefits
+
+Implementing a dedicated Filesystem Service provides several advantages:
+
+- Separation of concerns
+- Centralized filesystem logic
+- Reusable implementation across multiple tools
+- Improved security
+- Easier testing
+- Better maintainability
+- Cross-platform compatibility
+- Consistent error handling
+
+This design also makes it easier to add new filesystem capabilities without modifying the MCP Server itself.
+
+---
+
+# ✅ Deliverables
+
+By the end of this part, you will have:
+
+- ✅ A dedicated Filesystem Service
+- ✅ Secure file reading
+- ✅ Directory listing functionality
+- ✅ Path validation
+- ✅ Workspace restriction
+- ✅ Cross-platform path normalization
+- ✅ Centralized error handling
+- ✅ A reusable service layer for all Filesystem MCP Tools
+
+---
+
+# 🚀 Next Part
+
+In **Part 4 – Filesystem MCP Server**, we will connect the Filesystem Service to our MCP infrastructure.
+
+We will:
+
+- Build the Filesystem MCP Server
+- Register all Filesystem Tools
+- Handle tool execution requests
+- Return structured responses
+- Integrate the server with the MCP Gateway
+- Prepare the backend for end-to-end AI interaction with real project files
+
+By the end of the next part, our first fully functional **Filesystem MCP Server** will be ready to serve tool requests through the Model Context Protocol.
+
+📚 Part 4 – Filesystem MCP Server
+
+Build the server responsible for exposing filesystem functionality as MCP tools.
+
+Responsibilities:
+
+Register tools
+Receive tool requests
+Execute tools
+Return responses
+Validate arguments
+Log execution
+
+# 📚 Part 4 – Filesystem MCP Server
+
+## 🎯 Goal
+
+In this part, we will build our first fully functional **Filesystem MCP Server**.
+
+The Filesystem MCP Server acts as the bridge between the **MCP Gateway** and the **Filesystem Service**. It exposes filesystem operations as MCP tools, allowing our AI-powered Full Stack Developer Assistant to securely interact with local project files.
+
+Rather than performing filesystem operations directly, the server receives tool requests, validates them, delegates the work to the Filesystem Service, and returns structured responses.
+
+This is the first real implementation of an MCP Server in our application.
+
+---
+
+# 🏗 Architecture
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Operating System
+        │
+        ▼
+Project Workspace
+```
+
+The MCP Server is responsible for exposing tools, while the Filesystem Service performs the actual filesystem operations.
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this part, you will understand:
+
+- How to build an MCP Server
+- How to expose developer tools
+- How tool registration works
+- How tool requests are processed
+- How the server communicates with the Filesystem Service
+- How structured responses are returned
+- How logging improves debugging and monitoring
+
+---
+
+# 📂 Responsibilities of the Filesystem MCP Server
+
+The Filesystem MCP Server serves as the public interface for all filesystem-related capabilities.
+
+Its primary responsibilities include:
+
+- Registering available tools
+- Receiving tool execution requests
+- Validating incoming arguments
+- Delegating work to the Filesystem Service
+- Returning structured responses
+- Logging tool execution
+- Handling execution errors
+
+By keeping these responsibilities separate from the Filesystem Service, the overall architecture remains modular and easy to maintain.
+
+---
+
+# 🛠 Tool Registration
+
+When the server starts, it registers all supported filesystem tools.
+
+Initial tools include:
+
+- 📄 Read File
+- 📂 List Directory
+- 📌 File Exists
+- 📑 File Metadata
+- 📚 Read Multiple Files
+- 🔍 Search Files
+- 🌳 Project Tree
+
+Once registered, these tools become discoverable through the MCP Gateway.
+
+Future milestones will introduce additional developer tools such as:
+
+- Search TODO comments
+- Analyze dependencies
+- Detect frameworks
+- Generate project summaries
+- Explain application architecture
+
+---
+
+# 📥 Receiving Tool Requests
+
+Whenever the AI assistant requires project information, the request is routed through the MCP Gateway to the Filesystem MCP Server.
+
+Example:
+
+```text
+User
+
+↓
+
+Explain package.json
+
+↓
+
+AI Service
+
+↓
+
+MCP Gateway
+
+↓
+
+Filesystem MCP Server
+```
+
+The server determines which tool should be executed based on the incoming request.
+
+---
+
+# ⚙ Tool Execution
+
+After identifying the requested tool, the Filesystem MCP Server delegates the operation to the Filesystem Service.
+
+Example flow:
+
+```text
+Read File Tool
+
+        │
+
+        ▼
+
+Filesystem Service
+
+        │
+
+        ▼
+
+Read package.json
+
+        │
+
+        ▼
+
+Return File Content
+```
+
+The server itself does not contain filesystem logic. Its responsibility is to coordinate tool execution.
+
+---
+
+# 📤 Returning Responses
+
+Once the Filesystem Service completes the requested operation, the MCP Server returns a structured response.
+
+A typical response may include:
+
+- Execution status
+- Tool result
+- Metadata
+- Error information (if applicable)
+
+Using structured responses makes it easier for the MCP Gateway and AI Service to process results consistently.
+
+---
+
+# ✅ Argument Validation
+
+Before executing any tool, the Filesystem MCP Server validates incoming arguments.
+
+Validation includes:
+
+- Required parameters
+- Data types
+- Empty values
+- Invalid paths
+- Unsupported operations
+
+Invalid requests are rejected before reaching the Filesystem Service, improving reliability and security.
+
+---
+
+# 📝 Logging
+
+Every tool execution is logged to simplify debugging and monitoring.
+
+Typical log information includes:
+
+- Tool name
+- Execution time
+- Request parameters
+- Success or failure
+- Error details (if any)
+
+Example:
+
+```text
+[INFO]
+
+Tool: Read File
+
+Path: package.json
+
+Status: Success
+
+Duration: 8 ms
+```
+
+Structured logging helps monitor the health and performance of the Filesystem MCP Server.
+
+---
+
+# 🔄 Request Lifecycle
+
+Every tool request follows the same execution pipeline.
+
+```text
+User Request
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Validate Arguments
+        │
+        ▼
+Select Tool
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Execute Operation
+        │
+        ▼
+Return Result
+        │
+        ▼
+Gateway
+        │
+        ▼
+AI Service
+        │
+        ▼
+User Response
+```
+
+This consistent lifecycle ensures predictable tool execution and simplifies future enhancements.
+
+---
+
+# 🔒 Security
+
+The Filesystem MCP Server works together with the Filesystem Service to enforce security.
+
+Security measures include:
+
+- Workspace restriction
+- Path validation
+- Controlled tool execution
+- Structured error handling
+- Logging and monitoring
+
+These safeguards ensure that the AI assistant only interacts with approved project files and cannot access arbitrary locations on the user's system.
+
+---
+
+# 💡 Benefits
+
+Building a dedicated Filesystem MCP Server provides several advantages:
+
+- Centralized tool management
+- Clear separation of concerns
+- Secure filesystem access
+- Reusable tool execution framework
+- Easier debugging through structured logging
+- Consistent request and response handling
+- Seamless integration with the MCP Gateway
+
+This server becomes the foundation for all future MCP Servers, including GitHub, Docker, Kubernetes, PostgreSQL, MongoDB, Redis, AWS, and Azure.
+
+---
+
+# ✅ Deliverables
+
+By the end of this part, you will have:
+
+- ✅ A fully functional Filesystem MCP Server
+- ✅ Tool registration mechanism
+- ✅ Tool request handling
+- ✅ Tool execution workflow
+- ✅ Argument validation
+- ✅ Structured responses
+- ✅ Centralized logging
+- ✅ Secure integration with the Filesystem Service
+
+---
+
+# 🚀 Next Part
+
+In **Part 5 – Gateway Integration**, we will connect the Filesystem MCP Server to our existing MCP infrastructure.
+
+We will:
+
+- Register the Filesystem MCP Server during application startup
+- Add it to the Server Registry
+- Connect it to the MCP Gateway
+- Discover available tools automatically
+- Execute filesystem tools through the Gateway
+
+By the end of the next part, our AI-powered Full Stack Developer Assistant will be able to execute real filesystem operations through the complete MCP pipeline.
+
+
+📚 Part 5 – Gateway Integration
+
+Connect the Filesystem MCP Server to the existing infrastructure.
+
+Implementation steps:
+
+Register the server during bootstrap
+Add it to the Registry
+Connect it to the Gateway
+Expose its tools
+
+Flow:
+
+Bootstrap
+      │
+      ▼
+Register Filesystem Server
+      │
+      ▼
+Registry
+      │
+      ▼
+Gateway
+      │
+      ▼
+Filesystem MCP Server
+
+# 🔗 Part 5 – Gateway Integration
+
+## 🎯 Goal
+
+In this part, we will integrate the **Filesystem MCP Server** with the existing MCP infrastructure built in the previous milestone.
+
+Until now, we have developed the individual building blocks:
+
+- MCP Gateway
+- Server Registry
+- Configuration
+- Logger
+- Health Monitor
+- Filesystem MCP Server
+
+Now it is time to connect them together.
+
+After completing this part, the Filesystem MCP Server will become the first fully operational server managed by the **MCP Gateway**.
+
+---
+
+# 🏗 Architecture
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Server Registry
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Local Project Workspace
+```
+
+The Gateway acts as the single entry point for all MCP communication, while the Registry manages all available MCP Servers.
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this part, you will understand:
+
+- How to register an MCP Server
+- How the Gateway discovers available servers
+- How the Registry stores server metadata
+- How tool execution is routed through the Gateway
+- How the Bootstrap initializes the MCP infrastructure
+- How to prepare the architecture for additional MCP Servers
+
+---
+
+# 🔄 Integration Overview
+
+The Filesystem MCP Server will be integrated into the backend during application startup.
+
+The startup process follows these steps:
+
+1. The application starts.
+2. The MCP Bootstrap initializes the infrastructure.
+3. The Filesystem MCP Server is created.
+4. The server is registered with the Registry.
+5. The Gateway discovers the registered server.
+6. The Gateway exposes the server's tools.
+7. The AI Service can execute filesystem tools through the Gateway.
+
+This initialization happens only once when the backend starts.
+
+---
+
+# 🚀 Step 1 – Register the Filesystem Server During Bootstrap
+
+The Bootstrap is responsible for initializing the MCP infrastructure.
+
+During application startup, it creates an instance of the Filesystem MCP Server and registers it with the Registry.
+
+```text
+Application Starts
+        │
+        ▼
+Bootstrap
+        │
+        ▼
+Create Filesystem MCP Server
+        │
+        ▼
+Register Server
+```
+
+This ensures that the server is available before any AI requests are processed.
+
+---
+
+# 📋 Step 2 – Add the Server to the Registry
+
+Once created, the Filesystem MCP Server is added to the **Server Registry**.
+
+The Registry maintains metadata about every available server.
+
+Typical information includes:
+
+- Server ID
+- Server Name
+- Version
+- Connection Status
+- Transport Type
+- Registered Tools
+
+Example:
+
+| Server | Status | Transport |
+|---------|--------|-----------|
+| Filesystem | Connected | stdio |
+
+As additional MCP Servers are added, they will also be managed by the Registry.
+
+---
+
+# 🌉 Step 3 – Connect the Server to the Gateway
+
+The MCP Gateway communicates only with servers registered in the Registry.
+
+When the Filesystem MCP Server is registered, the Gateway automatically discovers it.
+
+```text
+Gateway
+
+        │
+
+        ▼
+
+Registry
+
+        │
+
+        ▼
+
+Filesystem MCP Server
+```
+
+The Gateway does not need to know implementation details of the server.
+
+Its responsibilities include:
+
+- Discovering servers
+- Executing tools
+- Managing connections
+- Monitoring health
+- Returning responses
+
+This keeps the AI Service completely decoupled from individual MCP Servers.
+
+---
+
+# 🛠 Step 4 – Expose Filesystem Tools
+
+After the Filesystem MCP Server is connected to the Gateway, all registered tools become available to the AI assistant.
+
+Initially, the server will expose tools such as:
+
+- 📄 Read File
+- 📂 List Directory
+- 📌 File Exists
+- 📑 File Metadata
+- 📚 Read Multiple Files
+- 🔍 Search Files
+- 🌳 Project Tree
+
+The Gateway can discover these tools dynamically and execute them whenever required.
+
+---
+
+# 🔄 Request Flow
+
+Once the integration is complete, every filesystem request follows the same execution pipeline.
+
+```text
+User Request
+        │
+        ▼
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Server Registry
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Local Project Files
+        │
+        ▼
+Tool Result
+        │
+        ▼
+Gateway
+        │
+        ▼
+AI Service
+        │
+        ▼
+LLM
+        │
+        ▼
+User Response
+```
+
+The AI Service remains unaware of the underlying server implementation and communicates only with the Gateway.
+
+---
+
+# 🔍 Tool Discovery
+
+One of the key benefits of the Gateway architecture is **dynamic tool discovery**.
+
+Instead of hardcoding available tools inside the AI Service, the Gateway queries registered servers and retrieves the list of supported tools.
+
+Example:
+
+```text
+Gateway
+
+        │
+
+        ▼
+
+Filesystem Server
+
+        │
+
+        ▼
+
+Available Tools
+
+• Read File
+
+• List Directory
+
+• Search Files
+
+• Project Tree
+```
+
+This allows new tools to be added without modifying the AI Service.
+
+---
+
+# 📈 Benefits
+
+Integrating the Filesystem MCP Server with the Gateway provides several advantages:
+
+- Centralized MCP communication
+- Dynamic server discovery
+- Automatic tool discovery
+- Cleaner backend architecture
+- Better separation of concerns
+- Easier scalability
+- Simplified maintenance
+- Reusable infrastructure for future MCP Servers
+
+Future servers such as GitHub, Docker, Kubernetes, PostgreSQL, MongoDB, Redis, AWS, and Azure will follow the same integration process.
+
+---
+
+# 🏛 Final Architecture
+
+```text
+                         Chrome Extension
+                                 │
+                                 ▼
+                         Express Backend
+                                 │
+                                 ▼
+                            AI Service
+                                 │
+                                 ▼
+                           MCP Gateway
+                                 │
+                                 ▼
+                          Server Registry
+                                 │
+                 ┌───────────────┴───────────────┐
+                 ▼                               ▼
+       Filesystem MCP Server           Future MCP Servers
+                 │
+                 ▼
+         Filesystem Service
+                 │
+                 ▼
+        Local Project Workspace
+```
+
+This architecture provides a scalable foundation for integrating any number of MCP Servers.
+
+---
+
+# ✅ Deliverables
+
+By the end of this part, you will have:
+
+- ✅ Filesystem MCP Server registered during application startup
+- ✅ Server added to the Registry
+- ✅ Gateway connected to the Filesystem MCP Server
+- ✅ Automatic tool discovery
+- ✅ Filesystem tools exposed through the Gateway
+- ✅ End-to-end communication between the AI Service and the Filesystem MCP Server
+- ✅ A scalable architecture ready for future MCP Server integrations
+
+---
+
+# 🚀 Next Part
+
+In **Part 6 – AI Integration**, we will connect the **AI Service** to the MCP Gateway.
+
+Instead of sending every user request directly to the Large Language Model (LLM), the AI Service will first determine whether external tools are required.
+
+If a filesystem operation is needed, the request will be routed through the MCP Gateway, the appropriate tool will be executed, and the results will be added to the LLM prompt.
+
+This will be the first time our **AI-powered Full Stack Developer Assistant** uses real project data to generate accurate, context-aware responses.
+
+
+📚 Part 6 – AI Integration
+
+Update the AI Service to use MCP tools.
+
+Instead of:
+
+User
+      │
+      ▼
+LLM
+
+The flow becomes:
+
+User
+      │
+      ▼
+AI Service
+      │
+      ▼
+Need filesystem?
+      │
+      ├── No ─────────► LLM
+      │
+      ▼
+Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Read project files
+      │
+      ▼
+Append context
+      │
+      ▼
+LLM
+      │
+      ▼
+Streaming Response
+
+# 🤖 Part 6 – AI Integration
+
+## 🎯 Goal
+
+In this part, we will integrate the **AI Service** with the **MCP Gateway**, enabling our AI-powered Full Stack Developer Assistant to use external tools when generating responses.
+
+Until now, every user prompt was sent directly to the Large Language Model (LLM). While this works for general programming questions, it cannot answer project-specific questions because the LLM has no access to the developer's local files.
+
+With MCP integration, the AI Service will first determine whether a user request requires external project context. If it does, it will execute the appropriate Filesystem MCP Tool, retrieve the required information, append it to the prompt, and then send the enriched context to the LLM.
+
+This transforms our assistant from a general-purpose chatbot into a context-aware software development assistant.
+
+---
+
+# 🏗 Previous Flow
+
+Before MCP integration, every request followed a simple path.
+
+```text
+User
+      │
+      ▼
+Chrome Extension
+      │
+      ▼
+Express Backend
+      │
+      ▼
+AI Service
+      │
+      ▼
+LLM
+      │
+      ▼
+Streaming Response
+```
+
+The AI relied entirely on its pre-trained knowledge.
+
+It could not:
+
+- Read project files
+- Understand the project structure
+- Explain application-specific code
+- Inspect configuration files
+
+As a result, responses were often generic.
+
+---
+
+# 🚀 New Flow with MCP
+
+After integrating the MCP Gateway, the AI Service becomes capable of deciding whether external tools are needed.
+
+```text
+User
+      │
+      ▼
+AI Service
+      │
+      ▼
+Need Filesystem Tool?
+      │
+      ├────────────── No ──────────────► LLM
+      │
+      ▼
+MCP Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Read Project Files
+      │
+      ▼
+Return Context
+      │
+      ▼
+Append Context to Prompt
+      │
+      ▼
+LLM
+      │
+      ▼
+Streaming Response
+```
+
+The AI now combines **LLM reasoning** with **real project data**, resulting in more accurate and context-aware responses.
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this part, you will understand:
+
+- How the AI Service communicates with the MCP Gateway
+- How tool execution fits into the AI workflow
+- How project context is retrieved
+- How retrieved data is added to the LLM prompt
+- How streaming responses continue to work after MCP integration
+- How the architecture supports additional MCP Servers
+
+---
+
+# 🧠 Deciding When to Use MCP
+
+Not every request requires external tools.
+
+The AI Service will first analyze the user's prompt and determine whether filesystem access is necessary.
+
+Examples that **do not** require MCP:
+
+- Explain JavaScript promises
+- What is Docker?
+- Difference between React and Vue
+
+These requests can be answered directly by the LLM.
+
+Examples that **do** require MCP:
+
+- Explain my `package.json`
+- Read `README.md`
+- Show my project structure
+- Which framework is this project using?
+- Why is this API failing?
+- Explain `src/app.ts`
+
+For these requests, the AI Service invokes the appropriate MCP tool before calling the LLM.
+
+---
+
+# 📂 Retrieving Project Context
+
+When a tool is required, the AI Service sends a request to the MCP Gateway.
+
+The Gateway selects the appropriate MCP Server and executes the requested tool.
+
+Example:
+
+```text
+User
+
+↓
+
+Explain package.json
+
+↓
+
+AI Service
+
+↓
+
+Gateway
+
+↓
+
+Filesystem MCP Server
+
+↓
+
+Read File Tool
+
+↓
+
+package.json
+
+↓
+
+Return Content
+```
+
+The AI Service receives the file contents as structured data.
+
+---
+
+# ✍ Appending Context
+
+Instead of sending only the user's prompt to the LLM, the AI Service enriches the prompt with the retrieved project information.
+
+Conceptually, the prompt becomes:
+
+```text
+User Question
+
++
+
+Filesystem Tool Result
+
+↓
+
+LLM
+```
+
+This additional context allows the LLM to generate responses based on the **actual project** rather than assumptions.
+
+---
+
+# 🌊 Streaming Responses
+
+One of the goals of our backend is to provide real-time responses to the Chrome Extension.
+
+MCP integration does not change the streaming architecture.
+
+The flow becomes:
+
+```text
+User Prompt
+
+↓
+
+Retrieve Project Context
+
+↓
+
+Append Context
+
+↓
+
+Send to LLM
+
+↓
+
+Stream Response
+
+↓
+
+Chrome Extension
+```
+
+The user continues to receive responses incrementally while benefiting from project-specific information.
+
+---
+
+# 🔄 End-to-End Request Flow
+
+The complete request lifecycle is now:
+
+```text
+User
+      │
+      ▼
+Chrome Extension
+      │
+      ▼
+Express Backend
+      │
+      ▼
+AI Controller
+      │
+      ▼
+AI Service
+      │
+      ▼
+Determine Tool Requirement
+      │
+      ├────────────── No ──────────────► LLM
+      │
+      ▼
+MCP Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Read Project Data
+      │
+      ▼
+Return Tool Result
+      │
+      ▼
+Append Context
+      │
+      ▼
+LLM
+      │
+      ▼
+Streaming Response
+      │
+      ▼
+Chrome Extension
+```
+
+This architecture keeps the AI Service focused on orchestration while delegating filesystem operations to the MCP infrastructure.
+
+---
+
+# 🔮 Preparing for Future MCP Servers
+
+The integration pattern established in this part is not limited to the Filesystem MCP Server.
+
+Future servers will follow the same workflow.
+
+Examples include:
+
+- GitHub MCP Server
+- Docker MCP Server
+- Kubernetes MCP Server
+- PostgreSQL MCP Server
+- MongoDB MCP Server
+- Redis MCP Server
+- AWS MCP Server
+- Azure MCP Server
+
+The AI Service will continue to communicate only with the MCP Gateway, regardless of how many servers are added.
+
+---
+
+# 💡 Benefits
+
+Integrating the AI Service with the MCP Gateway provides several advantages:
+
+- Context-aware AI responses
+- Access to real project files
+- Better code explanations
+- Improved debugging assistance
+- Smarter architectural recommendations
+- Separation of AI logic and infrastructure
+- Scalable support for additional developer tools
+
+This architecture enables the assistant to understand the current project instead of relying solely on general programming knowledge.
+
+---
+
+# ✅ Deliverables
+
+By the end of this part, you will have:
+
+- ✅ AI Service integrated with the MCP Gateway
+- ✅ Automatic decision-making for tool execution
+- ✅ Retrieval of project context through MCP tools
+- ✅ Context enrichment before LLM invocation
+- ✅ Streaming responses with project-aware information
+- ✅ A scalable AI orchestration layer ready for additional MCP Servers
+
+---
+
+# 🚀 Next Part
+
+In **Part 7 – End-to-End Testing**, we will verify the complete MCP workflow by testing real scenarios through the Chrome Extension.
+
+We will:
+
+- Read project files using the Filesystem MCP Server
+- List directories
+- Verify workspace restrictions
+- Test invalid path handling
+- Validate Gateway communication
+- Confirm AI responses use real project context
+- Ensure streaming responses continue to work correctly
+
+By the end of the next part, we will have a fully functional, end-to-end MCP-enabled AI-powered Full Stack Developer Assistant capable of understanding and interacting with real software projects.
+
+
+📚 Part 7 – End-to-End Testing
+
+Verify the complete flow.
+
+Test scenarios:
+
+Read README.md
+Read package.json
+List project directory
+Verify workspace restrictions
+Handle invalid paths
+Test streaming AI responses with project context
+📂 Final Folder Structure
+src/
+│
+├── ai/
+│
+├── controllers/
+│
+├── routes/
+│
+├── services/
+│
+├── mcp/
+│   │
+│   ├── gateway/
+│   ├── registry/
+│   ├── config/
+│   ├── logger/
+│   ├── health/
+│   ├── bootstrap/
+│   ├── client/
+│   │
+│   ├── servers/
+│   │     └── filesystem/
+│   │            ├── filesystem.server.ts
+│   │            ├── filesystem.service.ts
+│   │            ├── filesystem.tools.ts
+│   │            ├── filesystem.constants.ts
+│   │            ├── filesystem.types.ts
+│   │            └── index.ts
+│   │
+│   └── types/
+│
+└── server.ts
+✅ Deliverables
+
+By the end of Milestone 5.3, you will have:
+
+✅ A production-ready Filesystem MCP Server
+✅ Workspace-restricted filesystem access
+✅ Tool registration and execution
+✅ Gateway integration
+✅ AI Service capable of reading real project files
+✅ End-to-end MCP communication
+✅ A foundation for future MCP Servers (GitHub, Docker, Kubernetes, PostgreSQL, MongoDB, Redis, AWS, Azure)
+
+# 🧪 Part 7 – End-to-End Testing
+
+## 🎯 Goal
+
+In this final part of **Milestone 5.3**, we will verify that the entire MCP pipeline works correctly from the Chrome Extension to the Filesystem MCP Server.
+
+By the end of this part, our AI-powered Full Stack Developer Assistant will be capable of retrieving real project information through the **Model Context Protocol (MCP)** instead of relying solely on the Large Language Model (LLM).
+
+This milestone marks the first fully functional implementation of MCP within our application.
+
+---
+
+# 🏗 Complete Architecture
+
+```text
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Controller
+        │
+        ▼
+AI Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Server Registry
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Local Project Workspace
+```
+
+Every request now flows through the complete MCP infrastructure before reaching the LLM.
+
+---
+
+# 🎯 Learning Objectives
+
+By the end of this part, you will understand:
+
+- How to test the complete MCP workflow
+- How the Chrome Extension communicates with the backend
+- How the Gateway routes requests
+- How Filesystem tools are executed
+- How project context is retrieved
+- How the AI Service enriches prompts
+- How streaming responses work with MCP
+
+---
+
+# 🧪 Test Scenarios
+
+The following scenarios verify that every layer of the MCP infrastructure is working correctly.
+
+---
+
+## 📄 Test 1 – Read README.md
+
+Verify that the AI assistant can retrieve the project's README file.
+
+Example prompt:
+
+```text
+Explain the README.md file.
+```
+
+Expected flow:
+
+```text
+User
+        │
+        ▼
+AI Service
+        │
+        ▼
+Gateway
+        │
+        ▼
+Read File Tool
+        │
+        ▼
+README.md
+        │
+        ▼
+LLM Response
+```
+
+Expected result:
+
+- README is read successfully
+- File contents are appended to the prompt
+- AI provides an accurate explanation
+
+---
+
+## 📦 Test 2 – Read package.json
+
+Verify that configuration files can be accessed.
+
+Example prompt:
+
+```text
+Explain my package.json.
+```
+
+Expected result:
+
+- package.json is retrieved
+- Dependencies are available to the AI
+- Scripts are explained
+- Project metadata is understood
+
+---
+
+## 📂 Test 3 – List Project Directory
+
+Verify that directory traversal works inside the workspace.
+
+Example prompt:
+
+```text
+Show my project structure.
+```
+
+Expected result:
+
+- Root folders are listed
+- Source directories are discovered
+- AI understands the project layout
+
+---
+
+## 🔒 Test 4 – Verify Workspace Restrictions
+
+Attempt to access a location outside the configured workspace.
+
+Example request:
+
+```text
+Read:
+
+C:\Windows\System32
+```
+
+Expected result:
+
+- Access denied
+- Validation error returned
+- No filesystem operation executed
+
+This confirms that the Filesystem MCP Server enforces workspace isolation.
+
+---
+
+## ❌ Test 5 – Handle Invalid Paths
+
+Attempt to access a file that does not exist.
+
+Example:
+
+```text
+Read missing-file.txt
+```
+
+Expected result:
+
+- File not found
+- Structured error response
+- Backend remains stable
+- Gateway logs the failure
+
+---
+
+## 🌊 Test 6 – Streaming AI Responses
+
+Verify that MCP works correctly with streaming responses.
+
+Example prompt:
+
+```text
+Explain the architecture of this project.
+```
+
+Expected flow:
+
+```text
+User
+
+↓
+
+Gateway
+
+↓
+
+Filesystem Tools
+
+↓
+
+Project Context
+
+↓
+
+LLM
+
+↓
+
+Streaming Response
+
+↓
+
+Chrome Extension
+```
+
+Expected result:
+
+- Project context is retrieved first
+- LLM generates a project-aware response
+- Response is streamed back to the Chrome Extension in real time
+
+---
+
+# 🔄 Complete Request Lifecycle
+
+The complete end-to-end request flow is shown below.
+
+```text
+User
+        │
+        ▼
+Chrome Extension
+        │
+        ▼
+Express Backend
+        │
+        ▼
+AI Controller
+        │
+        ▼
+AI Service
+        │
+        ▼
+Need MCP Tool?
+        │
+        ├────────────── No ─────────────► LLM
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Server Registry
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Local Project Workspace
+        │
+        ▼
+Tool Result
+        │
+        ▼
+Gateway
+        │
+        ▼
+AI Service
+        │
+        ▼
+Append Context
+        │
+        ▼
+LLM
+        │
+        ▼
+Streaming Response
+        │
+        ▼
+Chrome Extension
+```
+
+This confirms that every layer of the MCP infrastructure is functioning correctly.
+
+---
+
+# 📂 Final Project Structure
+
+```text
+src/
+│
+├── ai/
+│
+├── controllers/
+│
+├── routes/
+│
+├── services/
+│
+├── mcp/
+│   │
+│   ├── gateway/
+│   ├── registry/
+│   ├── config/
+│   ├── logger/
+│   ├── health/
+│   ├── bootstrap/
+│   ├── client/
+│   │
+│   ├── servers/
+│   │     └── filesystem/
+│   │            ├── filesystem.server.ts
+│   │            ├── filesystem.service.ts
+│   │            ├── filesystem.tools.ts
+│   │            ├── filesystem.constants.ts
+│   │            ├── filesystem.types.ts
+│   │            └── index.ts
+│   │
+│   └── types/
+│
+└── server.ts
+```
+
+This modular structure makes it easy to add additional MCP Servers without changing the AI Service.
+
+---
+
+# 🚀 Milestone Summary
+
+After completing **Milestone 5.3**, our backend has evolved from a traditional AI API into an MCP-enabled developer platform.
+
+The AI assistant can now:
+
+- Retrieve real project files
+- Explore project directories
+- Execute filesystem tools
+- Validate workspace access
+- Securely interact with the operating system
+- Provide context-aware responses using real project data
+
+The **MCP Gateway** now acts as the single communication layer between the AI Service and all external developer tools.
+
+---
+
+# ✅ Deliverables
+
+By the end of **Milestone 5.3**, you will have:
+
+- ✅ A production-ready Filesystem MCP Server
+- ✅ Workspace-restricted filesystem access
+- ✅ Secure path validation
+- ✅ Tool registration and execution
+- ✅ Filesystem Service with reusable business logic
+- ✅ MCP Gateway integration
+- ✅ AI Service capable of reading real project files
+- ✅ Context-aware prompt enrichment
+- ✅ End-to-end MCP communication
+- ✅ Streaming AI responses with real project context
+- ✅ A scalable foundation for future MCP Servers
+
+---
+
+# 🚀 Next Milestone
+
+## **Milestone 5.4 – Custom Developer MCP Tools**
+
+With the Filesystem MCP Server fully operational, the next milestone focuses on building **intelligent developer tools** that understand an entire software project rather than individual files.
+
+We will implement tools to:
+
+- 🔍 Search project files
+- 📌 Find TODO and FIXME comments
+- 📄 Read and analyze source code
+- 🌳 Generate complete project trees
+- 📦 Analyze project dependencies
+- 🏗 Detect application architecture
+- 🌐 Identify frameworks and technologies
+- 🧠 Generate project summaries
+- ⚙ Explain configuration files
+
+By the end of Milestone **5.4**, our AI-powered Full Stack Developer Assistant will move beyond simple file access and become an intelligent development companion capable of understanding, analyzing, and explaining real-world software projects through custom MCP tools.
