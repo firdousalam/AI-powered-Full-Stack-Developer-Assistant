@@ -1,19 +1,11 @@
 import { registry } from "../registry";
-
 import { logger } from "../logger";
 
 import {
-
     MCPServer,
-
     MCPTool,
-
-    ServerStatus,
-
     ToolRequest,
-
     ToolResponse
-
 } from "../types";
 
 class MCPGateway {
@@ -21,18 +13,14 @@ class MCPGateway {
     /**
      * Register a new MCP Server
      */
-    registerServer(
-
+    public registerServer(
         server: MCPServer
-
     ): void {
 
         registry.register(server);
 
         logger.info(
-
             `Gateway registered server: ${server.name}`
-
         );
 
     }
@@ -40,10 +28,8 @@ class MCPGateway {
     /**
      * Connect Server
      */
-    async connect(
-
+    public async connect(
         serverId: string
-
     ): Promise<boolean> {
 
         const server = registry.get(serverId);
@@ -51,21 +37,17 @@ class MCPGateway {
         if (!server) {
 
             logger.error(
-
                 `Server '${serverId}' not found.`
-
             );
 
             return false;
 
         }
 
-        server.status = ServerStatus.CONNECTED;
+        await server.connect();
 
         logger.info(
-
             `${server.name} connected.`
-
         );
 
         return true;
@@ -75,28 +57,26 @@ class MCPGateway {
     /**
      * Disconnect Server
      */
-    async disconnect(
-
+    public async disconnect(
         serverId: string
-
     ): Promise<boolean> {
 
         const server = registry.get(serverId);
 
         if (!server) {
 
+            logger.warn(
+                `Server '${serverId}' not found.`
+            );
+
             return false;
 
         }
 
-        server.status =
+        await server.disconnect();
 
-            ServerStatus.DISCONNECTED;
-
-        logger.warn(
-
+        logger.info(
             `${server.name} disconnected.`
-
         );
 
         return true;
@@ -106,16 +86,12 @@ class MCPGateway {
     /**
      * Execute Tool
      */
-    async executeTool(
-
+    public async executeTool(
         request: ToolRequest
-
     ): Promise<ToolResponse> {
 
         const server = registry.get(
-
             request.serverId
-
         );
 
         if (!server) {
@@ -124,89 +100,103 @@ class MCPGateway {
 
                 success: false,
 
-                error: "Server not found."
-
-            };
-
-        }
-
-        const tool = server.tools.find(
-
-            tool =>
-
-                tool.name === request.toolName
-
-        );
-
-        if (!tool) {
-
-            return {
-
-                success: false,
-
-                error: "Tool not found."
+                error: `Server '${request.serverId}' not found.`
 
             };
 
         }
 
         logger.info(
-
-            `Executing ${tool.name} on ${server.name}`
-
+            `Executing '${request.toolName}' on '${server.name}'.`
         );
 
-        const result = await tool.execute(
-
-            request.arguments
-
-        );
-
-        return {
-
-            success: true,
-
-            data: result
-
-        };
+        return await server.executeTool(request);
 
     }
 
     /**
      * Discover All Tools
      */
-    discoverTools(): MCPTool[] {
+    public discoverTools(): MCPTool[] {
 
         return registry
-
             .getAll()
+            .flatMap(server => server.discoverTools());
 
-            .flatMap(
+    }
 
-                server => server.tools
+    /**
+     * Discover Tools for a Specific Server
+     */
+    public discoverServerTools(
+        serverId: string
+    ): MCPTool[] {
 
-            );
+        const server = registry.get(serverId);
+
+        if (!server) {
+            return [];
+        }
+
+        return server.discoverTools();
 
     }
 
     /**
      * Health Check
      */
-    healthCheck() {
+    public async healthCheck() {
 
-        return registry
+        const servers = registry.getAll();
 
-            .getAll()
+        return Promise.all(
 
-            .map(server => ({
+            servers.map(async (server) => ({
 
                 id: server.id,
 
                 name: server.name,
 
-                status: server.status
+                version: server.version,
 
-            }));
+                status: server.status,
+
+                health: await server.healthCheck()
+
+            }))
+
+        );
+
+    }
+
+    /**
+     * List Registered Servers
+     */
+    public getServers(): MCPServer[] {
+
+        return registry.getAll();
+
+    }
+
+    /**
+     * Get Server
+     */
+    public getServer(
+        serverId: string
+    ): MCPServer | undefined {
+
+        return registry.get(serverId);
+
+    }
+
+    /**
+     * Check Registration
+     */
+    public hasServer(
+        serverId: string
+    ): boolean {
+
+        return registry.has(serverId);
 
     }
 

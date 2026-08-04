@@ -1,62 +1,100 @@
-// import gateway from "../gateway";
+import { gateway } from "../gateway";
 import { registry } from "../registry";
 import { healthMonitor } from "../health";
-
 import { logger } from "../logger";
 
+import {
+    FilesystemServer,
+    FilesystemService,
+    FilesystemTools
+} from "../servers/filesystem";
+
 class MCPBootstrap {
+
+    private filesystemServer?: FilesystemServer;
 
     /**
      * Initialize MCP Infrastructure
      */
-    async initialize(): Promise<void> {
+    public async initialize(): Promise<void> {
+
+        logger.info("Initializing MCP Infrastructure...");
+
+        /**
+         * ------------------------------------
+         * Create Filesystem Module
+         * ------------------------------------
+         */
+
+        const filesystemService =
+            new FilesystemService();
+
+        const filesystemTools =
+            new FilesystemTools(filesystemService);
+
+        this.filesystemServer =
+            new FilesystemServer(
+                filesystemService,
+                filesystemTools
+            );
+
+        /**
+         * ------------------------------------
+         * Register Server
+         * ------------------------------------
+         */
+
+        //  registry.register(this.filesystemServer);
+
+        gateway.registerServer(this.filesystemServer);
+
+        /**
+         * ------------------------------------
+         * Connect Server
+         * ------------------------------------
+         */
+
+        await this.filesystemServer.connect();
 
         logger.info(
+            `Registered Servers: ${registry.getAll().length}`
+        );
 
-            "Initializing MCP Infrastructure..."
-
+        logger.info(
+            `Registered Tools: ${this.filesystemServer.discoverTools().length}`
         );
 
         /**
-         * Future:
-         * Register Filesystem Server
-         * Register GitHub Server
-         * Register Docker Server
+         * ------------------------------------
+         * Start Health Monitor
+         * ------------------------------------
          */
-
-        logger.info(
-
-            `Registered Servers: ${registry.getAll().length}`
-
-        );
 
         healthMonitor.start();
 
-        logger.info(
-
-            "MCP Infrastructure Ready."
-
-        );
+        logger.info("MCP Infrastructure Ready.");
 
     }
 
     /**
-     * Gracefully Shutdown
+     * Graceful Shutdown
      */
-    async shutdown(): Promise<void> {
+    public async shutdown(): Promise<void> {
 
         logger.info(
-
             "Stopping MCP Infrastructure..."
-
         );
+
+        if (this.filesystemServer) {
+
+            await this.filesystemServer.disconnect();
+
+        }
 
         healthMonitor.stop();
 
         logger.info(
-
             "MCP Infrastructure Stopped."
-
         );
 
     }

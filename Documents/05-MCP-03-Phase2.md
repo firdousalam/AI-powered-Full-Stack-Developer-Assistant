@@ -126,6 +126,333 @@ Connect Server
 Application Ready
 ```
 
+# 📚 Part 1 – Bootstrap Integration
+
+## 🎯 Objective
+
+The first step in completing **Milestone 5.3 – Phase 2** is integrating the **Filesystem MCP Server** into the application's startup process.
+
+In Phase 1, we built the complete Filesystem MCP module, but it currently exists as an independent component. During application startup, we need to initialize the MCP infrastructure and register the Filesystem Server so that it becomes available for tool discovery and execution.
+
+After this step, the Filesystem MCP Server will be a fully managed component of the backend instead of a standalone module.
+
+---
+
+# 🏗 Why Bootstrap Integration?
+
+Modern applications should initialize all required services during startup rather than creating them on demand.
+
+Bootstrapping provides several benefits:
+
+- Ensures all MCP servers are available before handling requests
+- Centralizes initialization logic
+- Validates configuration early
+- Detects startup failures immediately
+- Simplifies future server registration
+- Provides a single entry point for all MCP infrastructure
+
+As the project grows to include GitHub, Docker, Kubernetes, PostgreSQL, MongoDB, Redis, AWS, and Azure MCP servers, the bootstrap process will initialize each server automatically.
+
+---
+
+# 🚀 Responsibilities
+
+During application startup, the bootstrap process will:
+
+- Create the MCP Gateway
+- Initialize the Server Registry
+- Create the Filesystem MCP Server
+- Register the server with the Registry
+- Register the server with the Gateway
+- Establish the server connection
+- Verify server health
+- Log successful initialization
+
+At the end of the startup process, the backend will be ready to execute filesystem tools through the Gateway.
+
+---
+
+# 📂 Startup Flow
+
+The application startup sequence will become:
+
+```text
+Application Start
+        │
+        ▼
+Bootstrap
+        │
+        ▼
+Initialize Gateway
+        │
+        ▼
+Create Filesystem Server
+        │
+        ▼
+Register Server
+        │
+        ▼
+Connect Server
+        │
+        ▼
+Application Ready
+```
+
+Each step prepares the infrastructure for the next one, ensuring that all MCP components are initialized in the correct order.
+
+---
+
+# 🔄 Detailed Initialization Flow
+
+The bootstrap process performs the following sequence:
+
+```text
+Start Application
+        │
+        ▼
+Load Environment Configuration
+        │
+        ▼
+Create Gateway
+        │
+        ▼
+Create Server Registry
+        │
+        ▼
+Create Filesystem Service
+        │
+        ▼
+Create Filesystem Tools
+        │
+        ▼
+Create Filesystem Server
+        │
+        ▼
+Register Server
+        │
+        ▼
+Connect Server
+        │
+        ▼
+Run Health Check
+        │
+        ▼
+Ready to Accept Requests
+```
+
+This initialization sequence ensures that all dependencies are available before the application begins processing user requests.
+
+---
+
+# 🧩 Components Involved
+
+Several components work together during bootstrap:
+
+## MCP Gateway
+
+Acts as the central communication layer responsible for routing tool execution requests to the appropriate MCP Server.
+
+---
+
+## Server Registry
+
+Maintains information about every registered MCP Server, including server metadata, available tools, and current connection status.
+
+---
+
+## Filesystem Service
+
+Provides the business logic for interacting with the local workspace, including file reading, directory listing, metadata retrieval, and path validation.
+
+---
+
+## Filesystem Tools
+
+Defines the collection of MCP tools exposed by the Filesystem Server, including their descriptions, input schemas, and execution logic.
+
+---
+
+## Filesystem MCP Server
+
+Coordinates tool registration, request handling, response generation, logging, and communication with the service layer.
+
+---
+
+# 📌 Registration Process
+
+During initialization, the Filesystem Server is registered with both the Registry and the Gateway.
+
+```text
+Filesystem Server
+        │
+        ├──────────────► Server Registry
+        │
+        └──────────────► MCP Gateway
+```
+
+The Registry keeps track of the server, while the Gateway enables tool discovery and execution.
+
+---
+
+# 🔍 Validation During Startup
+
+The bootstrap process should verify that:
+
+- The workspace directory exists
+- Configuration values are valid
+- The Filesystem Server initializes successfully
+- All tools are registered correctly
+- The server can establish a connection
+- The health check passes
+
+If any of these steps fail, the application should log the error and prevent incomplete initialization.
+
+---
+
+# 📊 Expected Result
+
+After completing bootstrap integration:
+
+- The Filesystem MCP Server is initialized automatically.
+- The server is registered with the Server Registry.
+- The Gateway can discover filesystem tools.
+- The server reports a healthy status.
+- The backend is ready to process MCP tool requests.
+
+---
+# Bootstrap.ts
+
+```ts
+import gateway from "../gateway";
+import { registry } from "../registry";
+import { healthMonitor } from "../health";
+import { logger } from "../logger";
+
+import {
+    FilesystemServer,
+    FilesystemService,
+    FilesystemTools
+} from "../servers/filesystem";
+
+class MCPBootstrap {
+
+    private filesystemServer?: FilesystemServer;
+
+    /**
+     * Initialize MCP Infrastructure
+     */
+    public async initialize(): Promise<void> {
+
+        logger.info("Initializing MCP Infrastructure...");
+
+        /**
+         * ------------------------------------
+         * Create Filesystem Module
+         * ------------------------------------
+         */
+
+        const filesystemService =
+            new FilesystemService();
+
+        const filesystemTools =
+            new FilesystemTools(filesystemService);
+
+        this.filesystemServer =
+            new FilesystemServer(
+                filesystemService,
+                filesystemTools
+            );
+
+        /**
+         * ------------------------------------
+         * Register Server
+         * ------------------------------------
+         */
+
+        registry.register(this.filesystemServer);
+
+        gateway.registerServer(this.filesystemServer);
+
+        /**
+         * ------------------------------------
+         * Connect Server
+         * ------------------------------------
+         */
+
+        await this.filesystemServer.connect();
+
+        logger.info(
+            `Registered Servers: ${registry.getAll().length}`
+        );
+
+        logger.info(
+            `Registered Tools: ${this.filesystemServer.discoverTools().length}`
+        );
+
+        /**
+         * ------------------------------------
+         * Start Health Monitor
+         * ------------------------------------
+         */
+
+        healthMonitor.start();
+
+        logger.info("MCP Infrastructure Ready.");
+
+    }
+
+    /**
+     * Graceful Shutdown
+     */
+    public async shutdown(): Promise<void> {
+
+        logger.info(
+            "Stopping MCP Infrastructure..."
+        );
+
+        if (this.filesystemServer) {
+
+            await this.filesystemServer.disconnect();
+
+        }
+
+        healthMonitor.stop();
+
+        logger.info(
+            "MCP Infrastructure Stopped."
+        );
+
+    }
+
+}
+
+export default new MCPBootstrap();
+
+
+```
+
+
+# ✅ Deliverables
+
+By the end of this part, the project will have:
+
+- ✅ Automatic MCP initialization during application startup
+- ✅ Filesystem MCP Server creation
+- ✅ Server Registry registration
+- ✅ Gateway registration
+- ✅ Server connection
+- ✅ Health verification
+- ✅ Structured startup logging
+- ✅ Backend ready for MCP tool execution
+
+---
+
+# 🎯 Outcome
+
+After completing Bootstrap Integration, the Filesystem MCP Server will become an active part of the application's runtime environment. Every time the backend starts, the MCP infrastructure will initialize automatically, register the available servers, and prepare the system for tool execution, creating the foundation for all future MCP integrations.
+
+
+
 ---
 
 # 📚 Part 2 – Server Registry Integration

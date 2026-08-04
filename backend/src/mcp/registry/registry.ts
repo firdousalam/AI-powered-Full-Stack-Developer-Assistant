@@ -103,16 +103,12 @@ class MCPRegistry {
         const server = this.get(serverId);
 
         if (!server) {
-
             return [];
-
         }
 
-        return server.tools.map(
-
-            tool => tool.name
-
-        );
+        return server
+            .discoverTools()
+            .map(tool => tool.name);
 
     }
 

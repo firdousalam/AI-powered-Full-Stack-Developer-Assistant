@@ -3,6 +3,7 @@ import { env } from "./config/env";
 import { logger } from "./utils/logger";
 import dotenv from "dotenv";
 import { bootstrap } from "./mcp/bootstrap";
+import { gateway } from "./mcp/gateway";
 
 dotenv.config();
 
@@ -19,6 +20,20 @@ async function startServer(): Promise<void> {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
 
             logger("Server Started");
+
+            // logger("Running Gateway integration test...");
+
+            // const response = await gateway.executeTool({
+            //     serverId: "filesystem-server",
+            //     toolName: "listDirectory",
+            //     args: {
+            //         path: "."
+            //     }
+            // });
+
+            // logger(
+            //     JSON.stringify(response, null, 2)
+            // );
 
         });
 
