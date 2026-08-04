@@ -1,4 +1,3 @@
-
 // src/mcp/servers/filesystem/index.ts
 
 import { FilesystemServer } from "./filesystem.server";
@@ -6,8 +5,11 @@ import { FilesystemService } from "./filesystem.service";
 import { FilesystemTools } from "./filesystem.tools";
 
 /**
- * Create singleton instances
+ * ============================================================
+ * Singleton Instances
+ * ============================================================
  */
+
 export const filesystemService = new FilesystemService();
 
 export const filesystemTools = new FilesystemTools(
@@ -20,8 +22,11 @@ export const filesystemServer = new FilesystemServer(
 );
 
 /**
- * Module Exports
+ * ============================================================
+ * Class Exports
+ * ============================================================
  */
+
 export {
     FilesystemServer,
     FilesystemService,
@@ -29,18 +34,31 @@ export {
 };
 
 /**
- * Export Types
+ * ============================================================
+ * Types
+ * ============================================================
  */
+
 export * from "./filesystem.types";
 
 /**
- * Export Constants
+ * ============================================================
+ * Constants
+ * ============================================================
  */
+
 export * from "./filesystem.constants";
 
 /**
- * Factory Method
+ * ============================================================
+ * Factory
+ * ============================================================
+ * Intended for unit tests or creating isolated instances.
+ * The application should normally use the singleton
+ * `filesystemServer` exported above.
+ * ============================================================
  */
+
 export function createFilesystemServer(): FilesystemServer {
 
     const service = new FilesystemService();
