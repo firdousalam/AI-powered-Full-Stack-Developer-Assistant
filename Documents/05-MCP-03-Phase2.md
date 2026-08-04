@@ -594,6 +594,657 @@ Testing scenarios include:
 
 Successful execution confirms that the Filesystem MCP Server is fully operational.
 
+recommend building it in this order
+
+1. mcp.controller.ts (complete production code)
+GET /servers
+GET /tools
+GET /health
+POST /execute
+
+2. mcp.routes.ts (Express router)
+
+3. mcp.service.ts (optional abstraction over the Gateway)
+
+4. Register the routes in your Express application.
+End-to-end testing using Postman or your Chrome extension.
+
+This approach will produce code that compiles cleanly and matches the architecture you've already built.
+
+Given the amount of code involved, it's better to deliver it file by file so each piece is complete, production-ready, and easy to integrate.
+
+1. mcp.controller.ts (complete production code)
+GET /servers
+GET /tools
+GET /health
+POST /execute
+
+```ts
+// src/controllers/mcp.controller.ts
+
+import { Request, Response } from "express";
+
+import gateway from "../mcp/gateway";
+
+import { logger } from "../mcp/logger";
+
+import { ToolRequest } from "../mcp/types";
+
+class MCPController {
+
+    /**
+     * ============================================================
+     * GET /api/v1/mcp/servers
+     * ============================================================
+     * Returns all registered MCP servers.
+     */
+    public async getServers(
+
+        req: Request,
+
+        res: Response
+
+    ): Promise<void> {
+
+        try {
+
+            const servers = gateway.getServers();
+
+            res.status(200).json({
+
+                success: true,
+
+                count: servers.length,
+
+                data: servers.map(server => ({
+
+                    id: server.id,
+
+                    name: server.name,
+
+                    version: server.version,
+
+                    status: server.status
+
+                }))
+
+            });
+
+        } catch (error) {
+
+            logger.error(
+
+                "Failed to fetch MCP servers.",
+
+                error
+
+            );
+
+            res.status(500).json({
+
+                success: false,
+
+                error:
+
+                    error instanceof Error
+
+                        ? error.message
+
+                        : "Unknown error"
+
+            });
+
+        }
+
+    }
+
+    /**
+     * ============================================================
+     * GET /api/v1/mcp/tools
+     * ============================================================
+     * Returns all discoverable MCP tools.
+     */
+    public async getTools(
+
+        req: Request,
+
+        res: Response
+
+    ): Promise<void> {
+
+        try {
+
+            const tools = gateway.discoverTools();
+
+            res.status(200).json({
+
+                success: true,
+
+                count: tools.length,
+
+                data: tools.map(tool => ({
+
+                    name: tool.name,
+
+                    description: tool.description
+
+                }))
+
+            });
+
+        } catch (error) {
+
+            logger.error(
+
+                "Failed to discover MCP tools.",
+
+                error
+
+            );
+
+            res.status(500).json({
+
+                success: false,
+
+                error:
+
+                    error instanceof Error
+
+                        ? error.message
+
+                        : "Unknown error"
+
+            });
+
+        }
+
+    }
+
+    /**
+     * ============================================================
+     * GET /api/v1/mcp/health
+     * ============================================================
+     * Returns health information for every MCP server.
+     */
+    public async getHealth(
+
+        req: Request,
+
+        res: Response
+
+    ): Promise<void> {
+
+        try {
+
+            const health = await gateway.healthCheck();
+
+            res.status(200).json({
+
+                success: true,
+
+                data: health
+
+            });
+
+        } catch (error) {
+
+            logger.error(
+
+                "Failed to retrieve health status.",
+
+                error
+
+            );
+
+            res.status(500).json({
+
+                success: false,
+
+                error:
+
+                    error instanceof Error
+
+                        ? error.message
+
+                        : "Unknown error"
+
+            });
+
+        }
+
+    }
+
+    /**
+     * ============================================================
+     * POST /api/v1/mcp/execute
+     * ============================================================
+     * Executes an MCP Tool.
+     */
+    public async executeTool(
+
+        req: Request,
+
+        res: Response
+
+    ): Promise<void> {
+
+        try {
+
+            const {
+
+                serverId,
+
+                toolName,
+
+                args
+
+            } = req.body;
+
+            if (!serverId) {
+
+                res.status(400).json({
+
+                    success: false,
+
+                    error: "serverId is required."
+
+                });
+
+                return;
+
+            }
+
+            if (!toolName) {
+
+                res.status(400).json({
+
+                    success: false,
+
+                    error: "toolName is required."
+
+                });
+
+                return;
+
+            }
+
+            const request: ToolRequest = {
+
+                serverId,
+
+                toolName,
+
+                args
+
+            };
+
+            logger.info(
+
+                `Executing MCP Tool '${toolName}' on '${serverId}'.`
+
+            );
+
+            const response =
+
+                await gateway.executeTool(
+
+                    request
+
+                );
+
+            if (!response.success) {
+
+                res.status(400).json(response);
+
+                return;
+
+            }
+
+            res.status(200).json(response);
+
+        } catch (error) {
+
+            logger.error(
+
+                "Tool execution failed.",
+
+                error
+
+            );
+
+            res.status(500).json({
+
+                success: false,
+
+                error:
+
+                    error instanceof Error
+
+                        ? error.message
+
+                        : "Unknown error"
+
+            });
+
+        }
+
+    }
+
+}
+
+export default new MCPController();
+
+```
+2. mcp.routes.ts (Express router)
+
+It assumes:
+
+mcp.controller.ts exports a singleton:
+
+export default new MCPController();
+
+You use Express Router
+
+Your base route will be mounted as:
+
+app.use("/api/v1/mcp", mcpRoutes);
+
+```ts
+import { Router } from "express";
+
+import mcpController from "../controllers/mcp.controller";
+
+const router = Router();
+
+/**
+ * ============================================================
+ * MCP Server Endpoints
+ * ============================================================
+ */
+
+/**
+ * GET /api/v1/mcp/servers
+ *
+ * Returns all registered MCP servers.
+ */
+router.get(
+    "/servers",
+    mcpController.getServers.bind(mcpController)
+);
+
+/**
+ * GET /api/v1/mcp/tools
+ *
+ * Returns all available MCP tools.
+ */
+router.get(
+    "/tools",
+    mcpController.getTools.bind(mcpController)
+);
+
+/**
+ * GET /api/v1/mcp/health
+ *
+ * Returns health information for every server.
+ */
+router.get(
+    "/health",
+    mcpController.getHealth.bind(mcpController)
+);
+
+/**
+ * POST /api/v1/mcp/execute
+ *
+ * Execute an MCP Tool.
+ */
+router.post(
+    "/execute",
+    mcpController.executeTool.bind(mcpController)
+);
+
+export default router;
+
+```
+
+```text
+
+Request
+POST http://localhost:3000/api/v1/mcp/execute
+Content-Type: application/json
+
+{
+    "serverId": "filesystem-server",
+    "toolName": "readFile",
+    "args": {
+        "path": "package.json"
+    }
+}
+
+Example: List Current Directory
+
+{
+    "serverId": "filesystem-server",
+    "toolName": "listDirectory",
+    "args": {
+        "path": "."
+    }
+}
+
+```
+3. mcp.service.ts (optional abstraction over the Gateway)
+
+``` ts
+import { gateway } from "../mcp/gateway";
+
+import {
+    MCPServer,
+    MCPTool,
+    ToolRequest,
+    ToolResponse
+} from "../mcp/types";
+
+import { logger } from "../mcp/logger";
+
+class MCPService {
+
+    /**
+     * ============================================================
+     * Get All Registered Servers
+     * ============================================================
+     */
+    public getServers(): MCPServer[] {
+
+        return gateway.getServers();
+
+    }
+
+    /**
+     * ============================================================
+     * Get Server By Id
+     * ============================================================
+     */
+    public getServer(
+        serverId: string
+    ): MCPServer | undefined {
+
+        return gateway.getServer(serverId);
+
+    }
+
+    /**
+     * ============================================================
+     * Discover All Tools
+     * ============================================================
+     */
+    public discoverTools(): MCPTool[] {
+
+        return gateway.discoverTools();
+
+    }
+
+    /**
+     * ============================================================
+     * Discover Tools For Server
+     * ============================================================
+     */
+    public discoverServerTools(
+        serverId: string
+    ): MCPTool[] {
+
+        return gateway.discoverServerTools(serverId);
+
+    }
+
+    /**
+     * ============================================================
+     * Execute MCP Tool
+     * ============================================================
+     */
+    public async executeTool(
+        request: ToolRequest
+    ): Promise<ToolResponse> {
+
+        logger.info(
+
+            `Executing MCP Tool '${request.toolName}'`
+
+        );
+
+        return await gateway.executeTool(request);
+
+    }
+
+    /**
+     * ============================================================
+     * Server Health
+     * ============================================================
+     */
+    public async healthCheck() {
+
+        return await gateway.healthCheck();
+
+    }
+
+    /**
+     * ============================================================
+     * Connect Server
+     * ============================================================
+     */
+    public async connect(
+        serverId: string
+    ): Promise<boolean> {
+
+        return await gateway.connect(serverId);
+
+    }
+
+    /**
+     * ============================================================
+     * Disconnect Server
+     * ============================================================
+     */
+    public async disconnect(
+        serverId: string
+    ): Promise<boolean> {
+
+        return await gateway.disconnect(serverId);
+
+    }
+
+    /**
+     * ============================================================
+     * Check Server Registration
+     * ============================================================
+     */
+    public hasServer(
+        serverId: string
+    ): boolean {
+
+        return gateway.hasServer(serverId);
+
+    }
+
+}
+
+export default new MCPService();
+
+```
+
+Update your controller
+
+Instead of:
+
+import { gateway } from "../mcp/gateway";
+
+use:
+
+import mcpService from "../services/mcp.service";
+
+Then replace calls such as:
+
+gateway.getServers();
+
+with:
+
+mcpService.getServers();
+
+Similarly:
+
+gateway.discoverTools();
+
+becomes:
+
+mcpService.discoverTools();
+
+and
+
+await gateway.executeTool(request);
+
+becomes:
+
+await mcpService.executeTool(request);
+Final Architecture
+
+After introducing the service layer, your request flow becomes:
+
+``` text
+HTTP Request
+      │
+      ▼
+MCP Controller
+      │
+      ▼
+MCP Service
+      │
+      ▼
+MCP Gateway
+      │
+      ▼
+Registry
+      │
+      ▼
+Filesystem Server
+      │
+      ▼
+Filesystem Tools
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Operating System
+```
+
+This follows a clean layered architecture:
+
+Controller → Handles HTTP requests and responses.
+Service → Encapsulates business logic and orchestration.
+Gateway → Routes requests to the appropriate MCP server.
+Server → Manages tools for a specific domain (filesystem, GitHub, Docker, etc.).
+Filesystem Service → Performs the actual filesystem operations.
+
+This design will scale well as you add additional MCP servers without changing the controller layer.
+
 ---
 
 # 📚 Part 7 – Preparing the AI Service

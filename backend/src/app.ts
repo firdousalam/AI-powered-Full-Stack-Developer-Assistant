@@ -28,6 +28,7 @@ import morgan from "morgan";
 import { requestIdMiddleware } from "./middlewares/requestId.middleware";
 import { loggerMiddleware } from "./middlewares/logger.middleware";
 import { errorMiddleware } from "./middlewares/error.middleware";
+import mcpRoutes from "./routes/mcp.routes";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use(morgan("dev"));
 app.use(requestIdMiddleware);
 app.use(loggerMiddleware);
 app.use(errorMiddleware);
+app.use("/api/v1/mcp", mcpRoutes);
 
 
 export default app;
