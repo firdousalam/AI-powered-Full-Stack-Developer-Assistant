@@ -2,8 +2,7 @@
 
 import { Request, Response } from "express";
 
-import { gateway } from "../mcp/gateway";
-
+import mcpService from "../services/mcp.service";
 import { logger } from "../mcp/logger";
 
 import { ToolRequest } from "../mcp/types";
@@ -26,7 +25,7 @@ class MCPController {
 
         try {
 
-            const servers = gateway.getServers();
+            const servers = mcpService.getServers();
 
             res.status(200).json({
 
@@ -92,7 +91,7 @@ class MCPController {
 
         try {
 
-            const tools = gateway.discoverTools();
+            const tools = mcpService.discoverTools();
 
             res.status(200).json({
 
@@ -154,7 +153,7 @@ class MCPController {
 
         try {
 
-            const health = await gateway.healthCheck();
+            const health = await mcpService.healthCheck();
 
             res.status(200).json({
 
@@ -264,7 +263,7 @@ class MCPController {
 
             const response =
 
-                await gateway.executeTool(
+                await mcpService.executeTool(
 
                     request
 

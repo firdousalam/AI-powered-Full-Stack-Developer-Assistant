@@ -40,7 +40,30 @@ app.use(morgan("dev"));
 app.use(requestIdMiddleware);
 app.use(loggerMiddleware);
 app.use(errorMiddleware);
-app.use("/api/v1/mcp", mcpRoutes);
+//app.use("/api/v1/mcp", mcpRoutes);
 
+
+app.get("/", (req, res) => {
+
+    res.json({
+
+        success: true,
+
+        message: "DevPilot AI Backend Running"
+
+    });
+
+});
+
+/**
+ * ============================================================
+ * API Routes
+ * ============================================================
+ */
+
+app.use(
+    "/api/v1",
+    routes
+);
 
 export default app;

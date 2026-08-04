@@ -1245,6 +1245,128 @@ Filesystem Service → Performs the actual filesystem operations.
 
 This design will scale well as you add additional MCP servers without changing the controller layer.
 
+
+4. Register the routes in your Express application.
+
+Step 1 – src/routes/index.ts
+
+If you don't already have one, create it.
+
+```ts 
+import { Router } from "express";
+
+import aiRoutes from "./ai.routes";
+import mcpRoutes from "./mcp.routes";
+
+const router = Router();
+
+/**
+ * ============================================================
+ * AI Routes
+ * ============================================================
+ */
+router.use(
+    "/ai",
+    aiRoutes
+);
+
+/**
+ * ============================================================
+ * MCP Routes
+ * ============================================================
+ */
+router.use(
+    "/mcp",
+    mcpRoutes
+);
+
+export default router;
+
+
+```
+
+Step 2 – Update app.ts
+
+Your app.ts should look similar to this:
+
+```ts
+import express from "express";
+import cors from "cors";
+
+import routes from "./routes";
+
+const app = express();
+
+/**
+ * ============================================================
+ * Middleware
+ * ============================================================
+ */
+
+app.use(cors());
+
+app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
+
+/**
+ * ============================================================
+ * Root Endpoint
+ * ============================================================
+ */
+
+app.get("/", (req, res) => {
+
+    res.json({
+
+        success: true,
+
+        message: "DevPilot AI Backend Running"
+
+    });
+
+});
+
+/**
+ * ============================================================
+ * API Routes
+ * ============================================================
+ */
+
+app.use(
+    "/api/v1",
+    routes
+);
+
+export default app;
+
+```
+
+Verify the routes
+
+Start your backend:
+
+npm run dev
+
+Then test the following:
+
+List Servers
+GET http://localhost:3000/api/v1/mcp/servers
+
+
+Discover Tools
+GET http://localhost:3000/api/v1/mcp/tools
+
+
+Health Check
+GET http://localhost:3000/api/v1/mcp/health
+
+
+Execute a Tool
+POST http://localhost:3000/api/v1/mcp/execute
+Content-Type: application/json
+
+
 ---
 
 # 📚 Part 7 – Preparing the AI Service
@@ -1344,6 +1466,343 @@ By the end of Phase 2, the project will include:
 - ✅ End-to-end MCP communication
 - ✅ Health monitoring and server status verification
 - ✅ Foundation for AI-driven filesystem interactions
+
+# Milestone 5.3 – Phase 2: Preparing the AI Service
+
+## Overview
+
+With the MCP infrastructure, Gateway, Registry, and Filesystem MCP Server fully integrated, the backend is now ready for AI integration.
+
+At this stage, the AI Service **does not yet invoke MCP tools automatically**. Instead, the architecture has been prepared so that future AI requests can dynamically discover and execute MCP tools before sending enriched context to the language model.
+
+This separation keeps the MCP infrastructure independent from the AI layer while providing a scalable foundation for future integrations.
+
+---
+
+# Current AI Architecture
+
+The current request flow is straightforward. Every user request is sent directly to the Large Language Model (LLM).
+
+```text
+User
+      │
+      ▼
+AI Service
+      │
+      ▼
+LLM
+      │
+      ▼
+Response
+```
+
+In this architecture, the AI has no visibility into the actual project files. All responses are generated solely from the prompt and the language model's knowledge.
+
+---
+
+# Future AI Architecture
+
+The next milestone will transform the AI Service into an orchestration layer capable of interacting with MCP Servers.
+
+```text
+User
+      │
+      ▼
+AI Service
+      │
+      ▼
+Need Filesystem Context?
+      │
+      ├── No ─────────────► LLM
+      │
+      ▼
+MCP Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Project Files
+      │
+      ▼
+Project Context
+      │
+      ▼
+LLM
+      │
+      ▼
+Streaming Response
+```
+
+This architecture enables the AI to retrieve live project data before generating a response.
+
+---
+
+# Planned AI Workflow
+
+When the AI receives a request, it will follow this workflow:
+
+1. Receive the user's prompt.
+2. Analyze the request.
+3. Determine whether external project information is required.
+4. Discover available MCP tools through the Gateway.
+5. Select the most appropriate tool.
+6. Execute the tool.
+7. Retrieve project data.
+8. Append the retrieved context to the original prompt.
+9. Send the enriched prompt to the LLM.
+10. Stream the final response back to the user.
+
+---
+
+# Example Workflows
+
+## Example 1 – Explain Authentication Flow
+
+### User Prompt
+
+```text
+Explain the authentication flow in this project.
+```
+
+### AI Workflow
+
+```text
+AI Service
+      │
+      ▼
+Gateway.executeTool(readFile)
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Read auth routes
+Read middleware
+Read configuration
+      │
+      ▼
+Append context
+      │
+      ▼
+LLM
+      │
+      ▼
+Detailed explanation
+```
+
+---
+
+## Example 2 – List Installed Packages
+
+### User Prompt
+
+```text
+Which dependencies are installed?
+```
+
+### AI Workflow
+
+```text
+AI Service
+      │
+      ▼
+Gateway.executeTool(readFile)
+      │
+      ▼
+Read package.json
+      │
+      ▼
+Append package.json
+      │
+      ▼
+LLM
+```
+
+---
+
+## Example 3 – Show Project Structure
+
+### User Prompt
+
+```text
+Show me the project structure.
+```
+
+### AI Workflow
+
+```text
+AI Service
+      │
+      ▼
+Gateway.executeTool(projectTree)
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Generate Project Tree
+      │
+      ▼
+LLM
+```
+
+---
+
+# Backend Architecture After Phase 2
+
+The backend now follows a layered architecture.
+
+```text
+Chrome Extension
+        │
+        ▼
+Express API
+        │
+        ▼
+Controllers
+        │
+        ▼
+Services
+        │
+        ▼
+MCP Service
+        │
+        ▼
+MCP Gateway
+        │
+        ▼
+Server Registry
+        │
+        ▼
+Filesystem MCP Server
+        │
+        ▼
+Filesystem Tools
+        │
+        ▼
+Filesystem Service
+        │
+        ▼
+Operating System
+```
+
+Each layer has a single responsibility, making the application easier to maintain and extend.
+
+---
+
+# Expected Project Structure
+
+```text
+src/
+│
+├── ai/
+│
+├── controllers/
+│   └── mcp.controller.ts
+│
+├── routes/
+│   ├── mcp.routes.ts
+│   └── index.ts
+│
+├── services/
+│   └── mcp.service.ts
+│
+├── mcp/
+│   │
+│   ├── bootstrap/
+│   ├── gateway/
+│   ├── registry/
+│   ├── logger/
+│   ├── health/
+│   ├── config/
+│   ├── types/
+│   │
+│   └── servers/
+│       └── filesystem/
+│           ├── filesystem.server.ts
+│           ├── filesystem.service.ts
+│           ├── filesystem.tools.ts
+│           ├── filesystem.constants.ts
+│           ├── filesystem.types.ts
+│           └── index.ts
+│
+└── server.ts
+```
+
+---
+
+# Deliverables Achieved
+
+By the completion of Phase 2, the backend now includes:
+
+* ✅ Filesystem MCP Server registration during application startup
+* ✅ Server Registry integration
+* ✅ MCP Gateway integration
+* ✅ Automatic tool discovery
+* ✅ Tool execution through the Gateway
+* ✅ REST APIs for MCP operations
+* ✅ End-to-end MCP communication
+* ✅ Health monitoring and server status verification
+* ✅ Layered architecture for future MCP servers
+* ✅ Foundation for AI-driven filesystem interactions
+
+---
+
+# Benefits of This Architecture
+
+This design provides several long-term advantages:
+
+* Scalable support for multiple MCP servers.
+* Clean separation between AI logic and infrastructure.
+* Centralized tool discovery through the Gateway.
+* Reusable server registration mechanism.
+* Standardized tool execution.
+* Easier testing and debugging.
+* Improved maintainability through layered architecture.
+* Simplified addition of future integrations.
+
+---
+
+# Future MCP Servers
+
+The same infrastructure can now support additional MCP Servers without modifying the AI Service.
+
+Planned servers include:
+
+* GitHub MCP Server
+* Docker MCP Server
+* Kubernetes MCP Server
+* PostgreSQL MCP Server
+* MongoDB MCP Server
+* Redis MCP Server
+* AWS MCP Server
+* Azure MCP Server
+* Git MCP Server
+* Terminal MCP Server
+
+Each server will register itself with the Registry and Gateway, making its tools automatically discoverable.
+
+---
+
+# Next Milestone
+
+The next milestone focuses on **AI Integration**.
+
+The AI Service will evolve into an intelligent orchestrator capable of:
+
+* Discovering available MCP tools.
+* Determining when external project context is required.
+* Executing filesystem tools through the Gateway.
+* Enriching prompts with real project data.
+* Sending context-aware prompts to the LLM.
+* Streaming accurate, project-specific responses back to the user.
+
+This will transform the assistant from a general-purpose language model into a project-aware AI development assistant capable of understanding and reasoning about real source code and project files.
+
 
 ---
 
