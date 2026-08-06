@@ -1,4 +1,3 @@
-
 // src/mcp/servers/filesystem/filesystem.server.ts
 
 import { FilesystemService } from "./filesystem.service";
@@ -13,11 +12,9 @@ import {
 } from "../../types";
 
 import MCPLogger from "../../logger/mcpLogger";
-import {
-    developerToolRegistry
-} from "./developer-tools/base/registry";
 
 import {
+    DeveloperToolRegistry,
     DeveloperToolMcpAdapter
 } from "./developer-tools/base";
 
@@ -25,27 +22,73 @@ import {
     registerDeveloperTools
 } from "./developer-tools/registerDeveloperTools";
 
-
 export class FilesystemServer implements MCPServer {
 
+    /**
+     * Unique server identifier.
+     */
     public readonly id = "filesystem-server";
 
+    /**
+     * Display name.
+     */
     public readonly name = "Filesystem MCP Server";
 
+    /**
+     * Server version.
+     */
     public readonly version = "1.0.0";
 
+    /**
+     * Transport type.
+     */
     public readonly transport = "local";
 
-    public status: ServerStatus = ServerStatus.DISCONNECTED;
+    /**
+     * Current server status.
+     */
+    public status: ServerStatus =
+        ServerStatus.DISCONNECTED;
 
-    private readonly tools = new Map<string, MCPTool>();
+    /**
+     * Final collection of MCP tools exposed
+     * by this server.
+     */
+    private readonly tools =
+        new Map<string, MCPTool>();
+
+    /**
+     * Registry containing all developer tools.
+     *
+     * These are higher-level AI developer tools
+     * such as:
+     *
+     * - Analyze Project
+     * - Dependency Analyzer
+     * - Route Scanner
+     * - TODO Scanner
+     * - Workspace Summary
+     *
+     * Developer tools are later converted into
+     * MCP tools using DeveloperToolMcpAdapter.
+     */
+    private readonly developerToolRegistry =
+        new DeveloperToolRegistry();
 
     constructor(
         private readonly filesystemService: FilesystemService,
         private readonly filesystemTools: FilesystemTools
-
     ) { }
 
+    /**
+     * Register all low-level filesystem tools.
+     *
+     * Examples:
+     *  - readFile
+     *  - writeFile
+     *  - searchFiles
+     *  - listDirectory
+     */
     private registerFilesystemTools(): void {
 
         const tools =
@@ -65,16 +108,25 @@ export class FilesystemServer implements MCPServer {
         }
 
     }
+
+    /**
+     * Register all developer tools.
+     *
+     * Developer tools are framework-agnostic.
+     *
+     * Before exposing them through the MCP Server
+     * they are wrapped using DeveloperToolMcpAdapter,
+     * allowing them to behave like normal MCP tools.
+     */
     private registerDeveloperTools(): void {
 
-        registerDeveloperTools();
+        const tools =
+            this.developerToolRegistry.getAll();
 
-        for (const tool of developerToolRegistry.getAll()) {
+        for (const tool of tools) {
 
             const adapter =
-                new DeveloperToolMcpAdapter(
-                    tool
-                );
+                new DeveloperToolMcpAdapter(tool);
 
             this.tools.set(
                 adapter.name,
@@ -88,8 +140,32 @@ export class FilesystemServer implements MCPServer {
         }
 
     }
+
     /**
-     * Connect the server.
+     * Register every tool exposed by this server.
+     *
+     * This includes:
+     *
+     * 1. Filesystem tools
+     * 2. Developer tools
+     */
+    private registerTools(): void {
+
+        this.registerFilesystemTools();
+
+        this.registerDeveloperTools();
+
+    }
+
+    /**
+     * Connect and initialize the server.
+     *
+     * Startup sequence:
+     *
+     * 1. Populate the developer tool registry.
+     * 2. Register filesystem tools.
+     * 3. Register developer tools.
+     * 4. Mark the server as connected.
      */
     public async connect(): Promise<void> {
 
@@ -97,19 +173,32 @@ export class FilesystemServer implements MCPServer {
             return;
         }
 
-        this.status = ServerStatus.CONNECTING;
+        this.status =
+            ServerStatus.CONNECTING;
 
         MCPLogger.info(
             "Connecting Filesystem MCP Server..."
         );
 
+        /**
+         * Register all built-in developer tools.
+         */
+        registerDeveloperTools(
+            this.developerToolRegistry
+        );
+
+        /**
+         * Register every MCP tool.
+         */
         this.registerTools();
 
-        this.status = ServerStatus.CONNECTED;
+        this.status =
+            ServerStatus.CONNECTED;
 
         MCPLogger.info(
             "Filesystem MCP Server connected."
         );
+
     }
 
     /**
@@ -121,27 +210,17 @@ export class FilesystemServer implements MCPServer {
 
         await this.filesystemService.dispose();
 
-        this.status = ServerStatus.DISCONNECTED;
+        this.status =
+            ServerStatus.DISCONNECTED;
 
         MCPLogger.info(
             "Filesystem MCP Server disconnected."
         );
-    }
-
-    /**
-     * Register all filesystem tools.
-     */
-    private registerTools(): void {
-
-        this.registerFilesystemTools();
-
-        this.registerDeveloperTools();
 
     }
 
-
     /**
-     * Execute a tool.
+     * Execute a registered MCP tool.
      */
     public async executeTool(
         request: ToolRequest
@@ -156,7 +235,8 @@ export class FilesystemServer implements MCPServer {
 
                 success: false,
 
-                error: `Unknown tool '${request.toolName}'`
+                error:
+                    `Unknown tool '${request.toolName}'`
 
             };
 
@@ -169,7 +249,9 @@ export class FilesystemServer implements MCPServer {
             );
 
             const result =
-                await tool.execute(request.args);
+                await tool.execute(
+                    request.args
+                );
 
             return {
 
@@ -205,7 +287,8 @@ export class FilesystemServer implements MCPServer {
     }
 
     /**
-     * Discover all tools.
+     * Discover every MCP tool exposed
+     * by this server.
      */
     public discoverTools(): MCPTool[] {
 
@@ -230,7 +313,8 @@ export class FilesystemServer implements MCPServer {
 
             status: this.status,
 
-            toolCount: this.tools.size,
+            toolCount:
+                this.tools.size,
 
             workspace:
                 this.filesystemService.getWorkspaceRoot()
@@ -249,38 +333,43 @@ export class FilesystemServer implements MCPServer {
     }
 
     /**
-     * Whether server is connected.
+     * Whether the server is connected.
      */
     public isConnected(): boolean {
 
-        return this.status === ServerStatus.CONNECTED;
+        return this.status ===
+            ServerStatus.CONNECTED;
 
     }
 
     /**
-     * Tool existence.
+     * Determine whether a tool exists.
      */
     public hasTool(
         toolName: string
     ): boolean {
 
-        return this.tools.has(toolName);
+        return this.tools.has(
+            toolName
+        );
 
     }
 
     /**
-     * Get tool by name.
+     * Retrieve a tool by name.
      */
     public getTool(
         toolName: string
     ): MCPTool | undefined {
 
-        return this.tools.get(toolName);
+        return this.tools.get(
+            toolName
+        );
 
     }
 
     /**
-     * List tool names.
+     * Return every registered tool name.
      */
     public listTools(): string[] {
 
@@ -289,7 +378,7 @@ export class FilesystemServer implements MCPServer {
     }
 
     /**
-     * Initialize server.
+     * Initialize the server.
      */
     public async initialize(): Promise<void> {
 
@@ -298,7 +387,7 @@ export class FilesystemServer implements MCPServer {
     }
 
     /**
-     * Shutdown server.
+     * Shutdown the server.
      */
     public async shutdown(): Promise<void> {
 

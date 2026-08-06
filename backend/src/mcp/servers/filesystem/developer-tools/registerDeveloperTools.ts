@@ -1,21 +1,58 @@
-import {
-    developerToolRegistry
-} from "./base/registry";
+import { DeveloperToolRegistry } from "./base";
+
+import { AnalyzeProjectTool } from "./analysis";
 
 import {
-    AnalyzeProjectTool
-} from "./analysis";
+    MetadataDetector,
+    LanguageDetector,
+    FrameworkDetector,
+    RuntimeDetector,
+    PackageManagerDetector,
+    BuildToolDetector,
+    EntryPointDetector,
+    DockerDetector,
+    KubernetesDetector,
+    GitDetector,
+    CiDetector
+} from "./analysis/detectors";
 
-import {
-    projectAnalyzerService
-} from "./analysis/services";
+import { ProjectAnalyzerService } from "./analysis/services";
 
-export function registerDeveloperTools(): void {
+export function registerDeveloperTools(
+    registry: DeveloperToolRegistry
+): void {
 
-    developerToolRegistry.register(
+    const analyzerService =
+        new ProjectAnalyzerService(
+
+            new MetadataDetector(),
+
+            new LanguageDetector(),
+
+            new FrameworkDetector(),
+
+            new RuntimeDetector(),
+
+            new PackageManagerDetector(),
+
+            new BuildToolDetector(),
+
+            new EntryPointDetector(),
+
+            new DockerDetector(),
+
+            new KubernetesDetector(),
+
+            new GitDetector(),
+
+            new CiDetector()
+
+        );
+
+    registry.register(
 
         new AnalyzeProjectTool(
-            projectAnalyzerService
+            analyzerService
         )
 
     );
