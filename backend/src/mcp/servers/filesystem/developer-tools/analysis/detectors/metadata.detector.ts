@@ -1,27 +1,15 @@
-import { DetectorBase } from "./base/detector.base";
+import path from "node:path";
+
+import { filesystemService } from "../../../services";
 
 import {
-    DetectorResult
-} from "../models";
-
-import { workspaceReader } from "../readers";
-
-export interface ProjectMetadata {
-
-    projectName?: string;
-
-    description?: string;
-
-    version?: string;
-
-    author?: string;
-
-    license?: string;
-
-}
+    ProjectDetector,
+    DetectorResult,
+    ProjectMetadata
+} from "../models"
 
 export class MetadataDetector
-    extends DetectorBase<ProjectMetadata> {
+    implements ProjectDetector<ProjectMetadata> {
 
     readonly name = "MetadataDetector";
 
@@ -29,32 +17,116 @@ export class MetadataDetector
         workspacePath: string
     ): Promise<DetectorResult<ProjectMetadata>> {
 
-        const packageJson =
-            await workspaceReader.readPackageJson<any>(
-                workspacePath
+        const packageJsonPath = path.join(
+            workspacePath,
+            "package.json"
+        );
+
+        const exists =
+            await filesystemService.exists(
+                packageJsonPath
             );
 
-        if (!packageJson) {
+        if (!exists) {
 
-            return this.failure([
-                "package.json not found."
-            ]);
+            return {
+
+                detector: this.name,
+
+                success: true,
+
+                data: {
+
+                    name: "",
+
+                    version: "",
+
+                    description: "",
+
+                    author: "",
+
+                    license: ""
+
+                },
+
+                warnings: [
+                    "package.json not found."
+                ]
+
+            };
 
         }
 
-        return this.success({
+        try {
 
-            projectName: packageJson.name,
+            const content =
+                await filesystemService.readFile(
+                    packageJsonPath
+                );
 
-            description: packageJson.description,
+            const packageJson =
+                JSON.parse(content);
 
-            version: packageJson.version,
+            return {
 
-            author: packageJson.author,
+                detector: this.name,
 
-            license: packageJson.license
+                success: true,
 
-        });
+                data: {
+
+                    name:
+                        packageJson.name ?? "",
+
+                    version:
+                        packageJson.version ?? "",
+
+                    description:
+                        packageJson.description ?? "",
+
+                    author:
+                        typeof packageJson.author === "string"
+                            ? packageJson.author
+                            : packageJson.author?.name ?? "",
+
+                    license:
+                        packageJson.license ?? ""
+
+                },
+
+                warnings: []
+
+            };
+
+        } catch {
+
+            return {
+
+                detector: this.name,
+
+                success: false,
+
+                data: {
+
+                    name: "",
+
+                    version: "",
+
+                    description: "",
+
+                    author: "",
+
+                    license: ""
+
+                },
+
+                warnings: [
+                    "Failed to parse package.json."
+                ]
+
+            };
+
+        }
 
     }
 

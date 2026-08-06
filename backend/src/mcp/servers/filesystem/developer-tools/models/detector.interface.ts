@@ -1,4 +1,11 @@
+import { DetectorResult } from "../analysis/models/detectorResult.interface";
+
 export interface ProjectDetector<T> {
-    detect(workspacePath: string): Promise<T>;
+
     readonly name: string;
+
+    detect(
+        workspacePath: string
+    ): Promise<DetectorResult<T>>;
+
 }

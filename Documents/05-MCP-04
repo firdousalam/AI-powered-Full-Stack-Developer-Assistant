@@ -7029,3 +7029,451 @@ Step 6
 This is a much cleaner foundation and avoids refactoring later.
 
 I think this will give you a significantly stronger architecture than jumping straight into the detectors.
+
+
+
+Milestone 5.4 – Developer Tool Framework
+Part 1 — Developer Tool Framework
+
+Goal: Build the infrastructure that every future developer tool will use.
+
+Step 1 — Folder Structure ✅
+developer-tools/
+│
+├── base/
+│   ├── developerTool.base.ts
+│   ├── developerTool.registry.ts
+│   ├── developerTool.types.ts
+│   ├── developerTool.validator.ts
+│   └── index.ts
+│
+├── analysis/
+├── search/
+├── workspace/
+└── index.ts
+Step 2 — FilesystemService ✅
+
+Implement reusable filesystem operations.
+
+Examples:
+
+exists()
+readFile()
+listDirectory()
+isDirectory()
+getMetadata()
+Step 3 — DeveloperToolBase ✅
+
+Standard execution pipeline
+
+Validate
+
+↓
+
+BeforeExecute
+
+↓
+
+ExecuteInternal
+
+↓
+
+AfterExecute
+
+↓
+
+DeveloperToolResponse
+Step 4 — DeveloperToolValidator ✅
+
+Validate
+
+workspace exists
+directory exists
+path normalization
+future security checks
+Step 5 — DeveloperToolRegistry ✅
+
+Supports
+
+register()
+
+remove()
+
+get()
+
+getAll()
+
+exists()
+
+list()
+Step 6 — Shared Types ✅
+
+Examples
+
+DeveloperToolContext
+
+DeveloperToolResponse
+
+ValidationResult
+Part 2 — Project Analyzer
+
+Goal: Build the first intelligent developer tool.
+
+Step 1 — Models ✅
+analysis/
+
+models/
+
+ProjectMetadata
+
+ProjectSummary
+
+ProjectAnalysisResult
+
+DetectorResult
+
+ProjectDetector
+Step 2 — Detector Contracts ✅
+
+Every detector implements
+
+ProjectDetector<T>
+
+Every detector returns
+
+DetectorResult<T>
+Step 3 — Detector Base (Recommended)
+
+Not mandatory but recommended.
+
+ProjectDetectorBase
+
+↓
+
+readPackageJson()
+
+↓
+
+readJson()
+
+↓
+
+exists()
+
+↓
+
+readFile()
+
+Reduces duplicated code.
+
+Step 4 — MetadataDetector ✅
+
+Reads
+
+package.json
+
+Returns
+
+name
+
+version
+
+description
+
+author
+
+license
+Step 5 — LanguageDetector ✅
+
+Detects
+
+TypeScript
+
+JavaScript
+
+Python
+
+Go
+
+Java
+
+Rust
+Step 6 — PackageManagerDetector ✅
+
+Detects
+
+npm
+
+pnpm
+
+Yarn
+
+Bun
+Step 7 — FrameworkDetector ✅
+
+Detects
+
+Express
+
+NestJS
+
+React
+
+Next.js
+
+Angular
+
+Vue
+
+Fastify
+
+Koa
+Step 8 — RuntimeDetector ✅
+
+Detects
+
+Node
+
+Python
+
+Java
+
+Go
+
+Rust
+Step 9 — BuildToolDetector ✅
+
+Detects
+
+Vite
+
+Webpack
+
+Rollup
+
+Nx
+
+Turbo
+Step 10 — EntryPointDetector ✅
+
+Detects
+
+src/server.ts
+
+src/index.ts
+
+src/main.ts
+
+index.js
+
+app.js
+Step 11 — DockerDetector ✅
+
+Detects
+
+Dockerfile
+
+docker-compose.yml
+
+docker-compose.yaml
+Step 12 — KubernetesDetector ✅
+
+Detects
+
+k8s/
+
+helm/
+
+deployment.yaml
+
+service.yaml
+
+ingress.yaml
+Step 13 — GitDetector ✅
+
+Detects
+
+.git
+Step 14 — CiDetector ✅
+
+Detects
+
+GitHub Actions
+
+Jenkins
+
+GitLab CI
+
+Azure DevOps
+Step 15 — ProjectAnalyzerService 🟡
+
+This is the orchestrator.
+
+Metadata
+
+↓
+
+Language
+
+↓
+
+Framework
+
+↓
+
+Runtime
+
+↓
+
+PackageManager
+
+↓
+
+BuildTool
+
+↓
+
+EntryPoint
+
+↓
+
+Docker
+
+↓
+
+Kubernetes
+
+↓
+
+Git
+
+↓
+
+CI
+
+↓
+
+ProjectAnalysisResult
+Step 16 — AnalyzeProjectTool 🟡
+
+Developer tool that calls
+
+ProjectAnalyzerService
+
+Returns
+
+ProjectAnalysisResult
+Step 17 — Registry Integration 🟡
+DeveloperToolRegistry
+
+↓
+
+register()
+
+↓
+
+AnalyzeProjectTool
+Step 18 — MCP Integration 🟡
+
+Register the developer tool with your existing FilesystemServer.
+
+FilesystemServer
+
+↓
+
+DeveloperToolRegistry
+
+↓
+
+AnalyzeProjectTool
+
+At this point, the AI can call:
+
+analyzeProject
+Part 3 — Dependency Analyzer
+
+Build
+
+DependencyAnalyzerTool
+
+Features
+
+package.json
+dependencies
+devDependencies
+peerDependencies
+optionalDependencies
+duplicates
+missing
+lock file
+package manager
+Part 4 — Search Code
+
+Build
+
+SearchCodeTool
+Part 5 — Route Scanner
+
+Build
+
+RouteScannerTool
+Part 6 — TODO Scanner
+
+Build
+
+TodoScannerTool
+Part 7 — Source Analyzer
+
+Build
+
+SourceAnalyzerTool
+Part 8 — Project Tree
+
+Build
+
+ProjectTreeTool
+Part 9 — Environment Scanner
+
+Build
+
+EnvironmentScannerTool
+Part 10 — Workspace Summary
+
+Final developer tool.
+
+Consumes
+
+Project Analyzer
+Dependency Analyzer
+Source Analyzer
+Route Scanner
+TODO Scanner
+Environment Scanner
+
+Returns one AI-optimized project summary.
+
+Current Status
+Step	Status
+Part 1 Framework	✅ Complete
+Models	✅ Complete
+Detector contracts	✅ Complete
+MetadataDetector	✅ Complete
+Remaining detectors	🟡 Mostly implemented (review for consistency)
+ProjectAnalyzerService	🟡 In progress
+AnalyzeProjectTool	🟡 In progress
+Registry integration	⏳ Pending
+MCP server integration	⏳ Pending
+Dependency Analyzer	⏳ Not started
+Remaining developer tools	⏳ Not started
+What I recommend next
+
+Rather than jumping between pieces, let's finish Part 2 completely. The remaining order should be:
+
+Review and standardize all detector implementations.
+Finalize ProjectAnalyzerService.
+Finalize AnalyzeProjectTool.
+Register AnalyzeProjectTool in DeveloperToolRegistry.
+Integrate the registry into FilesystemServer.
+Verify that an end-to-end analyzeProject request works.
+
+Once that's complete, you'll have your first fully functional intelligent MCP developer tool, and the rest of Milestone 5.4 will largely be about adding new tools that plug into the same framework rather than changing the architecture.
