@@ -13,7 +13,17 @@ import {
 } from "../../types";
 
 import MCPLogger from "../../logger/mcpLogger";
+import {
+    developerToolRegistry
+} from "./developer-tools/base/registry";
 
+import {
+    DeveloperToolMcpAdapter
+} from "./developer-tools/base";
+
+import {
+    registerDeveloperTools
+} from "./developer-tools/registerDeveloperTools";
 
 
 export class FilesystemServer implements MCPServer {
@@ -33,8 +43,51 @@ export class FilesystemServer implements MCPServer {
     constructor(
         private readonly filesystemService: FilesystemService,
         private readonly filesystemTools: FilesystemTools
+
     ) { }
 
+    private registerFilesystemTools(): void {
+
+        const tools =
+            this.filesystemTools.getTools();
+
+        for (const tool of tools) {
+
+            this.tools.set(
+                tool.name,
+                tool
+            );
+
+            MCPLogger.info(
+                `Registered Filesystem Tool: ${tool.name}`
+            );
+
+        }
+
+    }
+    private registerDeveloperTools(): void {
+
+        registerDeveloperTools();
+
+        for (const tool of developerToolRegistry.getAll()) {
+
+            const adapter =
+                new DeveloperToolMcpAdapter(
+                    tool
+                );
+
+            this.tools.set(
+                adapter.name,
+                adapter
+            );
+
+            MCPLogger.info(
+                `Registered Developer Tool: ${adapter.name}`
+            );
+
+        }
+
+    }
     /**
      * Connect the server.
      */
@@ -80,20 +133,12 @@ export class FilesystemServer implements MCPServer {
      */
     private registerTools(): void {
 
-        const tools =
-            this.filesystemTools.getTools();
+        this.registerFilesystemTools();
 
-        for (const tool of tools) {
-
-            this.tools.set(tool.name, tool);
-
-            MCPLogger.info(
-                `Registered MCP Tool: ${tool.name}`
-            );
-
-        }
+        this.registerDeveloperTools();
 
     }
+
 
     /**
      * Execute a tool.

@@ -6752,3 +6752,280 @@ By the end of Milestone **5.4**, the project will include:
 **Milestone 5.5 – AI Integration with MCP**
 
 The AI Service will begin using these developer-focused tools automatically to enrich prompts with real project context before invoking the language model, enabling accurate, context-aware responses tailored to the user's codebase.
+
+
+
+I recommend we restart Step 2
+
+Now that I know those files are empty, I would build them in this order:
+
+Step 2
+✅ filesystem.service.ts (complete implementation)
+Step 3
+✅ developerTool.base.ts
+
+Final Production Structure
+
+Instead of this:
+
+analysis/
+│
+├── detectors/
+├── services/
+└── analyzeProject.tool.ts
+
+I recommend:
+
+analysis/
+│
+├── detectors/
+│   ├── metadata.detector.ts
+│   ├── language.detector.ts
+│   ├── framework.detector.ts
+│   ├── runtime.detector.ts
+│   ├── packageManager.detector.ts
+│   ├── buildTool.detector.ts
+│   ├── entryPoint.detector.ts
+│   ├── docker.detector.ts
+│   ├── kubernetes.detector.ts
+│   ├── git.detector.ts
+│   ├── cicd.detector.ts
+│   └── index.ts
+│
+├── services/
+│   ├── projectAnalyzer.service.ts
+│   └── index.ts
+│
+├── models/
+│   ├── projectAnalysisResult.interface.ts
+│   ├── detectorResult.interface.ts
+│   └── index.ts
+│
+├── analyzeProject.tool.ts
+└── index.ts
+
+The additional models folder keeps analysis-specific models separate from the global developer tool models. This becomes important as Part 3 (Dependency Analyzer), Part 4 (Source Analyzer), and later tools introduce their own result types.
+
+Implementation Roadmap
+
+Rather than jumping directly into all detectors, I recommend building them in dependency order.
+
+Phase 1 – Foundation
+✅ DeveloperTool Framework
+✅ FilesystemService
+✅ Registry
+✅ Validator
+
+Already completed.
+
+Phase 2 – Project Analyzer Models
+
+We'll create:
+
+projectAnalysisResult.interface.ts
+
+detectorResult.interface.ts
+
+These define the contract between detectors and the analyzer.
+
+Phase 3 – Basic Detectors
+
+Build the simplest detectors first.
+
+MetadataDetector
+
+↓
+
+LanguageDetector
+
+↓
+
+PackageManagerDetector
+
+These all primarily inspect package.json or a small set of files.
+
+
+
+Phase 4 – Framework Detection
+
+Once metadata is available:
+
+FrameworkDetector
+
+↓
+
+RuntimeDetector
+
+↓
+
+BuildToolDetector
+Phase 5 – Infrastructure Detection
+
+These are mostly filesystem checks.
+
+DockerDetector
+
+↓
+
+KubernetesDetector
+
+↓
+
+GitDetector
+
+↓
+
+CiCdDetector
+Phase 6 – Entry Point Detection
+
+This detector uses the results of previous detectors to narrow its search.
+
+src/server.ts
+
+src/main.ts
+
+src/index.ts
+
+index.js
+
+...
+Phase 7 – Orchestration
+
+Now build:
+
+ProjectAnalyzerService
+
+Its job is simply:
+
+Run MetadataDetector
+
+↓
+
+Run LanguageDetector
+
+↓
+
+Run FrameworkDetector
+
+↓
+
+...
+
+↓
+
+Merge Results
+
+↓
+
+Return ProjectSummary
+
+No detection logic belongs here.
+
+Phase 8 – MCP Tool
+
+Finally:
+
+AnalyzeProjectTool
+
+becomes almost trivial:
+
+Validate
+
+↓
+
+ProjectAnalyzerService
+
+↓
+
+Return Standard Response
+Why this order?
+
+If we build the tool first:
+
+AnalyzeProjectTool
+
+it has nothing to call.
+
+If we build the service first:
+
+ProjectAnalyzerService
+
+it has no detectors.
+
+By building bottom-up, every layer is complete before the next one depends on it.
+
+Production Dependency Graph
+FilesystemService
+        │
+        ▼
+MetadataDetector
+LanguageDetector
+FrameworkDetector
+RuntimeDetector
+PackageManagerDetector
+BuildToolDetector
+DockerDetector
+GitDetector
+KubernetesDetector
+CiCdDetector
+EntryPointDetector
+        │
+        ▼
+ProjectAnalyzerService
+        │
+        ▼
+AnalyzeProjectTool
+        │
+        ▼
+DeveloperToolRegistry
+        │
+        ▼
+Filesystem MCP Server
+
+This keeps every class focused on a single responsibility.
+
+I would make one more architectural improvement
+
+Instead of every detector returning a different type, define a common detector interface such as:
+
+export interface DetectorResult<T> {
+    detector: string;
+    success: boolean;
+    data: T;
+    warnings: string[];
+}
+
+Then every detector—whether it's MetadataDetector, FrameworkDetector, or GitDetector—returns the same envelope. ProjectAnalyzerService only has to merge the data from each detector while still preserving warnings. This consistency becomes especially valuable when you later add parallel execution, caching, telemetry, or plugin-based detectors.
+
+My recommendation for the next implementation
+
+We should not start with MetadataDetector yet.
+
+The next step should be to create these three files:
+
+analysis/models/projectAnalysisResult.interface.ts
+analysis/models/detectorResult.interface.ts
+analysis/models/index.ts
+
+Those models become the contracts for every detector and allow the rest of Part 2 to build on a stable, strongly typed foundation without requiring later refactoring.
+
+The next sequence should be:
+
+✅ AnalyzeProjectTool
+✅ Register it in DeveloperToolRegistry
+✅ Wire it into the Filesystem MCP Server
+✅ Test it end-to-end
+✅ Then begin Milestone 5.4 – Part 3 (Dependency Analyzer)
+
+That gives you a fully working vertical slice—from the AI request, through
+
+Step 4
+✅ MetadataDetector
+Step 5
+✅ LanguageDetector
+Step 6
+✅ FrameworkDetector
+
+This is a much cleaner foundation and avoids refactoring later.
+
+I think this will give you a significantly stronger architecture than jumping straight into the detectors.
