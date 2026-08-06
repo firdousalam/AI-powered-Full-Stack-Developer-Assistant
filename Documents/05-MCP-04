@@ -1,0 +1,7479 @@
+# Milestone 5.4 – Custom Filesystem Tools (Developer-Focused Tools)
+
+## Overview
+
+In Milestone **5.3**, we built the Filesystem MCP Server and integrated it with the MCP Gateway, Registry, Bootstrap, and Health Monitor. The server can execute generic filesystem operations such as reading files and listing directories.
+
+In **Milestone 5.4**, we will build **developer-focused MCP tools** that understand software projects rather than simply exposing filesystem operations.
+
+Instead of asking the AI to manually read dozens of files, these custom tools will perform higher-level analysis and return structured results.
+
+The AI Assistant will begin behaving like an experienced developer capable of understanding an entire codebase.
+
+---
+
+# Learning Objectives
+
+By the end of this milestone you will understand how to:
+
+* Build custom MCP tools
+* Design reusable developer utilities
+* Analyze source code programmatically
+* Search an entire project efficiently
+* Extract project metadata
+* Generate project structure
+* Detect TODO/FIXME comments
+* Discover API routes
+* Analyze dependencies
+* Build AI-ready structured context
+* Prepare for GitHub and Kubernetes MCP Servers
+
+---
+
+# Why Custom Filesystem Tools?
+
+Generic filesystem tools only expose low-level operations.
+
+Example:
+
+```text
+readFile("package.json")
+```
+
+The AI must still understand the file itself.
+
+Instead, developer-focused tools perform the analysis automatically.
+
+Example:
+
+```text
+analyzeProject()
+```
+
+Returns:
+
+* Framework
+* Package Manager
+* Dependencies
+* Build Scripts
+* Project Type
+* Entry Points
+* Environment Files
+
+This dramatically reduces token usage while improving AI responses.
+
+---
+
+# Architecture
+
+```text
+User
+      │
+      ▼
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Developer Tools
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Operating System
+```
+
+---
+
+# Folder Structure
+
+```text
+src/
+│
+├── mcp/
+│
+│   └── servers/
+│
+│       └── filesystem/
+│
+│           ├── filesystem.server.ts
+│           ├── filesystem.service.ts
+│           ├── filesystem.tools.ts
+│           ├── filesystem.constants.ts
+│           ├── filesystem.types.ts
+│           │
+│           ├── developer-tools/
+│           │
+│           │    ├── analyzeProject.tool.ts
+│           │    ├── searchCode.tool.ts
+│           │    ├── projectTree.tool.ts
+│           │    ├── dependencyAnalyzer.tool.ts
+│           │    ├── todoScanner.tool.ts
+│           │    ├── routeScanner.tool.ts
+│           │    ├── sourceAnalyzer.tool.ts
+│           │    ├── environmentScanner.tool.ts
+│           │    └── workspaceSummary.tool.ts
+│           │
+│           └── index.ts
+```
+
+---
+
+# Developer-Focused MCP Tools
+
+## 1. Project Analyzer
+
+Purpose:
+
+Analyze the overall project.
+
+Responsibilities:
+
+* Detect framework
+* Detect language
+* Detect package manager
+* Read package.json
+* Detect build scripts
+* Detect entry point
+* Detect monorepo
+* Detect Docker support
+
+Example Output
+
+```json
+{
+  "framework": "Express",
+  "language": "TypeScript",
+  "packageManager": "npm",
+  "entryPoint": "src/server.ts"
+}
+```
+
+---
+
+## 2. Dependency Analyzer
+
+Purpose
+
+Analyze project dependencies.
+
+Reads
+
+* package.json
+
+Returns
+
+* Production dependencies
+* Development dependencies
+* Versions
+* Missing packages
+* Duplicate packages
+
+---
+
+## 3. Source Code Search
+
+Purpose
+
+Search the entire project.
+
+Supports
+
+* File names
+* Class names
+* Function names
+* Variables
+* Interfaces
+* Enums
+
+Example
+
+```text
+searchCode("AuthService")
+```
+
+Returns
+
+```text
+src/services/auth.service.ts
+
+src/controllers/auth.controller.ts
+```
+
+---
+
+## 4. TODO Scanner
+
+Purpose
+
+Find unfinished work.
+
+Scans
+
+```text
+TODO
+
+FIXME
+
+HACK
+
+BUG
+
+OPTIMIZE
+```
+
+Example
+
+```text
+src/services/auth.ts
+
+Line 82
+
+TODO:
+
+Implement JWT refresh token
+```
+
+---
+
+## 5. Route Scanner
+
+Purpose
+
+Automatically discover API routes.
+
+Supports
+
+* Express
+* Fastify
+* NestJS
+
+Returns
+
+```text
+GET /users
+
+POST /login
+
+PUT /profile
+
+DELETE /products/:id
+```
+
+---
+
+## 6. Project Tree Generator
+
+Purpose
+
+Generate a clean project hierarchy.
+
+Example
+
+```text
+src
+
+├── controllers
+
+├── services
+
+├── routes
+
+├── middleware
+
+└── models
+```
+
+Supports
+
+* Depth limits
+* Ignore folders
+* Ignore node_modules
+
+---
+
+## 7. Source Analyzer
+
+Purpose
+
+Analyze source code.
+
+Detects
+
+* Classes
+* Interfaces
+* Types
+* Functions
+* Enums
+* Exports
+* Imports
+
+Useful for AI reasoning.
+
+---
+
+## 8. Environment Scanner
+
+Purpose
+
+Analyze environment configuration.
+
+Reads
+
+* .env
+* .env.local
+* .env.example
+
+Returns
+
+```text
+PORT
+
+JWT_SECRET
+
+DATABASE_URL
+
+REDIS_HOST
+```
+
+Never exposes secret values.
+
+Only keys.
+
+---
+
+## 9. Workspace Summary
+
+Purpose
+
+Create a complete project summary.
+
+Includes
+
+* Framework
+* Language
+* Dependencies
+* Directory Structure
+* Environment Variables
+* Routes
+* TODO Items
+* Docker Support
+* Kubernetes Support
+
+This becomes the primary context sent to the LLM.
+
+---
+
+# AI Workflow
+
+Instead of
+
+```text
+User
+
+↓
+
+LLM
+```
+
+The flow becomes
+
+```text
+User
+
+↓
+
+AI Service
+
+↓
+
+Need Project Context?
+
+↓
+
+Workspace Summary Tool
+
+↓
+
+Dependency Analyzer
+
+↓
+
+Route Scanner
+
+↓
+
+Project Tree
+
+↓
+
+Structured Context
+
+↓
+
+LLM
+
+↓
+
+Response
+```
+
+---
+
+# Benefits
+
+Compared to reading raw files, custom tools provide:
+
+* Faster execution
+* Smaller prompts
+* Better context quality
+* Reduced token usage
+* More accurate answers
+* Easier AI reasoning
+* Reusable project intelligence
+
+---
+
+# Implementation Phases
+
+## Part 1
+
+Developer Tool Framework
+
+---
+
+# Milestone 5.4 – Part 1: Developer Tool Framework
+
+## Overview
+
+The Filesystem MCP Server currently exposes a collection of generic filesystem tools such as:
+
+* Read File
+* List Directory
+* File Exists
+* File Metadata
+* Search Files
+* Project Tree
+
+Although these tools provide access to the project, they operate at a very low level.
+
+For example, if the AI needs to understand an Express application, it must manually:
+
+* Read `package.json`
+* Read `src/server.ts`
+* Read every route
+* Read middleware
+* Read controllers
+* Read configuration files
+
+This approach is inefficient and consumes a large number of LLM tokens.
+
+To solve this problem, we introduce the **Developer Tool Framework**.
+
+Instead of exposing only filesystem operations, the Filesystem MCP Server will expose intelligent developer-oriented tools capable of understanding software projects.
+
+---
+
+# Objectives
+
+By the end of this part, the project will support:
+
+* A reusable developer tool architecture
+* Standardized tool registration
+* Shared developer tool interfaces
+* Reusable execution pipeline
+* Common validation
+* Automatic discovery
+* Consistent error handling
+* Foundation for future developer tools
+
+---
+
+# Why a Developer Tool Framework?
+
+Traditional filesystem tools answer questions such as:
+
+```text id="3k2rfm"
+Read this file.
+```
+
+Developer tools answer questions such as:
+
+```text id="zzr5gn"
+Analyze the project.
+```
+
+Instead of returning raw data, they return structured knowledge.
+
+Example
+
+Instead of
+
+```text id="xzbymh"
+readFile(package.json)
+```
+
+The AI receives
+
+```json id="vt18nn"
+{
+    "framework": "Express",
+    "language": "TypeScript",
+    "packageManager": "npm",
+    "entryPoint": "src/server.ts"
+}
+```
+
+The AI no longer needs to interpret the file itself.
+
+---
+
+# Architecture
+
+The Developer Tool Framework sits above the Filesystem Service.
+
+```text id="mjlwm4"
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Developer Tool Framework
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Operating System
+```
+
+Each developer tool focuses on solving one software engineering problem.
+
+---
+
+# Responsibilities
+
+The framework is responsible for:
+
+* Registering developer tools
+* Discovering available tools
+* Validating tool arguments
+* Executing tools
+* Returning standardized responses
+* Logging execution
+* Handling failures
+* Providing reusable abstractions
+
+---
+
+# Project Structure
+
+A dedicated folder will hold all developer-focused tools.
+
+```text id="9qn4nl"
+src/
+│
+├── mcp/
+│
+│   └── servers/
+│
+│       └── filesystem/
+│
+│           ├── developer-tools/
+│           │
+│           ├── analyzeProject.tool.ts
+│           ├── dependencyAnalyzer.tool.ts
+│           ├── searchCode.tool.ts
+│           ├── routeScanner.tool.ts
+│           ├── todoScanner.tool.ts
+│           ├── sourceAnalyzer.tool.ts
+│           ├── workspaceSummary.tool.ts
+│           ├── environmentScanner.tool.ts
+│           ├── projectTree.tool.ts
+│           │
+│           ├── developerTool.base.ts
+│           ├── developerTool.registry.ts
+│           ├── developerTool.types.ts
+│           └── index.ts
+```
+
+---
+
+# Framework Components
+
+## Base Tool
+
+Every developer tool follows a common structure.
+
+Responsibilities include:
+
+* Tool metadata
+* Validation
+* Execution
+* Error handling
+* Logging
+
+Example
+
+```text id="h70vte"
+AnalyzeProjectTool
+
+↓
+
+validate()
+
+↓
+
+execute()
+
+↓
+
+return Result
+```
+
+---
+
+## Tool Registry
+
+The registry maintains all developer tools.
+
+Responsibilities:
+
+* Register tool
+* Remove tool
+* Find tool
+* List tools
+* Check existence
+
+Example
+
+```text id="tfxhzn"
+Developer Tool Registry
+
+├── Analyze Project
+
+├── Search Code
+
+├── Route Scanner
+
+├── TODO Scanner
+
+├── Workspace Summary
+```
+
+---
+
+## Shared Types
+
+All tools share common interfaces.
+
+Examples include:
+
+* Tool Arguments
+* Tool Results
+* Validation Result
+* Search Result
+* Source File
+* Dependency
+* Route Information
+* Project Information
+
+Shared types improve consistency across the framework.
+
+---
+
+## Validation Layer
+
+Every tool validates its input before execution.
+
+Checks include:
+
+* Required parameters
+* Workspace restrictions
+* File existence
+* Path normalization
+* Input format
+* Maximum limits
+
+Validation failures return standardized error responses.
+
+---
+
+## Execution Pipeline
+
+Every tool follows the same lifecycle.
+
+```text id="sv7gg8"
+Receive Request
+
+        │
+
+        ▼
+
+Validate Arguments
+
+        │
+
+        ▼
+
+Execute Logic
+
+        │
+
+        ▼
+
+Collect Results
+
+        │
+
+        ▼
+
+Return Standard Response
+```
+
+This pipeline ensures predictable behavior for every tool.
+
+---
+
+# Tool Categories
+
+The framework supports multiple categories of tools.
+
+## Analysis Tools
+
+Purpose:
+
+Understand projects.
+
+Examples:
+
+* Analyze Project
+* Source Analyzer
+* Dependency Analyzer
+
+---
+
+## Search Tools
+
+Purpose:
+
+Locate project information.
+
+Examples:
+
+* Search Code
+* Search Files
+* Find Routes
+* Find TODO
+
+---
+
+## Workspace Tools
+
+Purpose:
+
+Summarize the project.
+
+Examples:
+
+* Project Tree
+* Workspace Summary
+* Environment Scanner
+
+---
+
+## Inspection Tools
+
+Purpose:
+
+Inspect project files.
+
+Examples:
+
+* Read File
+* Metadata
+* File Exists
+
+---
+
+# Registration Process
+
+During server startup:
+
+```text id="wgvd8m"
+Filesystem Server
+
+        │
+
+        ▼
+
+Developer Tool Registry
+
+        │
+
+        ▼
+
+Register All Developer Tools
+
+        │
+
+        ▼
+
+Gateway Discovery
+
+        │
+
+        ▼
+
+Available to AI
+```
+
+No changes are required inside the Gateway when new developer tools are added.
+
+---
+
+# Benefits
+
+The Developer Tool Framework provides:
+
+* Clean architecture
+* Reusable design
+* Consistent implementation
+* Easier testing
+* Better maintainability
+* Automatic discovery
+* Scalable registration
+* Standardized execution
+
+---
+
+# Planned Developer Tools
+
+The following tools will be implemented throughout Milestone 5.4:
+
+| Tool                | Purpose                                           |
+| ------------------- | ------------------------------------------------- |
+| Analyze Project     | Detect framework, language, scripts, project type |
+| Dependency Analyzer | Analyze project dependencies                      |
+| Search Code         | Search symbols and source files                   |
+| Route Scanner       | Discover API routes                               |
+| TODO Scanner        | Locate TODO, FIXME, HACK comments                 |
+| Source Analyzer     | Extract classes, interfaces, functions, enums     |
+| Project Tree        | Generate project hierarchy                        |
+| Environment Scanner | Discover environment variable names               |
+| Workspace Summary   | Produce an AI-ready summary of the project        |
+
+---
+
+# Design Principles
+
+The framework follows several software engineering principles.
+
+## Single Responsibility Principle (SRP)
+
+Each tool solves one specific problem.
+
+---
+
+## Open/Closed Principle (OCP)
+
+New tools can be added without modifying existing ones.
+
+---
+
+## Dependency Injection
+
+Tools receive required services instead of creating them internally.
+
+---
+
+## Reusability
+
+The same tool can be invoked by:
+
+* AI Service
+* REST API
+* CLI
+* Future VS Code Extension
+* Automated workflows
+
+---
+
+## Standardization
+
+Every tool exposes:
+
+* Name
+* Description
+* Input schema
+* Validation
+* Execution
+* Standard response
+
+---
+
+# Expected Workflow
+
+```text id="8bjyk2"
+AI Request
+
+        │
+
+        ▼
+
+Gateway
+
+        │
+
+        ▼
+
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Developer Tool Registry
+
+        │
+
+        ▼
+
+Developer Tool
+
+        │
+
+        ▼
+
+Filesystem Service
+
+        │
+
+        ▼
+
+Operating System
+
+        │
+
+        ▼
+
+Structured Result
+```
+
+---
+
+# Deliverables
+
+By the end of **Part 1**, the project will have:
+
+* ✅ Developer Tool Framework architecture
+* ✅ Dedicated developer tool folder structure
+* ✅ Standardized tool lifecycle
+* ✅ Shared developer tool interfaces
+* ✅ Validation pipeline
+* ✅ Execution pipeline
+* ✅ Registration strategy
+* ✅ Tool categorization
+* ✅ Extensible design for future developer tools
+
+---
+
+# Next Part
+
+**Part 2 – Project Analyzer**
+
+The first developer-focused MCP tool will be implemented.
+
+It will automatically inspect the workspace and identify:
+
+* Framework
+* Programming language
+* Package manager
+* Build system
+* Entry point
+* Scripts
+* Docker support
+* Monorepo configuration
+* Project type
+
+This information will become the foundation for AI-driven project understanding.
+
+
+
+## Part 2
+
+Project Analyzer
+
+---
+# Milestone 5.4 – Part 2: Project Analyzer
+
+## Overview
+
+The **Project Analyzer** is the first intelligent developer-focused MCP tool built on top of the Filesystem MCP Server.
+
+Unlike generic filesystem operations that simply read files, the Project Analyzer inspects an entire workspace and extracts structured information about the project.
+
+Instead of requiring the AI to manually inspect multiple files, this tool performs the analysis once and returns an AI-friendly summary.
+
+This significantly improves response quality while reducing the number of filesystem operations and LLM tokens.
+
+---
+
+# Objectives
+
+By the end of this part, the Project Analyzer will be capable of:
+
+* Detecting the project type
+* Detecting the programming language
+* Detecting the application framework
+* Detecting the package manager
+* Detecting the runtime
+* Reading project metadata
+* Detecting build tools
+* Detecting entry points
+* Detecting Docker support
+* Detecting Kubernetes support
+* Detecting Git repositories
+* Detecting CI/CD configurations
+* Returning a structured project summary
+
+---
+
+# Why Project Analyzer?
+
+Without a Project Analyzer, the AI must repeatedly execute operations such as:
+
+```text
+Read package.json
+Read tsconfig.json
+Read Dockerfile
+Read docker-compose.yml
+Read package-lock.json
+Read yarn.lock
+Read pnpm-lock.yaml
+Read src/server.ts
+Read src/index.ts
+Read README.md
+```
+
+The AI must then interpret these files to understand the project.
+
+With the Project Analyzer, a single MCP tool performs this work and returns a structured result.
+
+---
+
+# Architecture
+
+```text
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Project Analyzer Tool
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Workspace Files
+```
+
+---
+
+# Files to Inspect
+
+The analyzer examines common project files, including:
+
+```text
+package.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+tsconfig.json
+jsconfig.json
+
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+
+README.md
+
+.git
+
+.github/
+
+.gitlab-ci.yml
+
+azure-pipelines.yml
+
+Jenkinsfile
+
+vite.config.ts
+webpack.config.js
+
+next.config.js
+
+nest-cli.json
+
+angular.json
+
+composer.json
+
+pom.xml
+
+build.gradle
+
+requirements.txt
+
+pyproject.toml
+
+Cargo.toml
+
+go.mod
+```
+
+---
+
+# Information Extracted
+
+## Project Information
+
+* Project name
+* Description
+* Version
+* Author
+* License
+
+---
+
+## Language Detection
+
+Supported languages include:
+
+* TypeScript
+* JavaScript
+* Python
+* Java
+* Go
+* Rust
+* PHP
+* C#
+* C++
+* Kotlin
+
+---
+
+## Framework Detection
+
+Supported frameworks include:
+
+### Node.js
+
+* Express
+* NestJS
+* Fastify
+* Koa
+* Hapi
+
+### Frontend
+
+* React
+* Next.js
+* Angular
+* Vue
+* Svelte
+
+### Backend
+
+* Spring Boot
+* Django
+* Flask
+* Laravel
+* ASP.NET Core
+
+---
+
+## Package Manager
+
+Detect:
+
+```text
+npm
+
+yarn
+
+pnpm
+
+bun
+```
+
+---
+
+## Runtime
+
+Detect:
+
+```text
+Node.js
+
+Python
+
+Java
+
+Go
+
+Rust
+```
+
+---
+
+## Build Tools
+
+Examples:
+
+```text
+Vite
+
+Webpack
+
+Rollup
+
+Turbo
+
+Nx
+
+Gradle
+
+Maven
+```
+
+---
+
+## Entry Points
+
+Common entry files:
+
+```text
+src/server.ts
+
+src/index.ts
+
+src/main.ts
+
+index.js
+
+app.js
+```
+
+---
+
+## Docker Support
+
+Detect:
+
+```text
+Dockerfile
+
+docker-compose.yml
+
+docker-compose.yaml
+```
+
+---
+
+## Kubernetes Support
+
+Detect:
+
+```text
+k8s/
+
+helm/
+
+deployment.yaml
+
+service.yaml
+
+ingress.yaml
+```
+
+---
+
+## Version Control
+
+Detect:
+
+```text
+.git
+```
+
+---
+
+## CI/CD
+
+Supported systems:
+
+* GitHub Actions
+* Jenkins
+* GitLab CI
+* Azure DevOps
+
+---
+
+# Execution Flow
+
+```text
+Receive Request
+        │
+        ▼
+Validate Workspace
+        │
+        ▼
+Locate Project Files
+        │
+        ▼
+Read Metadata
+        │
+        ▼
+Detect Framework
+        │
+        ▼
+Detect Language
+        │
+        ▼
+Detect Runtime
+        │
+        ▼
+Detect Build Tools
+        │
+        ▼
+Generate Summary
+        │
+        ▼
+Return Structured Result
+```
+
+---
+
+# Example Response
+
+```json
+{
+  "projectName": "AI-powered-Full-Stack-Developer-Assistant",
+  "version": "1.0.0",
+  "language": "TypeScript",
+  "framework": "Express",
+  "runtime": "Node.js",
+  "packageManager": "npm",
+  "buildTool": "Vite",
+  "entryPoint": "src/server.ts",
+  "docker": true,
+  "kubernetes": true,
+  "git": true,
+  "ci": "GitHub Actions"
+}
+```
+
+---
+
+# AI Usage
+
+Instead of:
+
+```text
+AI
+
+↓
+
+Read package.json
+
+↓
+
+Read tsconfig.json
+
+↓
+
+Read Dockerfile
+
+↓
+
+Read README.md
+
+↓
+
+Understand Project
+```
+
+The AI performs:
+
+```text
+AI
+
+↓
+
+Project Analyzer
+
+↓
+
+Project Summary
+
+↓
+
+LLM
+```
+
+---
+
+# Advantages
+
+The Project Analyzer provides:
+
+* Fewer filesystem calls
+* Lower token usage
+* Faster execution
+* Structured context
+* Improved response quality
+* Better project understanding
+* Reusable project metadata
+* Reduced AI reasoning overhead
+
+---
+
+# Integration with MCP
+
+The Project Analyzer is registered like any other MCP tool.
+
+```text
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Register Tool
+
+        │
+
+        ▼
+
+Gateway Discovery
+
+        │
+
+        ▼
+
+AI Service
+```
+
+No Gateway changes are required.
+
+---
+
+# Responsibilities
+
+The Project Analyzer is responsible for:
+
+* Workspace inspection
+* Project metadata extraction
+* Framework detection
+* Language detection
+* Runtime detection
+* Package manager detection
+* Entry point detection
+* Docker detection
+* Kubernetes detection
+* CI/CD detection
+* Structured response generation
+
+It is **not** responsible for:
+
+* Reading source code in detail
+* Dependency analysis
+* Route discovery
+* TODO scanning
+* Environment variable inspection
+
+These responsibilities belong to dedicated developer tools implemented in later parts.
+
+---
+
+# Design Principles
+
+The Project Analyzer follows:
+
+* Single Responsibility Principle (SRP)
+* Open/Closed Principle (OCP)
+* Separation of Concerns
+* Reusable Tool Design
+* AI-Optimized Responses
+
+---
+
+# Testing Scenarios
+
+Verify that the analyzer correctly detects:
+
+* Node.js project
+* Express application
+* React application
+* Next.js application
+* Docker support
+* Kubernetes manifests
+* Git repository
+* CI/CD configuration
+* TypeScript projects
+* JavaScript projects
+* Missing metadata
+* Empty workspace
+
+---
+
+# Deliverables
+
+By the end of **Part 2**, the project will include:
+
+* ✅ Project Analyzer MCP tool
+* ✅ Automatic framework detection
+* ✅ Language detection
+* ✅ Runtime detection
+* ✅ Package manager detection
+* ✅ Build tool detection
+* ✅ Entry point detection
+* ✅ Docker detection
+* ✅ Kubernetes detection
+* ✅ Git detection
+* ✅ CI/CD detection
+* ✅ Structured project summary
+* ✅ AI-ready project metadata
+
+---
+
+# Next Part
+
+## Part 3 – Dependency Analyzer
+
+The next developer-focused MCP tool will inspect project dependencies and generate structured information about:
+
+* Production dependencies
+* Development dependencies
+* Package versions
+* Missing packages
+* Duplicate dependencies
+* Outdated packages
+* Security insights
+
+This will provide the AI with a comprehensive understanding of the project's dependency ecosystem without requiring manual inspection of package files.
+
+
+
+
+---
+
+# Milestone 5.4 – Part 3: Dependency Analyzer
+
+## Overview
+
+The **Dependency Analyzer** is the second developer-focused MCP tool built on top of the Filesystem MCP Server.
+
+Modern software projects rely on dozens or even hundreds of external libraries. Understanding these dependencies is essential for an AI-powered development assistant.
+
+Instead of asking the AI to repeatedly read and interpret `package.json`, `package-lock.json`, or other dependency files, the Dependency Analyzer extracts, organizes, and summarizes dependency information into a structured format.
+
+This enables the AI to reason about project dependencies quickly and accurately while significantly reducing prompt size and filesystem operations.
+
+---
+
+# Objectives
+
+By the end of this part, the Dependency Analyzer will be capable of:
+
+* Reading project dependency files
+* Detecting the package manager
+* Identifying production dependencies
+* Identifying development dependencies
+* Detecting package versions
+* Detecting duplicate packages
+* Detecting missing dependencies
+* Detecting peer dependencies
+* Detecting optional dependencies
+* Identifying outdated packages (future enhancement)
+* Identifying vulnerable packages (future enhancement)
+* Returning structured dependency information
+
+---
+
+# Why Dependency Analyzer?
+
+Without a Dependency Analyzer, the AI must manually inspect multiple files.
+
+Example workflow:
+
+```text
+Read package.json
+      │
+      ▼
+Read package-lock.json
+      │
+      ▼
+Read tsconfig.json
+      │
+      ▼
+Determine dependencies
+      │
+      ▼
+Answer user
+```
+
+This process consumes unnecessary tokens and increases latency.
+
+Instead, a single developer-focused MCP tool performs the analysis.
+
+```text
+Dependency Analyzer
+      │
+      ▼
+Structured Dependency Summary
+      │
+      ▼
+LLM
+```
+
+---
+
+# Supported Package Managers
+
+Initially, the analyzer will support:
+
+### Node.js
+
+* npm
+* Yarn
+* pnpm
+* Bun
+
+Future versions may support:
+
+* Maven
+* Gradle
+* Cargo
+* Go Modules
+* Composer
+* Pip
+* Poetry
+* NuGet
+
+---
+
+# Files to Inspect
+
+The analyzer automatically detects and inspects:
+
+```text
+package.json
+
+package-lock.json
+
+yarn.lock
+
+pnpm-lock.yaml
+
+bun.lockb
+```
+
+Future support:
+
+```text
+pom.xml
+
+build.gradle
+
+requirements.txt
+
+pyproject.toml
+
+Cargo.toml
+
+go.mod
+```
+
+---
+
+# Information Extracted
+
+The Dependency Analyzer collects the following information.
+
+---
+
+## Project Metadata
+
+* Project name
+* Version
+* Package manager
+
+---
+
+## Production Dependencies
+
+Examples:
+
+```text
+express
+
+mongoose
+
+cors
+
+jsonwebtoken
+
+dotenv
+```
+
+---
+
+## Development Dependencies
+
+Examples:
+
+```text
+typescript
+
+eslint
+
+prettier
+
+jest
+
+tsx
+
+nodemon
+```
+
+---
+
+## Package Versions
+
+Example:
+
+```text
+express
+
+Version:
+
+5.1.0
+```
+
+---
+
+## Peer Dependencies
+
+Example:
+
+```text
+react
+
+react-dom
+```
+
+---
+
+## Optional Dependencies
+
+Example:
+
+```text
+fsevents
+```
+
+---
+
+## Duplicate Packages
+
+The analyzer identifies duplicate dependency declarations.
+
+Example:
+
+```text
+express
+
+dependencies
+
+AND
+
+devDependencies
+```
+
+---
+
+## Missing Dependencies
+
+The analyzer checks for packages referenced by the project but not installed.
+
+Example:
+
+```text
+Package referenced
+
+↓
+
+Not found
+
+↓
+
+Report Missing Dependency
+```
+
+---
+
+## Lock File Detection
+
+Determine whether the project uses:
+
+```text
+package-lock.json
+
+yarn.lock
+
+pnpm-lock.yaml
+
+bun.lockb
+```
+
+This helps identify the active package manager.
+
+---
+
+# Future Enhancements
+
+The architecture prepares for advanced dependency analysis.
+
+Examples include:
+
+### Outdated Packages
+
+```text
+Current
+
+↓
+
+Latest Version
+
+↓
+
+Upgrade Recommendation
+```
+
+---
+
+### Security Vulnerabilities
+
+Future integration with:
+
+* npm audit
+* GitHub Advisory Database
+* OSV Database
+
+Example output:
+
+```text
+Package
+
+↓
+
+Severity
+
+↓
+
+Recommended Fix
+```
+
+---
+
+### License Analysis
+
+Detect licenses such as:
+
+* MIT
+* Apache 2.0
+* GPL
+* BSD
+
+Useful for enterprise environments.
+
+---
+
+# Execution Flow
+
+```text
+Receive Request
+        │
+        ▼
+Validate Workspace
+        │
+        ▼
+Detect Package Manager
+        │
+        ▼
+Locate Dependency Files
+        │
+        ▼
+Read package.json
+        │
+        ▼
+Extract Dependencies
+        │
+        ▼
+Extract Dev Dependencies
+        │
+        ▼
+Detect Lock File
+        │
+        ▼
+Build Dependency Summary
+        │
+        ▼
+Return Structured Response
+```
+
+---
+
+# Example Response
+
+```json
+{
+  "project": "AI-powered-Full-Stack-Developer-Assistant",
+  "packageManager": "npm",
+  "dependencies": [
+    {
+      "name": "express",
+      "version": "^5.1.0"
+    },
+    {
+      "name": "cors",
+      "version": "^2.8.5"
+    }
+  ],
+  "devDependencies": [
+    {
+      "name": "typescript",
+      "version": "^5.8.2"
+    },
+    {
+      "name": "tsx",
+      "version": "^4.20.4"
+    }
+  ],
+  "duplicates": [],
+  "missing": [],
+  "lockFile": "package-lock.json"
+}
+```
+
+---
+
+# AI Workflow
+
+Without the Dependency Analyzer:
+
+```text
+AI
+
+↓
+
+Read package.json
+
+↓
+
+Read package-lock.json
+
+↓
+
+Interpret Dependencies
+
+↓
+
+Generate Response
+```
+
+With the Dependency Analyzer:
+
+```text
+AI
+
+↓
+
+Dependency Analyzer
+
+↓
+
+Structured Dependency Information
+
+↓
+
+LLM
+```
+
+---
+
+# Integration with MCP
+
+The Dependency Analyzer is implemented as a developer-focused MCP tool.
+
+```text
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Dependency Analyzer
+
+        │
+
+        ▼
+
+Filesystem Service
+
+        │
+
+        ▼
+
+Workspace Files
+
+        │
+
+        ▼
+
+Dependency Summary
+```
+
+The Gateway automatically discovers the tool during server initialization.
+
+---
+
+# Responsibilities
+
+The Dependency Analyzer is responsible for:
+
+* Reading dependency configuration files
+* Detecting the package manager
+* Parsing dependency information
+* Separating production and development dependencies
+* Detecting duplicate packages
+* Detecting missing packages
+* Returning structured dependency metadata
+
+The analyzer is **not** responsible for:
+
+* Reading source code
+* Scanning TODO comments
+* Detecting API routes
+* Building the project tree
+* Performing security audits (future enhancement)
+* Updating packages
+
+These responsibilities belong to dedicated MCP tools.
+
+---
+
+# Design Principles
+
+The Dependency Analyzer follows:
+
+* Single Responsibility Principle (SRP)
+* Open/Closed Principle (OCP)
+* Reusable Tool Design
+* AI-Optimized Responses
+* Separation of Concerns
+
+---
+
+# Testing Scenarios
+
+Verify the analyzer correctly handles:
+
+* npm projects
+* Yarn projects
+* pnpm projects
+* Bun projects
+* Projects without dependencies
+* Projects with only devDependencies
+* Duplicate dependencies
+* Missing dependency files
+* Invalid package.json
+* Monorepo package structures (future enhancement)
+
+---
+
+# Benefits
+
+The Dependency Analyzer provides:
+
+* Faster dependency inspection
+* Reduced filesystem operations
+* Lower LLM token consumption
+* Structured project metadata
+* Improved AI understanding
+* Consistent dependency reporting
+* Foundation for dependency health analysis
+
+---
+
+# Deliverables
+
+By the end of **Part 3**, the project will include:
+
+* ✅ Dependency Analyzer MCP tool
+* ✅ Package manager detection
+* ✅ Production dependency analysis
+* ✅ Development dependency analysis
+* ✅ Package version extraction
+* ✅ Duplicate dependency detection
+* ✅ Missing dependency detection
+* ✅ Lock file detection
+* ✅ Structured dependency summary
+* ✅ AI-ready dependency metadata
+
+---
+
+# Next Part
+
+## Part 4 – Source Code Search Tool
+
+The next developer-focused MCP tool will enable intelligent searching across the project source code.
+
+It will support:
+
+* Searching by file name
+* Searching by class name
+* Searching by function name
+* Searching by interface
+* Searching by enum
+* Searching by variable
+* Pattern-based search
+* Extension filtering
+* Recursive workspace search
+
+This tool will allow the AI assistant to quickly locate relevant code without manually scanning every project file, significantly improving context retrieval and response quality.
+
+
+# Milestone 5.4 – Part 4: Source Code Search Tool
+
+## Overview
+
+The **Source Code Search Tool** is the third developer-focused MCP tool in the Filesystem MCP Server ecosystem.
+
+While the Filesystem MCP Server provides access to files and directories, the Source Code Search Tool introduces **semantic code discovery**. Instead of manually opening and scanning files, the AI can quickly locate relevant code elements such as classes, functions, interfaces, enums, variables, and file names.
+
+This tool serves as the primary code discovery mechanism for the AI-powered Full Stack Developer Assistant, enabling fast and intelligent context retrieval across the entire workspace.
+
+---
+
+# Objectives
+
+By the end of this part, the Source Code Search Tool will be capable of:
+
+* Searching by file name
+* Searching by class name
+* Searching by function name
+* Searching by interface
+* Searching by enum
+* Searching by variable
+* Searching using custom patterns
+* Filtering by file extension
+* Performing recursive workspace searches
+* Returning structured search results
+* Providing AI-ready code context
+
+---
+
+# Why Source Code Search?
+
+Without this tool, the AI must manually inspect numerous files.
+
+Example workflow:
+
+```text
+Read project tree
+      │
+      ▼
+Open multiple files
+      │
+      ▼
+Search manually
+      │
+      ▼
+Locate required code
+      │
+      ▼
+Generate response
+```
+
+This process is inefficient and consumes unnecessary tokens.
+
+Instead, the AI performs a single MCP tool call.
+
+```text
+Source Code Search
+      │
+      ▼
+Relevant Source Files
+      │
+      ▼
+LLM
+```
+
+---
+
+# Architecture
+
+```text
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Source Code Search Tool
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Workspace Source Files
+```
+
+---
+
+# Search Categories
+
+The tool supports multiple search strategies.
+
+---
+
+## File Name Search
+
+Locate files by partial or complete name.
+
+Example:
+
+```text
+Search
+
+↓
+
+auth.service
+
+↓
+
+auth.service.ts
+```
+
+---
+
+## Class Search
+
+Locate class declarations.
+
+Examples:
+
+```typescript
+class UserService
+
+class AuthController
+
+class MCPGateway
+```
+
+---
+
+## Function Search
+
+Locate function declarations.
+
+Examples:
+
+```typescript
+function login()
+
+function register()
+
+function initialize()
+
+function executeTool()
+```
+
+---
+
+## Interface Search
+
+Locate TypeScript interfaces.
+
+Examples:
+
+```typescript
+interface User
+
+interface MCPTool
+
+interface ProjectSummary
+```
+
+---
+
+## Enum Search
+
+Locate enum declarations.
+
+Examples:
+
+```typescript
+enum ServerStatus
+
+enum LogLevel
+```
+
+---
+
+## Variable Search
+
+Locate constant and variable declarations.
+
+Examples:
+
+```typescript
+const registry
+
+const gateway
+
+const app
+
+const logger
+```
+
+---
+
+## Pattern Search
+
+Support custom pattern matching.
+
+Examples:
+
+```text
+TODO
+
+FIXME
+
+console.log
+
+process.env
+
+async
+
+await
+
+try
+
+catch
+```
+
+---
+
+## Extension Filtering
+
+Restrict searches to specific file types.
+
+Examples:
+
+```text
+.ts
+
+.tsx
+
+.js
+
+.jsx
+
+.json
+
+.md
+
+.yaml
+
+.yml
+
+Dockerfile
+```
+
+---
+
+## Recursive Search
+
+Search the entire workspace hierarchy.
+
+```text
+Workspace
+
+│
+
+├── src
+
+│
+
+├── controllers
+
+│
+
+├── services
+
+│
+
+├── routes
+
+│
+
+├── ai
+
+│
+
+├── mcp
+
+│
+
+└── tests
+```
+
+---
+
+# Supported Languages
+
+Initially supported:
+
+* TypeScript
+* JavaScript
+* JSON
+* Markdown
+* YAML
+
+Future versions may include:
+
+* Python
+* Java
+* Go
+* Rust
+* PHP
+* C#
+* Kotlin
+
+---
+
+# Search Modes
+
+The Source Code Search Tool supports different search modes.
+
+## Exact Match
+
+```text
+UserService
+```
+
+---
+
+## Partial Match
+
+```text
+Service
+```
+
+---
+
+## Case-Insensitive Search
+
+```text
+userservice
+
+↓
+
+UserService
+```
+
+---
+
+## Regular Expression Search
+
+Examples:
+
+```text
+class\s+\w+
+
+function\s+\w+
+
+interface\s+\w+
+
+enum\s+\w+
+```
+
+---
+
+## Multi-Keyword Search
+
+```text
+Auth
+
+AND
+
+Controller
+```
+
+---
+
+# Execution Flow
+
+```text
+Receive Search Request
+        │
+        ▼
+Validate Workspace
+        │
+        ▼
+Validate Search Options
+        │
+        ▼
+Determine Search Scope
+        │
+        ▼
+Traverse Workspace
+        │
+        ▼
+Read Source Files
+        │
+        ▼
+Apply Search Strategy
+        │
+        ▼
+Collect Matches
+        │
+        ▼
+Rank Results
+        │
+        ▼
+Return Structured Response
+```
+
+---
+
+# Search Result Structure
+
+Each result contains:
+
+* File name
+* Relative path
+* Absolute path
+* Line number
+* Column number
+* Match type
+* Matching text
+* Context snippet
+* File extension
+
+---
+
+# Example Response
+
+```json
+{
+  "query": "executeTool",
+  "totalResults": 2,
+  "results": [
+    {
+      "file": "filesystem.server.ts",
+      "path": "src/mcp/servers/filesystem/filesystem.server.ts",
+      "line": 82,
+      "column": 18,
+      "type": "function",
+      "match": "executeTool",
+      "snippet": "public async executeTool(request: ToolRequest)"
+    },
+    {
+      "file": "gateway.ts",
+      "path": "src/mcp/gateway/index.ts",
+      "line": 60,
+      "column": 15,
+      "type": "method",
+      "match": "executeTool",
+      "snippet": "async executeTool(request: ToolRequest)"
+    }
+  ]
+}
+```
+
+---
+
+# AI Workflow
+
+Without the Source Code Search Tool:
+
+```text
+AI
+
+↓
+
+Read Project Tree
+
+↓
+
+Open Many Files
+
+↓
+
+Search Manually
+
+↓
+
+Locate Code
+
+↓
+
+Generate Response
+```
+
+With the Source Code Search Tool:
+
+```text
+AI
+
+↓
+
+Source Code Search
+
+↓
+
+Relevant Code Locations
+
+↓
+
+Read Only Required Files
+
+↓
+
+LLM
+```
+
+The AI receives only the most relevant code instead of the entire project.
+
+---
+
+# Integration with MCP
+
+The Source Code Search Tool is implemented as a standard MCP tool.
+
+```text
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Source Code Search Tool
+
+        │
+
+        ▼
+
+Filesystem Service
+
+        │
+
+        ▼
+
+Workspace Files
+
+        │
+
+        ▼
+
+Search Results
+```
+
+The MCP Gateway automatically discovers the tool during server initialization.
+
+---
+
+# Responsibilities
+
+The Source Code Search Tool is responsible for:
+
+* Searching project files
+* Searching source code declarations
+* Searching symbols
+* Searching text patterns
+* Filtering by extension
+* Returning ranked search results
+* Providing AI-friendly code snippets
+
+It is **not** responsible for:
+
+* Parsing Abstract Syntax Trees (AST)
+* Understanding code semantics
+* Dependency analysis
+* TODO analysis
+* Code quality analysis
+* Refactoring source code
+
+These capabilities will be implemented by future developer-focused MCP tools.
+
+---
+
+# Design Principles
+
+The Source Code Search Tool follows:
+
+* Single Responsibility Principle (SRP)
+* Open/Closed Principle (OCP)
+* Separation of Concerns
+* AI-Optimized Responses
+* Fast Recursive Search
+* Workspace Security
+* Extensible Search Strategies
+
+---
+
+# Testing Scenarios
+
+Verify that the tool correctly handles:
+
+* File name searches
+* Class searches
+* Function searches
+* Interface searches
+* Enum searches
+* Variable searches
+* Pattern searches
+* Recursive workspace searches
+* Extension filtering
+* Empty workspaces
+* Invalid search patterns
+* No matching results
+* Large codebases
+* Hidden directories
+* Ignored folders (`node_modules`, `.git`, `dist`, `build`)
+
+---
+
+# Performance Considerations
+
+To ensure scalability, the Source Code Search Tool should:
+
+* Ignore generated folders
+* Skip binary files
+* Cache frequently searched metadata
+* Stream large search results
+* Limit maximum result count
+* Support asynchronous file traversal
+* Optimize recursive directory scanning
+
+---
+
+# Benefits
+
+The Source Code Search Tool provides:
+
+* Fast code discovery
+* Reduced filesystem operations
+* Lower LLM token usage
+* Faster AI responses
+* Structured search results
+* Improved developer productivity
+* Better project navigation
+* Foundation for semantic code understanding
+
+---
+
+# Deliverables
+
+By the end of **Part 4**, the project will include:
+
+* ✅ Source Code Search MCP tool
+* ✅ File name search
+* ✅ Class search
+* ✅ Function search
+* ✅ Interface search
+* ✅ Enum search
+* ✅ Variable search
+* ✅ Pattern-based search
+* ✅ Extension filtering
+* ✅ Recursive workspace search
+* ✅ Structured search results
+* ✅ AI-ready code snippets
+
+---
+
+# Next Part
+
+## Part 5 – TODO & Technical Debt Analyzer
+
+The next developer-focused MCP tool will automatically identify technical debt across the project by scanning source files for development markers.
+
+It will detect:
+
+* TODO comments
+* FIXME comments
+* HACK notes
+* BUG markers
+* Deprecated code
+* Console statements
+* Commented-out code
+* Unused placeholders
+* Incomplete implementations
+
+This tool will help the AI assistant identify unfinished work, technical debt, and areas requiring developer attention, enabling smarter project analysis and actionable recommendations.
+
+
+# Milestone 5.4 – Part 5: TODO & Technical Debt Analyzer
+
+## Overview
+
+The **TODO & Technical Debt Analyzer** is the fourth developer-focused MCP tool in the Filesystem MCP Server ecosystem.
+
+While the Source Code Search Tool helps the AI locate code, the Technical Debt Analyzer enables the AI to identify unfinished work, development shortcuts, and potential maintainability issues across the entire project.
+
+Rather than manually inspecting source files, the analyzer scans the workspace for predefined technical debt markers and returns a structured report. This allows the AI-powered Full Stack Developer Assistant to provide proactive recommendations for improving code quality and project health.
+
+---
+
+# Objectives
+
+By the end of this part, the TODO & Technical Debt Analyzer will be capable of:
+
+* Detecting TODO comments
+* Detecting FIXME comments
+* Detecting HACK notes
+* Detecting BUG markers
+* Detecting deprecated code usage
+* Detecting console statements
+* Detecting commented-out code
+* Detecting unused placeholders
+* Detecting incomplete implementations
+* Categorizing technical debt
+* Prioritizing findings by severity
+* Returning structured analysis results
+
+---
+
+# Why a Technical Debt Analyzer?
+
+During development, developers often leave markers indicating unfinished work or temporary solutions.
+
+Examples include:
+
+```typescript id="7hyq9a"
+TODO: Implement authentication
+```
+
+```typescript id="hf3a4r"
+FIXME: Memory leak occurs here
+```
+
+```typescript id="6we7qn"
+HACK: Temporary workaround until API is updated
+```
+
+```typescript id="by7fnt"
+BUG: Incorrect calculation for negative values
+```
+
+Finding these manually becomes increasingly difficult as projects grow.
+
+Instead, the Technical Debt Analyzer performs a complete workspace scan and provides an organized summary.
+
+---
+
+# Architecture
+
+```text id="h9v3gc"
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Filesystem MCP Server
+      │
+      ▼
+Technical Debt Analyzer
+      │
+      ▼
+Filesystem Service
+      │
+      ▼
+Workspace Source Files
+```
+
+---
+
+# Technical Debt Categories
+
+The analyzer classifies findings into multiple categories.
+
+---
+
+## TODO Comments
+
+Detect developer reminders.
+
+Examples:
+
+```typescript id="i4mz2s"
+TODO: Add validation
+
+TODO: Refactor this module
+
+TODO: Optimize database query
+```
+
+---
+
+## FIXME Comments
+
+Detect known issues requiring attention.
+
+Examples:
+
+```typescript id="1vddqv"
+FIXME: Handle null values
+
+FIXME: Race condition
+```
+
+---
+
+## HACK Notes
+
+Detect temporary workarounds.
+
+Examples:
+
+```typescript id="n9q5di"
+HACK: Temporary implementation
+
+HACK: Remove after migration
+```
+
+---
+
+## BUG Markers
+
+Detect explicitly identified defects.
+
+Examples:
+
+```typescript id="7h9gfr"
+BUG: Incorrect pagination
+
+BUG: Duplicate records
+```
+
+---
+
+## Deprecated Code
+
+Detect deprecated APIs or annotations.
+
+Examples:
+
+```typescript id="kz6n4w"
+@deprecated
+
+Deprecated API
+
+Legacy method
+```
+
+---
+
+## Console Statements
+
+Identify debugging statements left in production code.
+
+Examples:
+
+```typescript id="lgh3ax"
+console.log()
+
+console.error()
+
+console.warn()
+
+console.debug()
+```
+
+---
+
+## Commented-Out Code
+
+Detect large blocks of disabled source code.
+
+Example:
+
+```typescript id="34q0qa"
+//
+// const user = getUser();
+//
+// saveUser(user);
+//
+```
+
+---
+
+## Unused Placeholders
+
+Detect placeholder implementations.
+
+Examples:
+
+```typescript id="me5m1b"
+throw new Error("Not implemented")
+
+return null
+
+return undefined
+
+return {}
+
+return []
+
+// placeholder
+```
+
+---
+
+## Incomplete Implementations
+
+Detect partially implemented functionality.
+
+Examples:
+
+```typescript id="4jvs4s"
+Not implemented
+
+Coming soon
+
+Implement later
+
+Pending
+
+Temporary
+```
+
+---
+
+# Supported File Types
+
+Initially supported:
+
+* TypeScript
+* JavaScript
+* TSX
+* JSX
+* JSON
+* Markdown
+* YAML
+
+Future versions may include:
+
+* Python
+* Java
+* Go
+* Rust
+* PHP
+* C#
+* Kotlin
+
+---
+
+# Severity Classification
+
+Each finding is assigned a severity level.
+
+| Severity | Description                                          |
+| -------- | ---------------------------------------------------- |
+| Critical | Serious issues affecting stability or security       |
+| High     | Known bugs or unsafe workarounds                     |
+| Medium   | TODOs, deprecated APIs, incomplete implementations   |
+| Low      | Console statements, commented-out code, placeholders |
+
+---
+
+# Detection Rules
+
+The analyzer searches for common markers.
+
+Examples:
+
+```text id="v2tng0"
+TODO
+
+FIXME
+
+HACK
+
+BUG
+
+XXX
+
+NOTE
+
+@deprecated
+
+console.log
+
+throw new Error("Not implemented")
+```
+
+Rules are configurable and can be extended with custom patterns.
+
+---
+
+# Execution Flow
+
+```text id="wlsv7l"
+Receive Analysis Request
+        │
+        ▼
+Validate Workspace
+        │
+        ▼
+Locate Source Files
+        │
+        ▼
+Traverse Directories
+        │
+        ▼
+Read File Contents
+        │
+        ▼
+Apply Detection Rules
+        │
+        ▼
+Categorize Findings
+        │
+        ▼
+Assign Severity
+        │
+        ▼
+Generate Technical Debt Report
+        │
+        ▼
+Return Structured Response
+```
+
+---
+
+# Example Response
+
+```json id="zvwt7m"
+{
+  "summary": {
+    "totalFindings": 12,
+    "critical": 1,
+    "high": 2,
+    "medium": 5,
+    "low": 4
+  },
+  "findings": [
+    {
+      "type": "TODO",
+      "severity": "Medium",
+      "file": "src/services/auth.service.ts",
+      "line": 42,
+      "message": "Implement refresh token support"
+    },
+    {
+      "type": "FIXME",
+      "severity": "High",
+      "file": "src/controllers/user.controller.ts",
+      "line": 88,
+      "message": "Handle concurrent requests safely"
+    },
+    {
+      "type": "Console Statement",
+      "severity": "Low",
+      "file": "src/server.ts",
+      "line": 17,
+      "message": "console.log(process.env.PORT)"
+    }
+  ]
+}
+```
+
+---
+
+# AI Workflow
+
+Without the Technical Debt Analyzer:
+
+```text id="o8m7s5"
+AI
+
+↓
+
+Open Source Files
+
+↓
+
+Search TODOs
+
+↓
+
+Search FIXMEs
+
+↓
+
+Search Console Statements
+
+↓
+
+Generate Report
+```
+
+With the Technical Debt Analyzer:
+
+```text id="ukv4xw"
+AI
+
+↓
+
+Technical Debt Analyzer
+
+↓
+
+Structured Findings
+
+↓
+
+LLM
+```
+
+The AI receives a complete overview of technical debt in a single MCP tool response.
+
+---
+
+# Integration with MCP
+
+The Technical Debt Analyzer is implemented as a standard developer-focused MCP tool.
+
+```text id="7qpru0"
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Technical Debt Analyzer
+
+        │
+
+        ▼
+
+Filesystem Service
+
+        │
+
+        ▼
+
+Workspace Source Files
+
+        │
+
+        ▼
+
+Technical Debt Report
+```
+
+The MCP Gateway automatically discovers and exposes the tool.
+
+---
+
+# Responsibilities
+
+The Technical Debt Analyzer is responsible for:
+
+* Scanning project source files
+* Detecting technical debt markers
+* Categorizing findings
+* Assigning severity
+* Returning structured reports
+* Providing AI-ready metadata
+
+It is **not** responsible for:
+
+* Fixing code
+* Refactoring implementations
+* Running static analysis
+* Executing lint rules
+* Measuring code coverage
+* Detecting dependency vulnerabilities
+
+These responsibilities belong to dedicated MCP tools or external analysis utilities.
+
+---
+
+# Design Principles
+
+The Technical Debt Analyzer follows:
+
+* Single Responsibility Principle (SRP)
+* Open/Closed Principle (OCP)
+* Configurable Detection Rules
+* AI-Optimized Responses
+* Extensible Pattern Matching
+* Workspace Security
+* Efficient Recursive Scanning
+
+---
+
+# Testing Scenarios
+
+Verify that the analyzer correctly detects:
+
+* TODO comments
+* FIXME comments
+* HACK notes
+* BUG markers
+* Deprecated annotations
+* Console statements
+* Commented-out code
+* Placeholder implementations
+* Incomplete methods
+* Empty projects
+* Projects with no technical debt
+* Large workspaces
+* Ignored directories (`node_modules`, `.git`, `dist`, `build`)
+
+---
+
+# Performance Considerations
+
+To ensure efficient execution, the analyzer should:
+
+* Skip ignored directories
+* Ignore binary files
+* Cache previously scanned files
+* Process files asynchronously
+* Limit maximum file size
+* Stream results for large workspaces
+* Support incremental scanning in future versions
+
+---
+
+# Benefits
+
+The TODO & Technical Debt Analyzer provides:
+
+* Faster project assessment
+* Automated technical debt discovery
+* Reduced manual code review effort
+* Lower LLM token consumption
+* Structured issue reporting
+* Prioritized findings
+* Improved maintainability insights
+* Foundation for automated code quality analysis
+
+---
+
+# Deliverables
+
+By the end of **Part 5**, the project will include:
+
+* ✅ TODO Analyzer MCP tool
+* ✅ FIXME detection
+* ✅ HACK detection
+* ✅ BUG marker detection
+* ✅ Deprecated code detection
+* ✅ Console statement detection
+* ✅ Commented-out code detection
+* ✅ Placeholder detection
+* ✅ Incomplete implementation detection
+* ✅ Severity classification
+* ✅ Structured technical debt report
+* ✅ AI-ready technical debt metadata
+
+---
+
+# Next Part
+
+## Part 6 – Project Context Builder
+
+The next developer-focused MCP tool will build a comprehensive project context by combining information from multiple analyzers.
+
+It will aggregate:
+
+* Project metadata
+* Dependency analysis
+* Source code search results
+* Technical debt findings
+* Filesystem information
+* Project structure
+* Configuration files
+
+The Project Context Builder will provide the AI assistant with a unified, high-level understanding of the entire project, enabling more accurate reasoning, better code generation, and context-aware development assistance.
+
+# Milestone 5.4 – Part 6: Project Context Builder
+
+## Overview
+
+The **Project Context Builder** is the central intelligence layer of the developer-focused MCP ecosystem.
+
+Previous MCP tools specialize in analyzing individual aspects of a project:
+
+* Filesystem MCP Server provides access to project files.
+* Project Analyzer understands project structure.
+* Dependency Analyzer understands package dependencies.
+* Source Code Search Tool locates code.
+* TODO & Technical Debt Analyzer identifies unfinished work.
+
+The Project Context Builder combines the outputs of all these tools into a **single, structured project context** that can be consumed directly by the AI Service.
+
+Instead of invoking multiple MCP tools individually for every request, the AI can retrieve one unified context object containing the most relevant project information.
+
+---
+
+# Objectives
+
+By the end of this part, the Project Context Builder will be capable of:
+
+* Aggregating project metadata
+* Collecting dependency information
+* Building the project directory structure
+* Including source code search results
+* Including technical debt findings
+* Reading configuration files
+* Producing a unified project summary
+* Providing AI-ready project context
+* Supporting incremental updates
+* Reducing repeated filesystem operations
+
+---
+
+# Why Project Context Builder?
+
+Without a centralized context builder, the AI performs multiple MCP calls for every request.
+
+Example workflow:
+
+```text
+Read package.json
+      │
+      ▼
+Analyze dependencies
+      │
+      ▼
+Read project tree
+      │
+      ▼
+Search source code
+      │
+      ▼
+Analyze TODOs
+      │
+      ▼
+Generate context
+      │
+      ▼
+LLM
+```
+
+Although functional, this workflow is inefficient and repeatedly scans the same project.
+
+Instead, the Project Context Builder performs the aggregation once.
+
+```text
+Project Context Builder
+        │
+        ▼
+Unified Project Context
+        │
+        ▼
+LLM
+```
+
+This greatly reduces latency and token usage.
+
+---
+
+# Architecture
+
+```text
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Project Context Builder
+      │
+      ├──────────────► Project Analyzer
+      │
+      ├──────────────► Dependency Analyzer
+      │
+      ├──────────────► Source Code Search
+      │
+      ├──────────────► Technical Debt Analyzer
+      │
+      └──────────────► Filesystem Service
+                     │
+                     ▼
+              Workspace Files
+```
+
+---
+
+# Context Components
+
+The Project Context Builder combines multiple sources of information into a single object.
+
+---
+
+## 1. Project Metadata
+
+Collect basic project information.
+
+Examples:
+
+* Project name
+* Version
+* Description
+* Author
+* License
+* Package manager
+* Programming language
+
+---
+
+## 2. Dependency Analysis
+
+Include structured dependency information.
+
+Examples:
+
+* Production dependencies
+* Development dependencies
+* Package versions
+* Duplicate packages
+* Missing packages
+* Lock file
+
+---
+
+## 3. Project Structure
+
+Build a simplified representation of the workspace.
+
+Example:
+
+```text
+src/
+
+controllers/
+
+services/
+
+routes/
+
+mcp/
+
+tests/
+
+package.json
+
+README.md
+```
+
+---
+
+## 4. Configuration Files
+
+Read important configuration files.
+
+Examples include:
+
+```text
+package.json
+
+tsconfig.json
+
+vite.config.ts
+
+eslint.config.js
+
+.prettierrc
+
+docker-compose.yml
+
+Dockerfile
+
+.env.example
+
+README.md
+```
+
+Future support may include:
+
+```text
+kubernetes/
+
+helm/
+
+terraform/
+
+github workflows/
+```
+
+---
+
+## 5. Filesystem Information
+
+Provide workspace statistics.
+
+Examples:
+
+* Total files
+* Total folders
+* Largest files
+* Workspace size
+* Source folders
+* Ignored folders
+
+---
+
+## 6. Source Code Search Summary
+
+Instead of returning every search result, the builder stores an indexed summary.
+
+Examples:
+
+* Controllers
+* Services
+* Models
+* Interfaces
+* Classes
+* Functions
+* Routes
+
+---
+
+## 7. Technical Debt Summary
+
+Include findings from the Technical Debt Analyzer.
+
+Examples:
+
+* Total TODOs
+* FIXMEs
+* HACKs
+* BUG markers
+* Console statements
+* Deprecated APIs
+
+Only summary information is included by default.
+
+Detailed reports remain available through the dedicated analyzer.
+
+---
+
+# Context Model
+
+The builder creates a structured object similar to:
+
+```text
+Project Context
+
+├── Metadata
+
+├── Dependencies
+
+├── Structure
+
+├── Configuration
+
+├── Source Index
+
+├── Technical Debt
+
+├── Workspace Information
+
+└── Generated Summary
+```
+
+---
+
+# Execution Flow
+
+```text
+Receive Build Context Request
+            │
+            ▼
+Validate Workspace
+            │
+            ▼
+Project Analyzer
+            │
+            ▼
+Dependency Analyzer
+            │
+            ▼
+Filesystem Service
+            │
+            ▼
+Source Code Search
+            │
+            ▼
+Technical Debt Analyzer
+            │
+            ▼
+Merge Results
+            │
+            ▼
+Generate Context Object
+            │
+            ▼
+Return Project Context
+```
+
+---
+
+# Example Response
+
+```json
+{
+  "project": {
+    "name": "AI-powered-Full-Stack-Developer-Assistant",
+    "language": "TypeScript",
+    "packageManager": "npm"
+  },
+  "workspace": {
+    "files": 218,
+    "directories": 37
+  },
+  "dependencies": {
+    "production": 24,
+    "development": 17
+  },
+  "technicalDebt": {
+    "todos": 6,
+    "fixmes": 2,
+    "consoleStatements": 5
+  },
+  "configuration": [
+    "package.json",
+    "tsconfig.json",
+    "vite.config.ts"
+  ]
+}
+```
+
+---
+
+# AI Workflow
+
+Without the Project Context Builder:
+
+```text
+AI
+
+↓
+
+Read Project Files
+
+↓
+
+Analyze Dependencies
+
+↓
+
+Search Code
+
+↓
+
+Read Configuration
+
+↓
+
+Analyze Technical Debt
+
+↓
+
+Combine Results
+
+↓
+
+LLM
+```
+
+With the Project Context Builder:
+
+```text
+AI
+
+↓
+
+Project Context Builder
+
+↓
+
+Unified Context
+
+↓
+
+LLM
+```
+
+The AI receives one optimized response instead of making multiple MCP requests.
+
+---
+
+# Integration with MCP
+
+The Project Context Builder is implemented as a developer-focused MCP tool.
+
+```text
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Project Context Builder
+
+        │
+
+        ├────────► Project Analyzer
+
+        ├────────► Dependency Analyzer
+
+        ├────────► Source Code Search
+
+        ├────────► Technical Debt Analyzer
+
+        └────────► Filesystem Service
+
+                    │
+
+                    ▼
+
+             Unified Project Context
+```
+
+The Gateway automatically discovers and exposes the tool like any other MCP tool.
+
+---
+
+# Responsibilities
+
+The Project Context Builder is responsible for:
+
+* Aggregating outputs from multiple analyzers
+* Building a unified project context
+* Reading essential configuration files
+* Producing AI-ready metadata
+* Reducing repeated filesystem access
+* Preparing project summaries
+
+It is **not** responsible for:
+
+* Editing project files
+* Refactoring code
+* Executing builds
+* Installing dependencies
+* Running tests
+* Performing code reviews
+
+Those responsibilities remain with specialized MCP tools.
+
+---
+
+# Caching Strategy
+
+To improve performance, the Project Context Builder should support caching.
+
+Recommended approach:
+
+* Cache generated project context
+* Refresh when files change
+* Detect changes using timestamps or file hashes
+* Support manual cache invalidation
+* Enable incremental context rebuilding
+
+This avoids rebuilding the complete context for every AI request.
+
+---
+
+# Performance Considerations
+
+The builder should:
+
+* Reuse analyzer outputs
+* Avoid duplicate filesystem reads
+* Ignore generated folders
+* Process tasks asynchronously
+* Limit file sizes
+* Cache configuration data
+* Support incremental updates
+
+---
+
+# Design Principles
+
+The Project Context Builder follows:
+
+* Single Responsibility Principle (SRP)
+* Separation of Concerns
+* AI-Optimized Context
+* Reusable Architecture
+* Modular Analyzer Composition
+* Extensible Design
+* Workspace Security
+
+---
+
+# Testing Scenarios
+
+Verify that the builder correctly:
+
+* Loads project metadata
+* Reads dependency information
+* Builds project structure
+* Detects configuration files
+* Includes technical debt summary
+* Includes source code index
+* Handles empty workspaces
+* Ignores excluded directories
+* Builds context for large projects
+* Rebuilds context after project changes
+* Returns cached context when appropriate
+
+---
+
+# Benefits
+
+The Project Context Builder provides:
+
+* Unified project understanding
+* Faster AI responses
+* Reduced MCP tool calls
+* Lower LLM token usage
+* Optimized filesystem access
+* Consistent project metadata
+* Reusable project summaries
+* Foundation for intelligent AI reasoning
+
+---
+
+# Deliverables
+
+By the end of **Part 6**, the project will include:
+
+* ✅ Project Context Builder MCP tool
+* ✅ Project metadata aggregation
+* ✅ Dependency summary integration
+* ✅ Project structure summary
+* ✅ Configuration file discovery
+* ✅ Filesystem statistics
+* ✅ Source code index summary
+* ✅ Technical debt summary
+* ✅ Unified AI-ready project context
+* ✅ Context caching foundation
+
+---
+
+# Next Part
+
+## Part 7 – Developer Knowledge Graph
+
+The next developer-focused MCP tool will build a searchable knowledge graph representing the relationships within the project.
+
+It will map:
+
+* Modules and packages
+* Classes and interfaces
+* Functions and methods
+* API routes
+* Database models
+* Services and controllers
+* Imports and dependencies
+* Cross-file references
+
+The Developer Knowledge Graph will enable the AI assistant to reason about project architecture, understand relationships between components, answer complex navigation questions, and support advanced features such as impact analysis, intelligent refactoring, and architecture-aware code generation.
+
+# Milestone 5.4 – Part 7: Developer Knowledge Graph
+
+## Overview
+
+The **Developer Knowledge Graph** is the intelligence layer that transforms source code into a connected graph of relationships.
+
+Previous MCP tools focused on collecting information:
+
+* Filesystem MCP Server provides file access.
+* Project Analyzer understands project structure.
+* Dependency Analyzer understands package dependencies.
+* Source Code Search Tool locates code.
+* TODO & Technical Debt Analyzer identifies technical debt.
+* Project Context Builder aggregates project information.
+
+The Developer Knowledge Graph goes one step further by understanding **how every part of the project is connected**.
+
+Instead of treating files as isolated documents, the AI receives a graph of relationships between modules, classes, services, controllers, database models, APIs, imports, and dependencies.
+
+This significantly improves the AI's ability to reason about architecture, understand code flow, perform impact analysis, and generate context-aware code.
+
+---
+
+# Objectives
+
+By the end of this part, the Developer Knowledge Graph will be capable of:
+
+* Discovering project modules
+* Mapping packages
+* Mapping classes
+* Mapping interfaces
+* Mapping functions
+* Mapping methods
+* Mapping API routes
+* Mapping services
+* Mapping controllers
+* Mapping database models
+* Mapping imports
+* Mapping exports
+* Mapping cross-file references
+* Building a searchable graph
+* Providing AI-ready relationship metadata
+
+---
+
+# Why a Knowledge Graph?
+
+Without a Knowledge Graph, the AI understands files individually.
+
+Example:
+
+```text
+auth.controller.ts
+
+↓
+
+auth.service.ts
+
+↓
+
+user.repository.ts
+```
+
+The AI knows each file exists but does not understand their relationships.
+
+With a Knowledge Graph:
+
+```text
+AuthController
+      │
+      ▼
+AuthService
+      │
+      ▼
+UserRepository
+      │
+      ▼
+MongoDB
+```
+
+Now the AI understands the architecture rather than isolated files.
+
+---
+
+# Architecture
+
+```text
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Developer Knowledge Graph
+      │
+      ├────────► Project Context Builder
+      │
+      ├────────► Source Code Search
+      │
+      ├────────► Dependency Analyzer
+      │
+      ├────────► Filesystem Service
+      │
+      └────────► Parser Engine
+                     │
+                     ▼
+              Workspace Source Files
+```
+
+---
+
+# Graph Components
+
+The Knowledge Graph consists of **nodes** and **relationships**.
+
+---
+
+# Nodes
+
+Nodes represent project entities.
+
+Examples include:
+
+* Packages
+* Modules
+* Classes
+* Interfaces
+* Functions
+* Methods
+* Controllers
+* Services
+* Repositories
+* Models
+* API Routes
+* Environment Variables
+* Configuration Files
+
+Example:
+
+```text
+Node
+
+Type: Service
+
+Name:
+
+AuthService
+```
+
+---
+
+# Relationships
+
+Relationships connect nodes.
+
+Examples:
+
+```text
+Controller
+
+USES
+
+Service
+```
+
+```text
+Service
+
+CALLS
+
+Repository
+```
+
+```text
+Repository
+
+CONNECTS_TO
+
+Database
+```
+
+```text
+Controller
+
+IMPORTS
+
+Middleware
+```
+
+---
+
+# Module Mapping
+
+Identify logical modules within the application.
+
+Example:
+
+```text
+Authentication Module
+
+├── Controller
+
+├── Service
+
+├── Repository
+
+├── DTO
+
+├── Middleware
+
+└── Routes
+```
+
+---
+
+# Class Mapping
+
+Locate all project classes.
+
+Example:
+
+```typescript
+AuthController
+
+AuthService
+
+UserRepository
+
+MCPGateway
+```
+
+---
+
+# Interface Mapping
+
+Locate shared interfaces.
+
+Example:
+
+```typescript
+MCPTool
+
+MCPServer
+
+ProjectContext
+
+User
+```
+
+---
+
+# Function Mapping
+
+Locate top-level functions.
+
+Example:
+
+```typescript
+initialize()
+
+shutdown()
+
+executeTool()
+
+searchFiles()
+```
+
+---
+
+# Method Mapping
+
+Locate class methods.
+
+Example:
+
+```typescript
+connect()
+
+disconnect()
+
+healthCheck()
+
+register()
+```
+
+---
+
+# API Route Mapping
+
+Automatically identify Express routes.
+
+Example:
+
+```text
+GET
+
+/api/users
+```
+
+```text
+POST
+
+/api/login
+```
+
+```text
+DELETE
+
+/api/projects/:id
+```
+
+---
+
+# Database Model Mapping
+
+Detect ORM or ODM models.
+
+Examples:
+
+```text
+MongoDB Models
+
+User
+
+Project
+
+Task
+```
+
+Future support:
+
+* Prisma
+* TypeORM
+* Sequelize
+* Mongoose
+
+---
+
+# Import Graph
+
+Build import relationships.
+
+Example:
+
+```text
+server.ts
+
+↓
+
+app.ts
+
+↓
+
+routes.ts
+
+↓
+
+controllers
+
+↓
+
+services
+```
+
+---
+
+# Dependency Graph
+
+Combine package relationships.
+
+Example:
+
+```text
+Express
+
+↓
+
+Router
+
+↓
+
+Controller
+
+↓
+
+Service
+
+↓
+
+Repository
+```
+
+---
+
+# Cross-File References
+
+Identify references across multiple files.
+
+Examples:
+
+```text
+AuthService
+
+↓
+
+Imported by
+
+↓
+
+AuthController
+```
+
+```text
+UserRepository
+
+↓
+
+Used by
+
+↓
+
+AuthService
+```
+
+---
+
+# Graph Representation
+
+The internal graph is represented as:
+
+```text
+Project Graph
+
+│
+
+├── Nodes
+
+│     ├── Classes
+
+│     ├── Functions
+
+│     ├── Routes
+
+│     ├── Models
+
+│     └── Services
+
+│
+
+└── Relationships
+
+      ├── Imports
+
+      ├── Calls
+
+      ├── Uses
+
+      ├── Extends
+
+      ├── Implements
+
+      └── References
+```
+
+---
+
+# Execution Flow
+
+```text
+Receive Build Graph Request
+            │
+            ▼
+Validate Workspace
+            │
+            ▼
+Traverse Project Files
+            │
+            ▼
+Parse Source Files
+            │
+            ▼
+Extract Entities
+            │
+            ▼
+Extract Relationships
+            │
+            ▼
+Build Graph Nodes
+            │
+            ▼
+Build Graph Edges
+            │
+            ▼
+Generate Knowledge Graph
+            │
+            ▼
+Return Structured Graph
+```
+
+---
+
+# Example Response
+
+```json
+{
+  "nodes": [
+    {
+      "id": "AuthController",
+      "type": "Controller"
+    },
+    {
+      "id": "AuthService",
+      "type": "Service"
+    },
+    {
+      "id": "UserRepository",
+      "type": "Repository"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "AuthController",
+      "target": "AuthService",
+      "type": "USES"
+    },
+    {
+      "source": "AuthService",
+      "target": "UserRepository",
+      "type": "CALLS"
+    }
+  ]
+}
+```
+
+---
+
+# AI Workflow
+
+Without the Knowledge Graph:
+
+```text
+AI
+
+↓
+
+Read Files
+
+↓
+
+Infer Relationships
+
+↓
+
+Answer User
+```
+
+With the Knowledge Graph:
+
+```text
+AI
+
+↓
+
+Knowledge Graph
+
+↓
+
+Architecture Relationships
+
+↓
+
+LLM
+```
+
+The AI receives a complete architectural view instead of manually discovering relationships.
+
+---
+
+# Integration with MCP
+
+The Developer Knowledge Graph is implemented as a developer-focused MCP tool.
+
+```text
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Developer Knowledge Graph
+
+        │
+
+        ├────────► Source Code Search
+
+        ├────────► Project Context Builder
+
+        ├────────► Dependency Analyzer
+
+        ├────────► Filesystem Service
+
+        └────────► Parser Engine
+
+                    │
+
+                    ▼
+
+             Project Relationship Graph
+```
+
+The MCP Gateway automatically discovers and exposes the tool alongside other developer-focused tools.
+
+---
+
+# Responsibilities
+
+The Developer Knowledge Graph is responsible for:
+
+* Building project relationship graphs
+* Mapping architectural components
+* Discovering imports and exports
+* Linking services and controllers
+* Linking models and repositories
+* Building API route maps
+* Producing AI-ready graph metadata
+
+It is **not** responsible for:
+
+* Editing source code
+* Running builds
+* Executing tests
+* Refactoring code
+* Installing packages
+* Measuring runtime performance
+
+These responsibilities remain with specialized MCP tools.
+
+---
+
+# Caching Strategy
+
+To improve performance, the Knowledge Graph should support:
+
+* Graph caching
+* Incremental graph updates
+* File-level invalidation
+* Timestamp-based refresh
+* Change detection
+* Background graph rebuilding
+
+Only modified files should be reprocessed instead of rebuilding the entire graph.
+
+---
+
+# Performance Considerations
+
+The Knowledge Graph should:
+
+* Ignore generated directories
+* Skip binary files
+* Parse source files asynchronously
+* Cache parsed metadata
+* Reuse outputs from the Project Context Builder
+* Support large monorepos
+* Build graph incrementally
+
+---
+
+# Design Principles
+
+The Developer Knowledge Graph follows:
+
+* Single Responsibility Principle (SRP)
+* Separation of Concerns
+* Graph-Based Architecture
+* AI-Optimized Metadata
+* Extensible Node Types
+* Extensible Relationship Types
+* Workspace Security
+* Incremental Processing
+
+---
+
+# Testing Scenarios
+
+Verify that the graph correctly:
+
+* Maps modules
+* Maps packages
+* Maps controllers
+* Maps services
+* Maps repositories
+* Maps models
+* Maps interfaces
+* Maps classes
+* Maps functions
+* Maps methods
+* Detects imports
+* Detects exports
+* Detects API routes
+* Detects cross-file references
+* Handles circular imports
+* Handles empty projects
+* Handles large workspaces
+* Ignores excluded directories (`node_modules`, `.git`, `dist`, `build`)
+
+---
+
+# Benefits
+
+The Developer Knowledge Graph provides:
+
+* Deep architectural understanding
+* Intelligent code navigation
+* Faster AI reasoning
+* Reduced filesystem operations
+* Lower LLM token consumption
+* Accurate impact analysis
+* Architecture-aware code generation
+* Foundation for advanced refactoring assistance
+* Improved developer productivity
+
+---
+
+# Deliverables
+
+By the end of **Part 7**, the project will include:
+
+* ✅ Developer Knowledge Graph MCP tool
+* ✅ Module mapping
+* ✅ Package mapping
+* ✅ Class and interface mapping
+* ✅ Function and method mapping
+* ✅ API route mapping
+* ✅ Database model mapping
+* ✅ Import and export graph
+* ✅ Cross-file reference graph
+* ✅ AI-ready relationship metadata
+* ✅ Searchable project graph
+* ✅ Incremental graph update foundation
+
+---
+
+# Next Part
+
+## Part 8 – Intelligent Code Navigation Engine
+
+The next developer-focused MCP tool will provide semantic navigation across the project by using the Knowledge Graph.
+
+It will enable the AI assistant to:
+
+* Jump directly to symbol definitions
+* Find all references to a symbol
+* Trace function call chains
+* Navigate between controllers, services, repositories, and models
+* Identify upstream and downstream dependencies
+* Analyze the impact of proposed code changes
+* Explain end-to-end execution flows
+* Support architecture-aware code generation and refactoring
+
+The Intelligent Code Navigation Engine will transform the AI assistant from a file-based search system into a true project-aware development companion capable of understanding and navigating complex software architectures.
+
+
+
+
+# Milestone 5.4 – Part 8: Intelligent Code Navigation Engine
+
+## Overview
+
+The **Intelligent Code Navigation Engine** is the final developer-focused MCP tool in Milestone 5.4 and represents the evolution from simple file access to semantic project navigation.
+
+Previous MCP tools progressively built the AI's understanding of the project:
+
+* Filesystem MCP Server provides secure file access.
+* Project Analyzer understands project structure.
+* Dependency Analyzer understands project dependencies.
+* Source Code Search Tool locates code elements.
+* TODO & Technical Debt Analyzer identifies unfinished work.
+* Project Context Builder aggregates project information.
+* Developer Knowledge Graph models relationships between project components.
+
+The Intelligent Code Navigation Engine leverages all of these capabilities to allow the AI assistant to navigate the project in the same way an experienced developer would.
+
+Instead of searching through files, the AI can directly understand where symbols are defined, how they are referenced, how execution flows through the application, and what components will be affected by a code change.
+
+---
+
+# Objectives
+
+By the end of this part, the Intelligent Code Navigation Engine will be capable of:
+
+* Jumping directly to symbol definitions
+* Finding all references to a symbol
+* Tracing function call chains
+* Navigating between controllers, services, repositories, and models
+* Identifying upstream dependencies
+* Identifying downstream dependencies
+* Explaining execution flow
+* Performing impact analysis
+* Supporting intelligent refactoring
+* Providing AI-ready navigation metadata
+
+---
+
+# Why an Intelligent Navigation Engine?
+
+Traditional source code search tells us where something exists.
+
+Example:
+
+```text id="5fd8jb"
+Search
+
+↓
+
+UserService
+
+↓
+
+Found in:
+
+user.service.ts
+```
+
+But it cannot answer:
+
+* Where is it used?
+* What depends on it?
+* What calls it?
+* What breaks if it changes?
+
+The Intelligent Navigation Engine answers those questions automatically.
+
+---
+
+# Architecture
+
+```text id="2p31kl"
+AI Service
+      │
+      ▼
+Gateway
+      │
+      ▼
+Navigation Engine
+      │
+      ├────────► Knowledge Graph
+      │
+      ├────────► Project Context Builder
+      │
+      ├────────► Source Code Search
+      │
+      └────────► Filesystem Service
+                     │
+                     ▼
+                Workspace Source Code
+```
+
+---
+
+# Navigation Capabilities
+
+The Navigation Engine provides semantic navigation across the project.
+
+---
+
+# Symbol Definition
+
+Locate where a symbol is originally defined.
+
+Examples:
+
+```typescript id="4cng0z"
+UserService
+
+AuthController
+
+ProjectAnalyzer
+
+executeTool()
+```
+
+Response includes:
+
+* File
+* Line number
+* Column
+* Symbol type
+* Parent scope
+
+---
+
+# Find References
+
+Locate every usage of a symbol.
+
+Example:
+
+```text id="4ot2q5"
+UserService
+
+↓
+
+Used in:
+
+AuthController
+
+AdminController
+
+UserRoutes
+
+Tests
+```
+
+---
+
+# Call Chain Analysis
+
+Trace function execution.
+
+Example:
+
+```text id="1r2u0d"
+HTTP Request
+
+↓
+
+AuthController.login()
+
+↓
+
+AuthService.login()
+
+↓
+
+UserRepository.findUser()
+
+↓
+
+MongoDB
+```
+
+The AI can now explain complete execution paths.
+
+---
+
+# Layer Navigation
+
+Navigate between architectural layers.
+
+Example:
+
+```text id="50laxv"
+Controller
+
+↓
+
+Service
+
+↓
+
+Repository
+
+↓
+
+Database
+```
+
+This enables architecture-aware reasoning.
+
+---
+
+# Upstream Dependency Analysis
+
+Identify components that depend on the selected symbol.
+
+Example:
+
+```text id="c7rhkp"
+UserRepository
+
+↓
+
+AuthService
+
+↓
+
+AdminService
+
+↓
+
+NotificationService
+```
+
+---
+
+# Downstream Dependency Analysis
+
+Identify dependencies used by the selected symbol.
+
+Example:
+
+```text id="ixm4jt"
+AuthController
+
+↓
+
+AuthService
+
+↓
+
+UserRepository
+
+↓
+
+JWTService
+```
+
+---
+
+# Impact Analysis
+
+Determine the effect of changing a component.
+
+Example:
+
+```text id="u1t6tl"
+Modify
+
+AuthService
+
+↓
+
+Affected Files
+
+↓
+
+Controllers
+
+Routes
+
+Tests
+
+Middleware
+```
+
+The AI can predict project-wide consequences before code changes.
+
+---
+
+# Execution Flow Analysis
+
+Generate end-to-end execution diagrams.
+
+Example:
+
+```text id="w5r3u7"
+Browser
+
+↓
+
+Express Route
+
+↓
+
+Controller
+
+↓
+
+Service
+
+↓
+
+Repository
+
+↓
+
+Database
+
+↓
+
+Response
+```
+
+---
+
+# Refactoring Assistance
+
+Support architecture-aware refactoring.
+
+Examples:
+
+* Rename class
+* Rename method
+* Rename interface
+* Move file
+* Split service
+* Extract repository
+* Update imports
+
+The Navigation Engine identifies every affected location.
+
+---
+
+# Navigation Model
+
+The engine works with multiple navigation targets.
+
+Supported symbols include:
+
+* Classes
+* Interfaces
+* Functions
+* Methods
+* Variables
+* Constants
+* Enums
+* Routes
+* Controllers
+* Services
+* Models
+* Repositories
+* Middleware
+* Configuration objects
+
+---
+
+# Execution Flow
+
+```text id="b6wfxv"
+Receive Navigation Request
+            │
+            ▼
+Validate Workspace
+            │
+            ▼
+Load Knowledge Graph
+            │
+            ▼
+Locate Symbol
+            │
+            ▼
+Resolve Relationships
+            │
+            ▼
+Traverse Dependencies
+            │
+            ▼
+Collect Navigation Data
+            │
+            ▼
+Generate Navigation Response
+            │
+            ▼
+Return AI-Ready Metadata
+```
+
+---
+
+# Example Response
+
+```json id="2h6gzw"
+{
+  "symbol": "AuthService",
+  "definition": {
+    "file": "src/services/auth.service.ts",
+    "line": 12
+  },
+  "references": [
+    "AuthController",
+    "AdminController",
+    "UserRoutes"
+  ],
+  "dependencies": [
+    "UserRepository",
+    "JWTService"
+  ],
+  "dependents": [
+    "AuthController"
+  ]
+}
+```
+
+---
+
+# AI Workflow
+
+Without the Navigation Engine:
+
+```text id="ntk50j"
+AI
+
+↓
+
+Search Symbol
+
+↓
+
+Read Files
+
+↓
+
+Find References
+
+↓
+
+Infer Relationships
+
+↓
+
+Generate Answer
+```
+
+With the Navigation Engine:
+
+```text id="j9z3dy"
+AI
+
+↓
+
+Navigation Engine
+
+↓
+
+Semantic Navigation
+
+↓
+
+LLM
+```
+
+The AI immediately understands how the project is connected.
+
+---
+
+# Integration with MCP
+
+The Intelligent Code Navigation Engine is implemented as a developer-focused MCP tool.
+
+```text id="lvm0pp"
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Navigation Engine
+
+        │
+
+        ├────────► Knowledge Graph
+
+        ├────────► Project Context Builder
+
+        ├────────► Source Code Search
+
+        └────────► Filesystem Service
+
+                    │
+
+                    ▼
+
+             Navigation Metadata
+```
+
+The MCP Gateway automatically discovers the Navigation Engine and exposes it like any other developer tool.
+
+---
+
+# Responsibilities
+
+The Intelligent Code Navigation Engine is responsible for:
+
+* Symbol navigation
+* Definition lookup
+* Reference discovery
+* Call chain analysis
+* Dependency traversal
+* Impact analysis
+* Execution flow generation
+* Navigation metadata generation
+
+It is **not** responsible for:
+
+* Editing source files
+* Performing code transformations
+* Running builds
+* Executing tests
+* Installing dependencies
+* Applying automated refactoring
+
+Those capabilities belong to future MCP tools.
+
+---
+
+# Navigation Types
+
+The engine supports multiple navigation strategies.
+
+## Definition Navigation
+
+Go directly to where a symbol is declared.
+
+---
+
+## Reference Navigation
+
+Locate every reference to a symbol.
+
+---
+
+## Dependency Navigation
+
+Traverse dependency relationships.
+
+---
+
+## Layer Navigation
+
+Move across architectural layers.
+
+---
+
+## Call Navigation
+
+Trace runtime execution.
+
+---
+
+## Impact Navigation
+
+Predict change propagation.
+
+---
+
+## Cross-Module Navigation
+
+Navigate between modules and packages.
+
+---
+
+# Caching Strategy
+
+To improve performance, the Navigation Engine should:
+
+* Cache symbol indexes
+* Cache navigation results
+* Cache dependency graphs
+* Support incremental updates
+* Refresh only modified files
+* Reuse the Knowledge Graph cache
+
+---
+
+# Performance Considerations
+
+The Navigation Engine should:
+
+* Avoid reparsing unchanged files
+* Reuse Project Context Builder data
+* Reuse Knowledge Graph relationships
+* Cache symbol lookups
+* Process requests asynchronously
+* Support large monorepos
+* Limit traversal depth when required
+
+---
+
+# Design Principles
+
+The Intelligent Code Navigation Engine follows:
+
+* Single Responsibility Principle (SRP)
+* Separation of Concerns
+* Semantic Code Navigation
+* Graph-Based Reasoning
+* AI-Optimized Metadata
+* Extensible Navigation Strategies
+* Workspace Security
+* Incremental Processing
+
+---
+
+# Testing Scenarios
+
+Verify that the Navigation Engine correctly:
+
+* Finds symbol definitions
+* Finds symbol references
+* Traces function call chains
+* Navigates controllers to services
+* Navigates services to repositories
+* Maps repositories to database models
+* Identifies upstream dependencies
+* Identifies downstream dependencies
+* Generates execution flows
+* Performs impact analysis
+* Handles circular dependencies
+* Handles missing symbols
+* Handles empty projects
+* Supports large workspaces
+* Ignores excluded directories (`node_modules`, `.git`, `dist`, `build`)
+
+---
+
+# Benefits
+
+The Intelligent Code Navigation Engine provides:
+
+* Semantic project navigation
+* Faster AI reasoning
+* Architecture-aware responses
+* Accurate dependency analysis
+* Reliable impact prediction
+* Reduced manual code exploration
+* Lower LLM token consumption
+* Improved refactoring assistance
+* Enhanced developer productivity
+* Foundation for autonomous coding agents
+
+---
+
+# Deliverables
+
+By the end of **Part 8**, the project will include:
+
+* ✅ Intelligent Code Navigation MCP tool
+* ✅ Symbol definition lookup
+* ✅ Reference discovery
+* ✅ Function call chain analysis
+* ✅ Layer-aware navigation
+* ✅ Upstream dependency analysis
+* ✅ Downstream dependency analysis
+* ✅ Execution flow generation
+* ✅ Impact analysis
+* ✅ AI-ready navigation metadata
+* ✅ Incremental navigation cache foundation
+
+---
+
+# Milestone 5.4 Completion Summary
+
+With the completion of Part 8, **Milestone 5.4 – Custom Filesystem Tools (Developer-Focused Tools)** is complete.
+
+The milestone now includes:
+
+* ✅ Part 1 – Developer Tool Framework
+* ✅ Part 2 – Project Analyzer
+* ✅ Part 3 – Dependency Analyzer
+* ✅ Part 4 – Source Code Search Tool
+* ✅ Part 5 – TODO & Technical Debt Analyzer
+* ✅ Part 6 – Project Context Builder
+* ✅ Part 7 – Developer Knowledge Graph
+* ✅ Part 8 – Intelligent Code Navigation Engine
+
+Together, these tools transform the Filesystem MCP Server from a simple file-access layer into a comprehensive developer intelligence platform capable of understanding project structure, relationships, dependencies, technical debt, and code navigation. This provides the foundation for advanced AI-assisted development features in future milestones, including autonomous coding, intelligent refactoring, architecture analysis, and context-aware code generation.
+
+
+
+# Milestone 5.4 – Part 9: Register All Developer Tools
+
+## Overview
+
+After implementing the developer-focused MCP tools, the final step is to register them with the **Filesystem MCP Server** so they become discoverable and executable through the MCP infrastructure.
+
+This part transforms a collection of independent tools into a unified developer platform.
+
+Once registration is complete, every tool will automatically become available through the MCP Gateway without requiring changes to the AI Service.
+
+---
+
+# Objectives
+
+By the end of this part, the Filesystem MCP Server will:
+
+* Register all developer tools
+* Expose every tool through a unified interface
+* Support automatic tool discovery
+* Allow execution through the MCP Gateway
+* Return standardized responses
+* Support future tool registration with minimal code changes
+* Provide metadata for all registered tools
+
+---
+
+# Why Tool Registration?
+
+Implementing a tool is only the first step.
+
+A tool must also be:
+
+* Registered
+* Discoverable
+* Executable
+* Managed
+
+Without registration:
+
+```text
+Developer Tool
+
+↓
+
+Exists in project
+
+↓
+
+Cannot be used
+```
+
+With registration:
+
+```text
+Developer Tool
+
+↓
+
+Filesystem MCP Server
+
+↓
+
+Gateway
+
+↓
+
+AI Service
+
+↓
+
+LLM
+```
+
+---
+
+# Architecture
+
+```text
+Developer Tools
+
+│
+
+├── Project Analyzer
+
+├── Dependency Analyzer
+
+├── Source Code Search
+
+├── Technical Debt Analyzer
+
+├── Project Context Builder
+
+├── Developer Knowledge Graph
+
+└── Navigation Engine
+
+        │
+
+        ▼
+
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+MCP Registry
+
+        │
+
+        ▼
+
+MCP Gateway
+
+        │
+
+        ▼
+
+AI Service
+```
+
+---
+
+# Registered Tools
+
+At the completion of Milestone 5.4, the Filesystem MCP Server should expose the following tools.
+
+## Filesystem Tools
+
+* Read File
+* List Directory
+* File Exists
+* File Metadata
+* Read Multiple Files
+* Search Files
+* Project Tree
+
+---
+
+## Developer Tools
+
+* Project Analyzer
+* Dependency Analyzer
+* Source Code Search
+* TODO & Technical Debt Analyzer
+* Project Context Builder
+* Developer Knowledge Graph
+* Intelligent Code Navigation Engine
+
+---
+
+# Registration Flow
+
+```text
+Application Startup
+
+        │
+
+        ▼
+
+Bootstrap
+
+        │
+
+        ▼
+
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Register Built-in Tools
+
+        │
+
+        ▼
+
+Register Developer Tools
+
+        │
+
+        ▼
+
+Tool Registry
+
+        │
+
+        ▼
+
+Gateway Discovery
+
+        │
+
+        ▼
+
+Available to AI
+```
+
+---
+
+# Tool Discovery
+
+The Gateway should never require hardcoded knowledge of available tools.
+
+Instead, it discovers tools dynamically.
+
+```text
+Gateway
+
+↓
+
+Discover Servers
+
+↓
+
+Discover Tools
+
+↓
+
+Register Metadata
+
+↓
+
+Expose API
+```
+
+Whenever a new tool is added, the Gateway automatically exposes it without modification.
+
+---
+
+# Registration Metadata
+
+Every registered tool should provide consistent metadata.
+
+Recommended metadata includes:
+
+* Tool name
+* Display name
+* Description
+* Category
+* Version
+* Input schema
+* Output schema
+* Author
+* Tags
+
+Example:
+
+```text
+Name
+
+projectAnalyzer
+
+Category
+
+Developer
+
+Version
+
+1.0.0
+
+Description
+
+Analyze project structure
+```
+
+---
+
+# Tool Categories
+
+Organizing tools into categories improves discovery and future scalability.
+
+```text
+Filesystem
+
+├── Read File
+
+├── List Directory
+
+└── Project Tree
+
+Developer
+
+├── Project Analyzer
+
+├── Dependency Analyzer
+
+├── Source Search
+
+├── Technical Debt
+
+├── Context Builder
+
+├── Knowledge Graph
+
+└── Navigation
+
+Future
+
+├── GitHub
+
+├── Docker
+
+├── Kubernetes
+
+├── MongoDB
+
+├── PostgreSQL
+
+├── Redis
+
+├── AWS
+
+└── Azure
+```
+
+---
+
+# Execution Flow
+
+```text
+AI Request
+
+        │
+
+        ▼
+
+Gateway
+
+        │
+
+        ▼
+
+Filesystem MCP Server
+
+        │
+
+        ▼
+
+Locate Tool
+
+        │
+
+        ▼
+
+Validate Input
+
+        │
+
+        ▼
+
+Execute Tool
+
+        │
+
+        ▼
+
+Return Standard Response
+```
+
+---
+
+# Standardized Tool Response
+
+Every tool should return a consistent response format.
+
+```json
+{
+  "success": true,
+  "tool": "projectAnalyzer",
+  "data": {},
+  "executionTime": 15
+}
+```
+
+Error responses should follow the same structure.
+
+```json
+{
+  "success": false,
+  "tool": "projectAnalyzer",
+  "error": "Workspace not found"
+}
+```
+
+---
+
+# Automatic Discovery
+
+Once registration is complete, the Gateway should automatically expose all tools.
+
+Example discovery response:
+
+```text
+Filesystem MCP Server
+
+↓
+
+14 Registered Tools
+
+↓
+
+Gateway
+
+↓
+
+AI Service
+```
+
+No additional configuration should be required.
+
+---
+
+# Extensibility
+
+Future developer tools should require only three steps:
+
+1. Create the tool implementation.
+2. Register the tool in the Filesystem MCP Server.
+3. Restart the application.
+
+No Gateway changes.
+
+No Registry changes.
+
+No AI Service changes.
+
+---
+
+# Responsibilities
+
+The registration layer is responsible for:
+
+* Registering developer tools
+* Registering filesystem tools
+* Providing metadata
+* Supporting discovery
+* Managing execution
+* Maintaining tool lifecycle
+
+It is **not** responsible for:
+
+* Business logic
+* Filesystem operations
+* AI prompting
+* LLM communication
+
+Those responsibilities remain within their respective components.
+
+---
+
+# Testing Scenarios
+
+Verify that:
+
+* All filesystem tools are registered.
+* All developer tools are registered.
+* Duplicate registrations are prevented.
+* Gateway discovers every tool.
+* Tool metadata is available.
+* Tool execution succeeds.
+* Invalid tool requests return standardized errors.
+* Newly added tools appear automatically after registration.
+
+---
+
+# Performance Considerations
+
+The registration system should:
+
+* Register tools only once during startup.
+* Avoid duplicate tool instances.
+* Cache tool metadata.
+* Support lazy initialization where appropriate.
+* Minimize startup overhead.
+
+---
+
+# Benefits
+
+Registering all developer tools provides:
+
+* Unified tool management
+* Automatic Gateway discovery
+* Simplified AI integration
+* Consistent execution model
+* Reduced maintenance effort
+* Easy extensibility
+* Production-ready architecture
+
+---
+
+# Deliverables
+
+By the end of **Part 9**, the project will include:
+
+* ✅ Registration of all Filesystem MCP tools
+* ✅ Registration of all Developer MCP tools
+* ✅ Automatic Gateway discovery
+* ✅ Standardized tool metadata
+* ✅ Unified execution interface
+* ✅ Dynamic tool registration mechanism
+* ✅ Extensible architecture for future MCP servers
+
+---
+
+# Next Part
+
+## Part 10 – AI Integration with Developer Tools
+
+The next milestone connects the AI Service directly with the developer tool ecosystem.
+
+Instead of relying solely on the LLM, the AI Service will intelligently determine when to invoke MCP tools, gather project context, execute developer-focused analysis, and enrich prompts with real project data before generating responses. This marks the transition from a traditional chatbot to a project-aware AI development assistant capable of understanding and reasoning about live codebases.
+
+# Milestone 5.4 – Part 10: AI Integration with Developer Tools
+
+## Overview
+
+The final part of Milestone 5.4 connects the AI Service directly with the developer-focused MCP ecosystem.
+
+Up to this point, the AI assistant has access to a production-ready MCP infrastructure, a secure Filesystem MCP Server, and a rich collection of developer tools capable of understanding project structure, dependencies, technical debt, source code, and architecture.
+
+However, these tools are not yet part of the AI reasoning process.
+
+Part 10 introduces an intelligent orchestration layer inside the AI Service that automatically decides when MCP tools should be invoked, gathers the required project context, enriches prompts with real project information, and then sends the enhanced request to the Large Language Model (LLM).
+
+The result is a project-aware AI assistant capable of answering questions using live project data instead of relying solely on model knowledge.
+
+---
+
+# Objectives
+
+By the end of this part, the AI Service will be able to:
+
+* Detect when project context is required
+* Discover available MCP tools dynamically
+* Select the appropriate developer tools
+* Execute multiple MCP tools in sequence or parallel
+* Aggregate results into a unified project context
+* Inject project context into LLM prompts
+* Stream enriched responses back to the client
+* Handle tool failures gracefully
+* Cache frequently requested project information
+* Support future MCP servers without AI Service changes
+
+---
+
+# Traditional AI Workflow
+
+Previously, every request followed a simple path.
+
+```text
+User
+
+      │
+
+      ▼
+
+AI Service
+
+      │
+
+      ▼
+
+LLM
+
+      │
+
+      ▼
+
+Response
+```
+
+The AI had no knowledge of the actual project.
+
+---
+
+# Intelligent AI Workflow
+
+With MCP integration, the workflow becomes significantly more capable.
+
+```text
+User
+
+      │
+
+      ▼
+
+AI Service
+
+      │
+
+      ▼
+
+Intent Detection
+
+      │
+
+      ├────────► General Question
+
+      │               │
+
+      │               ▼
+
+      │             LLM
+
+      │
+
+      ▼
+
+Developer Question
+
+      │
+
+      ▼
+
+Gateway
+
+      │
+
+      ▼
+
+Filesystem MCP Server
+
+      │
+
+      ▼
+
+Developer Tools
+
+      │
+
+      ▼
+
+Project Context
+
+      │
+
+      ▼
+
+Prompt Builder
+
+      │
+
+      ▼
+
+LLM
+
+      │
+
+      ▼
+
+Streaming Response
+```
+
+---
+
+# Why AI Tool Integration?
+
+Without developer tools, the AI can only make educated guesses.
+
+Example:
+
+> "Where is the authentication logic implemented?"
+
+Traditional AI:
+
+* May guess the architecture.
+* May hallucinate file names.
+* Cannot verify answers.
+
+With MCP:
+
+* Searches the actual project.
+* Finds controllers.
+* Finds services.
+* Builds execution flow.
+* Explains the implementation using real source code.
+
+---
+
+# AI Decision Engine
+
+The AI Service becomes responsible for deciding whether MCP tools are needed.
+
+Typical workflow:
+
+```text
+Receive Prompt
+
+        │
+
+        ▼
+
+Classify Request
+
+        │
+
+        ├────────► General Knowledge
+
+        │               │
+
+        │               ▼
+
+        │             LLM
+
+        │
+
+        ▼
+
+Project Question
+
+        │
+
+        ▼
+
+Invoke MCP Tools
+```
+
+The decision engine minimizes unnecessary tool execution while ensuring project-aware responses when needed.
+
+---
+
+# Tool Selection Strategy
+
+Different requests require different tools.
+
+| User Request           | MCP Tools               |
+| ---------------------- | ----------------------- |
+| Explain project        | Project Analyzer        |
+| Show project structure | Project Tree            |
+| Find login API         | Source Code Search      |
+| Read README            | Read File               |
+| List dependencies      | Dependency Analyzer     |
+| Explain architecture   | Knowledge Graph         |
+| Find TODOs             | Technical Debt Analyzer |
+| Trace request flow     | Navigation Engine       |
+| Build project summary  | Context Builder         |
+
+The AI Service chooses the minimum set of tools required to answer each request efficiently.
+
+---
+
+# Context Aggregation
+
+Multiple MCP tool responses are merged into a single structured context.
+
+```text
+Read File
+
+      │
+
+Dependency Analyzer
+
+      │
+
+Project Analyzer
+
+      │
+
+Knowledge Graph
+
+      │
+
+Navigation Engine
+
+      ▼
+
+Unified Project Context
+```
+
+This prevents sending fragmented information to the LLM.
+
+---
+
+# Prompt Enrichment
+
+The AI Service enriches prompts before contacting the LLM.
+
+Instead of:
+
+```text
+Explain authentication.
+```
+
+The enriched prompt becomes:
+
+```text
+Project Structure:
+...
+
+Authentication Controller:
+...
+
+Authentication Service:
+...
+
+Dependencies:
+...
+
+Execution Flow:
+...
+
+User Question:
+Explain authentication.
+```
+
+The LLM now answers using verified project information.
+
+---
+
+# Context Builder Pipeline
+
+```text
+User Prompt
+
+        │
+
+        ▼
+
+Intent Detection
+
+        │
+
+        ▼
+
+Tool Planner
+
+        │
+
+        ▼
+
+Gateway
+
+        │
+
+        ▼
+
+Developer Tools
+
+        │
+
+        ▼
+
+Context Builder
+
+        │
+
+        ▼
+
+Prompt Builder
+
+        │
+
+        ▼
+
+LLM
+```
+
+---
+
+# Streaming Response
+
+Tool execution occurs before LLM generation.
+
+```text
+User
+
+      │
+
+      ▼
+
+Execute MCP Tools
+
+      │
+
+      ▼
+
+Build Context
+
+      │
+
+      ▼
+
+LLM Streaming
+
+      │
+
+      ▼
+
+Client
+```
+
+This preserves streaming while improving answer quality.
+
+---
+
+# AI Capabilities After Integration
+
+The assistant can now:
+
+* Explain project architecture
+* Read configuration files
+* Understand dependencies
+* Locate implementations
+* Explain API flows
+* Navigate source code
+* Detect technical debt
+* Summarize projects
+* Analyze execution paths
+* Recommend refactoring
+* Identify affected components
+* Answer project-specific questions accurately
+
+---
+
+# Error Handling
+
+Tool failures should never prevent the AI from responding.
+
+Example workflow:
+
+```text
+Navigation Engine
+
+↓
+
+Failed
+
+↓
+
+Log Error
+
+↓
+
+Continue
+
+↓
+
+LLM
+```
+
+The AI can indicate that some project information was unavailable while still providing a useful answer.
+
+---
+
+# Context Caching
+
+Frequently requested project information can be cached.
+
+Examples:
+
+* Project metadata
+* Dependency graph
+* Knowledge graph
+* Project tree
+* Package information
+
+Benefits:
+
+* Lower latency
+* Reduced filesystem access
+* Faster responses
+* Reduced CPU usage
+
+---
+
+# Security Considerations
+
+The AI Service must respect MCP security boundaries.
+
+It must:
+
+* Never bypass workspace restrictions
+* Never access unauthorized files
+* Validate every tool request
+* Execute only registered tools
+* Sanitize tool inputs
+* Log all tool executions
+
+---
+
+# Integration Architecture
+
+```text
+Client
+
+    │
+
+    ▼
+
+REST API
+
+    │
+
+    ▼
+
+AI Controller
+
+    │
+
+    ▼
+
+AI Service
+
+    │
+
+    ├────────► Gateway
+
+    │               │
+
+    │               ▼
+
+    │      Filesystem MCP Server
+
+    │               │
+
+    │               ▼
+
+    │        Developer Tools
+
+    │
+
+    ▼
+
+Prompt Builder
+
+    │
+
+    ▼
+
+LLM Provider
+
+    │
+
+    ▼
+
+Streaming Response
+```
+
+---
+
+# Future Extensibility
+
+The AI Service should never depend on specific MCP servers.
+
+Instead:
+
+```text
+AI Service
+
+↓
+
+Gateway
+
+↓
+
+Registered Servers
+
+↓
+
+Registered Tools
+```
+
+Future integrations become plug-and-play.
+
+Examples include:
+
+* GitHub MCP Server
+* Docker MCP Server
+* Kubernetes MCP Server
+* PostgreSQL MCP Server
+* MongoDB MCP Server
+* Redis MCP Server
+* AWS MCP Server
+* Azure MCP Server
+* Git MCP Server
+* CI/CD MCP Server
+
+No AI Service modifications should be required when these servers are added.
+
+---
+
+# Responsibilities
+
+The AI integration layer is responsible for:
+
+* Intent detection
+* Tool planning
+* Tool execution
+* Context aggregation
+* Prompt enrichment
+* Response streaming
+* Error recovery
+* Tool orchestration
+* Context caching
+
+It is **not** responsible for:
+
+* Filesystem operations
+* Dependency analysis
+* Source code parsing
+* Project analysis
+* Knowledge graph construction
+
+These remain within their dedicated MCP tools.
+
+---
+
+# Testing Scenarios
+
+Verify that the AI Service correctly:
+
+* Detects developer-related requests
+* Invokes appropriate MCP tools
+* Avoids unnecessary tool execution
+* Builds unified project context
+* Enriches LLM prompts
+* Streams responses successfully
+* Handles MCP failures gracefully
+* Respects workspace restrictions
+* Executes multiple tools in sequence
+* Executes independent tools in parallel
+* Works with large projects
+* Supports newly registered MCP tools automatically
+
+---
+
+# Benefits
+
+Integrating the AI Service with developer tools provides:
+
+* Project-aware responses
+* Accurate code explanations
+* Reduced hallucinations
+* Better architectural understanding
+* Improved debugging assistance
+* Intelligent code navigation
+* Rich project summaries
+* Smarter refactoring recommendations
+* Extensible AI capabilities
+* Foundation for autonomous development workflows
+
+---
+
+# Deliverables
+
+By the end of **Part 10**, the project will include:
+
+* ✅ AI Service integrated with the MCP Gateway
+* ✅ Intelligent intent detection
+* ✅ Dynamic developer tool discovery
+* ✅ Automatic MCP tool invocation
+* ✅ Unified project context aggregation
+* ✅ Prompt enrichment using live project data
+* ✅ Streaming AI responses with project context
+* ✅ Robust error handling and fallback mechanisms
+* ✅ Context caching for improved performance
+* ✅ Extensible architecture supporting future MCP servers
+
+---
+
+# Milestone 5.4 Completion Summary
+
+With the completion of **Part 10**, **Milestone 5.4 – Custom Filesystem Tools (Developer-Focused Tools)** reaches full completion.
+
+The platform now provides:
+
+* ✅ Developer Tool Framework
+* ✅ Project Analyzer
+* ✅ Dependency Analyzer
+* ✅ Source Code Search
+* ✅ TODO & Technical Debt Analyzer
+* ✅ Project Context Builder
+* ✅ Developer Knowledge Graph
+* ✅ Intelligent Code Navigation Engine
+* ✅ Dynamic Tool Registration
+* ✅ AI Integration with Developer Tools
+
+Together, these components establish a production-ready, extensible developer intelligence platform. The AI assistant is no longer limited to static language model knowledge; it can discover, analyze, navigate, and reason over live project data through the MCP ecosystem, providing accurate, context-aware assistance and laying the groundwork for future capabilities such as autonomous coding, intelligent refactoring, architecture analysis, and multi-server orchestration.
+
+
+# Expected Architecture
+
+```text
+Chrome Extension
+
+        │
+
+        ▼
+
+Backend
+
+        │
+
+        ▼
+
+AI Service
+
+        │
+
+        ▼
+
+Gateway
+
+        │
+
+        ▼
+
+Filesystem MCP Server
+
+        │
+
+        ├── Read File
+
+        ├── List Directory
+
+        ├── Search Code
+
+        ├── Analyze Project
+
+        ├── Route Scanner
+
+        ├── Dependency Analyzer
+
+        ├── TODO Scanner
+
+        ├── Workspace Summary
+
+        └── Source Analyzer
+
+        │
+
+        ▼
+
+Filesystem Service
+
+        │
+
+        ▼
+
+Operating System
+```
+
+---
+
+# Deliverables
+
+By the end of Milestone **5.4**, the project will include:
+
+* ✅ Developer-focused MCP tools
+* ✅ Project Analyzer
+* ✅ Dependency Analyzer
+* ✅ Search Code Tool
+* ✅ Route Scanner
+* ✅ TODO Scanner
+* ✅ Workspace Summary Generator
+* ✅ Source Analyzer
+* ✅ Environment Scanner
+* ✅ Automatic tool registration
+* ✅ AI-ready structured project context
+* ✅ Foundation for intelligent code understanding
+
+---
+
+# Next Milestone
+
+**Milestone 5.5 – AI Integration with MCP**
+
+The AI Service will begin using these developer-focused tools automatically to enrich prompts with real project context before invoking the language model, enabling accurate, context-aware responses tailored to the user's codebase.
+
+
+
+I recommend we restart Step 2
+
+Now that I know those files are empty, I would build them in this order:
+
+Step 2
+✅ filesystem.service.ts (complete implementation)
+Step 3
+✅ developerTool.base.ts
+
+Final Production Structure
+
+Instead of this:
+
+analysis/
+│
+├── detectors/
+├── services/
+└── analyzeProject.tool.ts
+
+I recommend:
+
+analysis/
+│
+├── detectors/
+│   ├── metadata.detector.ts
+│   ├── language.detector.ts
+│   ├── framework.detector.ts
+│   ├── runtime.detector.ts
+│   ├── packageManager.detector.ts
+│   ├── buildTool.detector.ts
+│   ├── entryPoint.detector.ts
+│   ├── docker.detector.ts
+│   ├── kubernetes.detector.ts
+│   ├── git.detector.ts
+│   ├── cicd.detector.ts
+│   └── index.ts
+│
+├── services/
+│   ├── projectAnalyzer.service.ts
+│   └── index.ts
+│
+├── models/
+│   ├── projectAnalysisResult.interface.ts
+│   ├── detectorResult.interface.ts
+│   └── index.ts
+│
+├── analyzeProject.tool.ts
+└── index.ts
+
+The additional models folder keeps analysis-specific models separate from the global developer tool models. This becomes important as Part 3 (Dependency Analyzer), Part 4 (Source Analyzer), and later tools introduce their own result types.
+
+Implementation Roadmap
+
+Rather than jumping directly into all detectors, I recommend building them in dependency order.
+
+Phase 1 – Foundation
+✅ DeveloperTool Framework
+✅ FilesystemService
+✅ Registry
+✅ Validator
+
+Already completed.
+
+Phase 2 – Project Analyzer Models
+
+We'll create:
+
+projectAnalysisResult.interface.ts
+
+detectorResult.interface.ts
+
+These define the contract between detectors and the analyzer.
+
+Phase 3 – Basic Detectors
+
+Build the simplest detectors first.
+
+MetadataDetector
+
+↓
+
+LanguageDetector
+
+↓
+
+PackageManagerDetector
+
+These all primarily inspect package.json or a small set of files.
+
+
+
+Phase 4 – Framework Detection
+
+Once metadata is available:
+
+FrameworkDetector
+
+↓
+
+RuntimeDetector
+
+↓
+
+BuildToolDetector
+Phase 5 – Infrastructure Detection
+
+These are mostly filesystem checks.
+
+DockerDetector
+
+↓
+
+KubernetesDetector
+
+↓
+
+GitDetector
+
+↓
+
+CiCdDetector
+Phase 6 – Entry Point Detection
+
+This detector uses the results of previous detectors to narrow its search.
+
+src/server.ts
+
+src/main.ts
+
+src/index.ts
+
+index.js
+
+...
+Phase 7 – Orchestration
+
+Now build:
+
+ProjectAnalyzerService
+
+Its job is simply:
+
+Run MetadataDetector
+
+↓
+
+Run LanguageDetector
+
+↓
+
+Run FrameworkDetector
+
+↓
+
+...
+
+↓
+
+Merge Results
+
+↓
+
+Return ProjectSummary
+
+No detection logic belongs here.
+
+Phase 8 – MCP Tool
+
+Finally:
+
+AnalyzeProjectTool
+
+becomes almost trivial:
+
+Validate
+
+↓
+
+ProjectAnalyzerService
+
+↓
+
+Return Standard Response
+Why this order?
+
+If we build the tool first:
+
+AnalyzeProjectTool
+
+it has nothing to call.
+
+If we build the service first:
+
+ProjectAnalyzerService
+
+it has no detectors.
+
+By building bottom-up, every layer is complete before the next one depends on it.
+
+Production Dependency Graph
+FilesystemService
+        │
+        ▼
+MetadataDetector
+LanguageDetector
+FrameworkDetector
+RuntimeDetector
+PackageManagerDetector
+BuildToolDetector
+DockerDetector
+GitDetector
+KubernetesDetector
+CiCdDetector
+EntryPointDetector
+        │
+        ▼
+ProjectAnalyzerService
+        │
+        ▼
+AnalyzeProjectTool
+        │
+        ▼
+DeveloperToolRegistry
+        │
+        ▼
+Filesystem MCP Server
+
+This keeps every class focused on a single responsibility.
+
+I would make one more architectural improvement
+
+Instead of every detector returning a different type, define a common detector interface such as:
+
+export interface DetectorResult<T> {
+    detector: string;
+    success: boolean;
+    data: T;
+    warnings: string[];
+}
+
+Then every detector—whether it's MetadataDetector, FrameworkDetector, or GitDetector—returns the same envelope. ProjectAnalyzerService only has to merge the data from each detector while still preserving warnings. This consistency becomes especially valuable when you later add parallel execution, caching, telemetry, or plugin-based detectors.
+
+My recommendation for the next implementation
+
+We should not start with MetadataDetector yet.
+
+The next step should be to create these three files:
+
+analysis/models/projectAnalysisResult.interface.ts
+analysis/models/detectorResult.interface.ts
+analysis/models/index.ts
+
+Those models become the contracts for every detector and allow the rest of Part 2 to build on a stable, strongly typed foundation without requiring later refactoring.
+
+The next sequence should be:
+
+✅ AnalyzeProjectTool
+✅ Register it in DeveloperToolRegistry
+✅ Wire it into the Filesystem MCP Server
+✅ Test it end-to-end
+✅ Then begin Milestone 5.4 – Part 3 (Dependency Analyzer)
+
+That gives you a fully working vertical slice—from the AI request, through
+
+Step 4
+✅ MetadataDetector
+Step 5
+✅ LanguageDetector
+Step 6
+✅ FrameworkDetector
+
+This is a much cleaner foundation and avoids refactoring later.
+
+I think this will give you a significantly stronger architecture than jumping straight into the detectors.
+
+
+
+Milestone 5.4 – Developer Tool Framework
+Part 1 — Developer Tool Framework
+
+Goal: Build the infrastructure that every future developer tool will use.
+
+Step 1 — Folder Structure ✅
+developer-tools/
+│
+├── base/
+│   ├── developerTool.base.ts
+│   ├── developerTool.registry.ts
+│   ├── developerTool.types.ts
+│   ├── developerTool.validator.ts
+│   └── index.ts
+│
+├── analysis/
+├── search/
+├── workspace/
+└── index.ts
+Step 2 — FilesystemService ✅
+
+Implement reusable filesystem operations.
+
+Examples:
+
+exists()
+readFile()
+listDirectory()
+isDirectory()
+getMetadata()
+Step 3 — DeveloperToolBase ✅
+
+Standard execution pipeline
+
+Validate
+
+↓
+
+BeforeExecute
+
+↓
+
+ExecuteInternal
+
+↓
+
+AfterExecute
+
+↓
+
+DeveloperToolResponse
+Step 4 — DeveloperToolValidator ✅
+
+Validate
+
+workspace exists
+directory exists
+path normalization
+future security checks
+Step 5 — DeveloperToolRegistry ✅
+
+Supports
+
+register()
+
+remove()
+
+get()
+
+getAll()
+
+exists()
+
+list()
+Step 6 — Shared Types ✅
+
+Examples
+
+DeveloperToolContext
+
+DeveloperToolResponse
+
+ValidationResult
+Part 2 — Project Analyzer
+
+Goal: Build the first intelligent developer tool.
+
+Step 1 — Models ✅
+analysis/
+
+models/
+
+ProjectMetadata
+
+ProjectSummary
+
+ProjectAnalysisResult
+
+DetectorResult
+
+ProjectDetector
+Step 2 — Detector Contracts ✅
+
+Every detector implements
+
+ProjectDetector<T>
+
+Every detector returns
+
+DetectorResult<T>
+Step 3 — Detector Base (Recommended)
+
+Not mandatory but recommended.
+
+ProjectDetectorBase
+
+↓
+
+readPackageJson()
+
+↓
+
+readJson()
+
+↓
+
+exists()
+
+↓
+
+readFile()
+
+Reduces duplicated code.
+
+Step 4 — MetadataDetector ✅
+
+Reads
+
+package.json
+
+Returns
+
+name
+
+version
+
+description
+
+author
+
+license
+Step 5 — LanguageDetector ✅
+
+Detects
+
+TypeScript
+
+JavaScript
+
+Python
+
+Go
+
+Java
+
+Rust
+Step 6 — PackageManagerDetector ✅
+
+Detects
+
+npm
+
+pnpm
+
+Yarn
+
+Bun
+Step 7 — FrameworkDetector ✅
+
+Detects
+
+Express
+
+NestJS
+
+React
+
+Next.js
+
+Angular
+
+Vue
+
+Fastify
+
+Koa
+Step 8 — RuntimeDetector ✅
+
+Detects
+
+Node
+
+Python
+
+Java
+
+Go
+
+Rust
+Step 9 — BuildToolDetector ✅
+
+Detects
+
+Vite
+
+Webpack
+
+Rollup
+
+Nx
+
+Turbo
+Step 10 — EntryPointDetector ✅
+
+Detects
+
+src/server.ts
+
+src/index.ts
+
+src/main.ts
+
+index.js
+
+app.js
+Step 11 — DockerDetector ✅
+
+Detects
+
+Dockerfile
+
+docker-compose.yml
+
+docker-compose.yaml
+Step 12 — KubernetesDetector ✅
+
+Detects
+
+k8s/
+
+helm/
+
+deployment.yaml
+
+service.yaml
+
+ingress.yaml
+Step 13 — GitDetector ✅
+
+Detects
+
+.git
+Step 14 — CiDetector ✅
+
+Detects
+
+GitHub Actions
+
+Jenkins
+
+GitLab CI
+
+Azure DevOps
+Step 15 — ProjectAnalyzerService 🟡
+
+This is the orchestrator.
+
+Metadata
+
+↓
+
+Language
+
+↓
+
+Framework
+
+↓
+
+Runtime
+
+↓
+
+PackageManager
+
+↓
+
+BuildTool
+
+↓
+
+EntryPoint
+
+↓
+
+Docker
+
+↓
+
+Kubernetes
+
+↓
+
+Git
+
+↓
+
+CI
+
+↓
+
+ProjectAnalysisResult
+Step 16 — AnalyzeProjectTool 🟡
+
+Developer tool that calls
+
+ProjectAnalyzerService
+
+Returns
+
+ProjectAnalysisResult
+Step 17 — Registry Integration 🟡
+DeveloperToolRegistry
+
+↓
+
+register()
+
+↓
+
+AnalyzeProjectTool
+Step 18 — MCP Integration 🟡
+
+Register the developer tool with your existing FilesystemServer.
+
+FilesystemServer
+
+↓
+
+DeveloperToolRegistry
+
+↓
+
+AnalyzeProjectTool
+
+At this point, the AI can call:
+
+analyzeProject
+Part 3 — Dependency Analyzer
+
+Build
+
+DependencyAnalyzerTool
+
+Features
+
+package.json
+dependencies
+devDependencies
+peerDependencies
+optionalDependencies
+duplicates
+missing
+lock file
+package manager
+Part 4 — Search Code
+
+Build
+
+SearchCodeTool
+Part 5 — Route Scanner
+
+Build
+
+RouteScannerTool
+Part 6 — TODO Scanner
+
+Build
+
+TodoScannerTool
+Part 7 — Source Analyzer
+
+Build
+
+SourceAnalyzerTool
+Part 8 — Project Tree
+
+Build
+
+ProjectTreeTool
+Part 9 — Environment Scanner
+
+Build
+
+EnvironmentScannerTool
+Part 10 — Workspace Summary
+
+Final developer tool.
+
+Consumes
+
+Project Analyzer
+Dependency Analyzer
+Source Analyzer
+Route Scanner
+TODO Scanner
+Environment Scanner
+
+Returns one AI-optimized project summary.
+
+Current Status
+Step	Status
+Part 1 Framework	✅ Complete
+Models	✅ Complete
+Detector contracts	✅ Complete
+MetadataDetector	✅ Complete
+Remaining detectors	🟡 Mostly implemented (review for consistency)
+ProjectAnalyzerService	🟡 In progress
+AnalyzeProjectTool	🟡 In progress
+Registry integration	⏳ Pending
+MCP server integration	⏳ Pending
+Dependency Analyzer	⏳ Not started
+Remaining developer tools	⏳ Not started
+What I recommend next
+
+Rather than jumping between pieces, let's finish Part 2 completely. The remaining order should be:
+
+Review and standardize all detector implementations.
+Finalize ProjectAnalyzerService.
+Finalize AnalyzeProjectTool.
+Register AnalyzeProjectTool in DeveloperToolRegistry.
+Integrate the registry into FilesystemServer.
+Verify that an end-to-end analyzeProject request works.
+
+Once that's complete, you'll have your first fully functional intelligent MCP developer tool, and the rest of Milestone 5.4 will largely be about adding new tools that plug into the same framework rather than changing the architecture.
