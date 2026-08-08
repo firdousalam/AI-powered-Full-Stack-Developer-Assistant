@@ -54,6 +54,7 @@ export interface DirectoryEntry {
 
 }
 
+
 export interface DirectoryInfo {
 
     path: string;
