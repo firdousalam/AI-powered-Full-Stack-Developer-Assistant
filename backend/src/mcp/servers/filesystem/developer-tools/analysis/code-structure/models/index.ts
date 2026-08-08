@@ -21,3 +21,7 @@ export * from "./codeStructureAnalysisResult.interface";
 export * from "./codeStructureDetector.interface";
 
 export * from "./codeStructureDetectorResult.interface";
+
+export * from "./StructureModule.interface";
+
+export * from "./structureController.interface";
