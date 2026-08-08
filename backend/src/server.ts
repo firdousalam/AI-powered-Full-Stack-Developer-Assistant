@@ -11,6 +11,9 @@ const filesystemServer =
         filesystemService,
         filesystemTools
     );
+import {
+    mcpToolDiscoveryService
+} from "./mcp/orchestration";
 
 // IMPORTANT: initialize/connect first
 filesystemServer.initialize();
@@ -89,6 +92,26 @@ async function startServer(): Promise<void> {
         //         2
         //     )
         // );
+
+        const tools =
+            mcpToolDiscoveryService.discoverTools();
+
+        console.log(
+            "========== MCP TOOL DISCOVERY =========="
+        );
+
+        console.log(
+            JSON.stringify(
+                tools,
+                null,
+                2
+            )
+        );
+
+        console.log(
+            "Total MCP Tools:",
+            tools.length
+        );
 
     }
     catch (error) {
