@@ -1,20 +1,9 @@
 import {
     DependencyDetectorBase
 } from "../base/dependencyDetector.base";
+import { DependencyProjectMetadata } from "./dependencyProjectMetadata.interface";
 
-export interface DependencyProjectMetadata {
 
-    /**
-     * Project name.
-     */
-    project: string;
-
-    /**
-     * Project version.
-     */
-    version: string;
-
-}
 
 export class MetadataDetector
     extends DependencyDetectorBase<DependencyProjectMetadata> {

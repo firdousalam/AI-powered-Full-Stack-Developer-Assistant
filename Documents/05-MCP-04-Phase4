@@ -1,0 +1,584 @@
+# Phase 4 – DependencyAnalyzerService
+
+## Overview
+
+The `DependencyAnalyzerService` is the orchestration layer of the Dependency Analyzer.
+
+Its responsibility is to execute all dependency detectors, collect their results, and combine them into a single `DependencyAnalysisResult`.
+
+The service itself should contain **no dependency detection logic**.
+
+Each detector remains responsible for one specific concern, while the analyzer service coordinates them.
+
+---
+
+## Architecture
+
+```text
+                    DependencyAnalyzerService
+                              │
+             ┌────────────────┼────────────────┐
+             │                │                │
+             ▼                ▼                ▼
+      MetadataDetector  DependencyDetector  DevDependencyDetector
+             │                │                │
+             └────────────────┼────────────────┘
+                              │
+             ┌────────────────┼────────────────┐
+             │                │                │
+             ▼                ▼                ▼
+   PackageManagerDetector LockFileDetector PeerDependencyDetector
+             │                │                │
+             └────────────────┼────────────────┘
+                              │
+             ┌────────────────┴────────────────┐
+             │                                 │
+             ▼                                 ▼
+ OptionalDependencyDetector      DuplicateDependencyDetector
+             │                                 │
+             └────────────────┬────────────────┘
+                              │
+                              ▼
+                   MissingDependencyDetector
+                              │
+                              ▼
+                  DependencyAnalysisResult
+```
+
+---
+
+# Step 1 – File Location
+
+Create:
+
+```text
+src/
+└── mcp/
+    └── servers/
+        └── filesystem/
+            └── developer-tools/
+                └── analysis/
+                    └── dependency/
+                        └── services/
+                            └── dependencyAnalyzer.service.ts
+```
+
+---
+
+# Step 2 – Detectors Used
+
+The service will orchestrate the following detectors:
+
+| Detector                      | Responsibility                 |
+| ----------------------------- | ------------------------------ |
+| `MetadataDetector`            | Project name and version       |
+| `DependencyDetector`          | Production dependencies        |
+| `DevDependencyDetector`       | Development dependencies       |
+| `PackageManagerDetector`      | npm, Yarn, pnpm, Bun           |
+| `LockFileDetector`            | Detect lock file               |
+| `PeerDependencyDetector`      | Peer dependencies              |
+| `OptionalDependencyDetector`  | Optional dependencies          |
+| `DuplicateDependencyDetector` | Duplicate declarations         |
+| `MissingDependencyDetector`   | Potential missing dependencies |
+
+Total:
+
+```text
+9 detectors
+```
+
+---
+
+# Step 3 – Service Responsibilities
+
+`DependencyAnalyzerService` should:
+
+1. Receive `workspacePath`
+2. Execute all detectors
+3. Run independent detectors concurrently
+4. Collect detector results
+5. Extract detector data
+6. Combine the data
+7. Return `DependencyAnalysisResult`
+
+It should **not**:
+
+* Read `package.json` directly
+* Parse dependencies
+* Inspect lock files
+* Detect duplicates
+* Detect missing dependencies
+
+Those responsibilities belong to the detectors.
+
+---
+
+# Step 4 – Implementation
+
+## File
+
+```text
+src/mcp/servers/filesystem/developer-tools/analysis/dependency/services/dependencyAnalyzer.service.ts
+```
+
+```ts
+import {
+    MetadataDetector,
+    DependencyDetector,
+    DevDependencyDetector,
+    PackageManagerDetector,
+    LockFileDetector,
+    PeerDependencyDetector,
+    OptionalDependencyDetector,
+    DuplicateDependencyDetector,
+    MissingDependencyDetector
+} from "../detectors";
+
+import {
+    DependencyAnalysisResult
+} from "../models";
+
+export class DependencyAnalyzerService {
+
+    constructor(
+
+        private readonly metadataDetector:
+            MetadataDetector,
+
+        private readonly dependencyDetector:
+            DependencyDetector,
+
+        private readonly devDependencyDetector:
+            DevDependencyDetector,
+
+        private readonly packageManagerDetector:
+            PackageManagerDetector,
+
+        private readonly lockFileDetector:
+            LockFileDetector,
+
+        private readonly peerDependencyDetector:
+            PeerDependencyDetector,
+
+        private readonly optionalDependencyDetector:
+            OptionalDependencyDetector,
+
+        private readonly duplicateDependencyDetector:
+            DuplicateDependencyDetector,
+
+        private readonly missingDependencyDetector:
+            MissingDependencyDetector
+
+    ) { }
+
+    /**
+     * Analyze project dependencies.
+     *
+     * All detectors are independent, so they
+     * can execute concurrently.
+     */
+    async analyze(
+        workspacePath: string
+    ): Promise<DependencyAnalysisResult> {
+
+        const [
+
+            metadata,
+
+            dependencies,
+
+            devDependencies,
+
+            packageManager,
+
+            lockFile,
+
+            peerDependencies,
+
+            optionalDependencies,
+
+            duplicates,
+
+            missing
+
+        ] = await Promise.all([
+
+            this.metadataDetector.detect(
+                workspacePath
+            ),
+
+            this.dependencyDetector.detect(
+                workspacePath
+            ),
+
+            this.devDependencyDetector.detect(
+                workspacePath
+            ),
+
+            this.packageManagerDetector.detect(
+                workspacePath
+            ),
+
+            this.lockFileDetector.detect(
+                workspacePath
+            ),
+
+            this.peerDependencyDetector.detect(
+                workspacePath
+            ),
+
+            this.optionalDependencyDetector.detect(
+                workspacePath
+            ),
+
+            this.duplicateDependencyDetector.detect(
+                workspacePath
+            ),
+
+            this.missingDependencyDetector.detect(
+                workspacePath
+            )
+
+        ]);
+
+        return {
+
+            metadata:
+                metadata.data,
+
+            dependencies:
+                dependencies.data,
+
+            devDependencies:
+                devDependencies.data,
+
+            packageManager:
+                packageManager.data,
+
+            lockFile:
+                lockFile.data,
+
+            peerDependencies:
+                peerDependencies.data,
+
+            optionalDependencies:
+                optionalDependencies.data,
+
+            duplicates:
+                duplicates.data,
+
+            missing:
+                missing.data
+
+        };
+
+    }
+
+}
+```
+
+---
+
+# Step 5 – Result Flow
+
+When the service receives:
+
+```ts
+await dependencyAnalyzerService.analyze(
+    workspacePath
+);
+```
+
+the flow becomes:
+
+```text
+workspacePath
+      │
+      ▼
+DependencyAnalyzerService
+      │
+      ├── MetadataDetector
+      │
+      ├── DependencyDetector
+      │
+      ├── DevDependencyDetector
+      │
+      ├── PackageManagerDetector
+      │
+      ├── LockFileDetector
+      │
+      ├── PeerDependencyDetector
+      │
+      ├── OptionalDependencyDetector
+      │
+      ├── DuplicateDependencyDetector
+      │
+      └── MissingDependencyDetector
+      │
+      ▼
+DependencyAnalysisResult
+```
+
+---
+
+# Step 6 – Example Result
+
+For a project containing:
+
+```text
+package.json
+package-lock.json
+node_modules/
+```
+
+the analyzer could produce:
+
+```json
+{
+    "metadata": {
+        "project": "AI-powered-Full-Stack-Developer-Assistant"
+    },
+
+    "dependencies": [
+        {
+            "name": "express",
+            "version": "^5.1.0"
+        },
+        {
+            "name": "mongoose",
+            "version": "^8.0.0"
+        }
+    ],
+
+    "devDependencies": [
+        {
+            "name": "typescript",
+            "version": "^5.8.2"
+        },
+        {
+            "name": "tsx",
+            "version": "^4.20.4"
+        }
+    ],
+
+    "packageManager": {
+        "name": "npm",
+        "lockFile": "package-lock.json"
+    },
+
+    "lockFile": {
+        "exists": true,
+        "file": "package-lock.json"
+    },
+
+    "peerDependencies": [],
+
+    "optionalDependencies": [],
+
+    "duplicates": [],
+
+    "missing": []
+}
+```
+
+---
+
+# Step 7 – Why `Promise.all()`?
+
+The detectors are mostly independent.
+
+For example:
+
+```text
+MetadataDetector
+       │
+       └── package.json
+
+DependencyDetector
+       │
+       └── package.json
+
+PackageManagerDetector
+       │
+       └── lock files
+
+GitDetector
+       │
+       └── .git
+```
+
+There is no need to execute them sequentially.
+
+Instead of:
+
+```ts
+await detector1.detect();
+
+await detector2.detect();
+
+await detector3.detect();
+```
+
+we use:
+
+```ts
+await Promise.all([
+    detector1.detect(),
+    detector2.detect(),
+    detector3.detect()
+]);
+```
+
+This reduces unnecessary waiting.
+
+---
+
+# Step 8 – Error Isolation
+
+Every detector already returns a standard result:
+
+```ts
+{
+    detector: "...",
+    success: true,
+    data: ...,
+    warnings: []
+}
+```
+
+Therefore, one detector can fail without throwing an exception through the entire analyzer.
+
+For example:
+
+```text
+MetadataDetector
+      ✅ success
+
+DependencyDetector
+      ✅ success
+
+DevDependencyDetector
+      ❌ failed
+      │
+      └── warning
+
+PackageManagerDetector
+      ✅ success
+
+LockFileDetector
+      ✅ success
+```
+
+The analyzer can still return the available information.
+
+---
+
+# Step 9 – Update `services/index.ts`
+
+## File
+
+```text
+src/mcp/servers/filesystem/developer-tools/analysis/dependency/services/index.ts
+```
+
+Add:
+
+```ts
+export * from "./dependencyAnalyzer.service";
+```
+
+If the file doesn't exist yet, create it.
+
+---
+
+# Step 10 – Dependency Analysis Architecture
+
+The complete Dependency Analyzer now looks like:
+
+```text
+dependency/
+│
+├── base/
+│   └── dependencyDetector.base.ts
+│
+├── models/
+│   ├── dependency.interface.ts
+│   ├── dependencySummary.interface.ts
+│   ├── dependencyAnalysisResult.interface.ts
+│   ├── dependencyDetector.interface.ts
+│   ├── dependencyDetectorResult.interface.ts
+│   ├── packageManager.interface.ts
+│   ├── lockFile.interface.ts
+│   └── index.ts
+│
+├── detectors/
+│   ├── metadata.detector.ts
+│   ├── dependency.detector.ts
+│   ├── devDependency.detector.ts
+│   ├── packageManager.detector.ts
+│   ├── lockFile.detector.ts
+│   ├── peerDependency.detector.ts
+│   ├── optionalDependency.detector.ts
+│   ├── duplicateDependency.detector.ts
+│   └── missingDependency.detector.ts
+│
+└── services/
+    ├── dependencyAnalyzer.service.ts
+    └── index.ts
+```
+
+---
+
+# Phase 4 Status
+
+```text
+Phase 4 – DependencyAnalyzerService
+
+Service structure             ✅
+DependencyDetector wiring     ✅
+DevDependencyDetector wiring  ✅
+PackageManagerDetector wiring ✅
+LockFileDetector wiring       ✅
+PeerDependencyDetector wiring ✅
+OptionalDependencyDetector   ✅
+DuplicateDependencyDetector  ✅
+MissingDependencyDetector    ✅
+Promise.all orchestration     ✅
+Result aggregation            ✅
+```
+
+---
+
+# Next Step — DependencyAnalyzerTool
+
+Once `DependencyAnalyzerService` compiles successfully, the next layer is:
+
+```text
+DependencyAnalyzerService
+          │
+          ▼
+DependencyAnalyzerTool
+          │
+          ▼
+DeveloperToolBase
+          │
+          ▼
+DeveloperToolMcpAdapter
+          │
+          ▼
+Filesystem MCP Server
+          │
+          ▼
+MCP Gateway
+          │
+          ▼
+AI Service
+```
+
+The tool will expose the dependency analysis to the AI using a developer-friendly MCP tool such as:
+
+```text
+analyzeDependencies
+```
+
+The AI will then be able to ask the MCP layer for structured dependency information instead of reading `package.json` manually.

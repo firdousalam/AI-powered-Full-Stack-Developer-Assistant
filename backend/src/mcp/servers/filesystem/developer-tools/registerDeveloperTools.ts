@@ -1,60 +1,46 @@
-import { DeveloperToolRegistry } from "./base";
-
-import { AnalyzeProjectTool } from "./analysis";
+import {
+    DeveloperToolRegistry
+} from "./base";
 
 import {
-    MetadataDetector,
-    LanguageDetector,
-    FrameworkDetector,
-    RuntimeDetector,
-    PackageManagerDetector,
-    BuildToolDetector,
-    EntryPointDetector,
-    DockerDetector,
-    KubernetesDetector,
-    GitDetector,
-    CiDetector
-} from "./analysis/detectors";
+    createAnalyzeProjectTool
+} from "./analysis";
 
-import { ProjectAnalyzerService } from "./analysis/services";
+import {
+    createDependencyAnalyzerTool
+} from "./analysis/dependency";
 
+
+/**
+ * Register all developer tools.
+ *
+ * The registry becomes the central catalog
+ * of developer capabilities exposed through
+ * the MCP server.
+ */
 export function registerDeveloperTools(
     registry: DeveloperToolRegistry
 ): void {
 
-    const analyzerService =
-        new ProjectAnalyzerService(
-
-            new MetadataDetector(),
-
-            new LanguageDetector(),
-
-            new FrameworkDetector(),
-
-            new RuntimeDetector(),
-
-            new PackageManagerDetector(),
-
-            new BuildToolDetector(),
-
-            new EntryPointDetector(),
-
-            new DockerDetector(),
-
-            new KubernetesDetector(),
-
-            new GitDetector(),
-
-            new CiDetector()
-
-        );
+    /**
+     * Register Project Analyzer.
+     */
+    const analyzeProjectTool =
+        createAnalyzeProjectTool();
 
     registry.register(
+        analyzeProjectTool
+    );
 
-        new AnalyzeProjectTool(
-            analyzerService
-        )
 
+    /**
+     * Register Dependency Analyzer.
+     */
+    const analyzeDependenciesTool =
+        createDependencyAnalyzerTool();
+
+    registry.register(
+        analyzeDependenciesTool
     );
 
 }
