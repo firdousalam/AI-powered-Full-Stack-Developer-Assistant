@@ -12,7 +12,9 @@ import {
     RuntimeDetector
 } from "../detectors";
 
-import { ProjectAnalysisResult } from "../models";
+import {
+    ProjectAnalysisResult
+} from "../models";
 
 export class ProjectAnalyzerService {
 
