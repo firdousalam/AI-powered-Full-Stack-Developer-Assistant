@@ -15,6 +15,11 @@ import {
     mcpToolDiscoveryService
 } from "./mcp/orchestration";
 
+
+import {
+    toolCatalogService
+} from "./mcp/orchestration/tool-catalog";
+
 // IMPORTANT: initialize/connect first
 filesystemServer.initialize();
 
@@ -93,11 +98,32 @@ async function startServer(): Promise<void> {
         //     )
         // );
 
+        // const tools =
+        //     mcpToolDiscoveryService.discoverTools();
+
+        // console.log(
+        //     "========== MCP TOOL DISCOVERY =========="
+        // );
+
+        // console.log(
+        //     JSON.stringify(
+        //         tools,
+        //         null,
+        //         2
+        //     )
+        // );
+
+        // console.log(
+        //     "Total MCP Tools:",
+        //     tools.length
+        // );
+
+
         const tools =
-            mcpToolDiscoveryService.discoverTools();
+            toolCatalogService.getTools();
 
         console.log(
-            "========== MCP TOOL DISCOVERY =========="
+            "========== LLM TOOL CATALOG =========="
         );
 
         console.log(
@@ -106,11 +132,6 @@ async function startServer(): Promise<void> {
                 null,
                 2
             )
-        );
-
-        console.log(
-            "Total MCP Tools:",
-            tools.length
         );
 
     }

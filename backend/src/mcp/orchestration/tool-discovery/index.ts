@@ -1,3 +1,14 @@
-export * from "./mcpToolDiscovery.service";
+import {
+    McpToolDiscoveryService
+} from "./mcpToolDiscovery.service";
 
-export * from "./toolDiscovery.types";
+export const mcpToolDiscoveryService =
+    new McpToolDiscoveryService();
+
+export {
+    McpToolDiscoveryService
+};
+
+export type {
+    DiscoveredTool
+} from "./toolDiscovery.types";

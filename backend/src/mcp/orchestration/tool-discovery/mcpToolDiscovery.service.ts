@@ -1,31 +1,24 @@
 import { gateway } from "../../gateway";
+
 import {
-    DiscoveredTool
-} from "./toolDiscovery.types";
+    MCPTool
+} from "../../types";
 
 export class McpToolDiscoveryService {
 
-    /**
-     * Discover all tools registered
-     * in the MCP Gateway.
-     */
-    public discoverTools(): DiscoveredTool[] {
+    public discoverTools(): MCPTool[] {
 
-        const tools =
-            gateway.discoverTools();
+        return gateway.discoverTools();
 
-        return tools.map(tool => ({
+    }
 
-            name:
-                tool.name,
+    public discoverServerTools(
+        serverId: string
+    ): MCPTool[] {
 
-            description:
-                tool.description,
-
-            inputSchema:
-                tool.inputSchema
-
-        }));
+        return gateway.discoverServerTools(
+            serverId
+        );
 
     }
 
