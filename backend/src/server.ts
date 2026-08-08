@@ -38,22 +38,57 @@ async function startServer(): Promise<void> {
 
         });
 
-        const result =
-            await gateway.executeTool({
-                serverId: "filesystem-server",
-                toolName: "analyzeDependencies",
-                args: {
-                    workspacePath: process.cwd()
-                }
-            });
 
-        console.log(
-            JSON.stringify(
-                result,
-                null,
-                2
-            )
-        );
+        // const result =
+        //     await gateway.executeTool({
+        //         serverId: "filesystem-server",
+        //         toolName: "analyzeDependencies",
+        //         args: {
+        //             workspacePath: process.cwd()
+        //         }
+        //     });
+
+        // console.log(
+        //     JSON.stringify(
+        //         result,
+        //         null,
+        //         2
+        //     )
+        // );
+
+        // const response =
+        //     await gateway.executeTool({
+        //         serverId: "filesystem-server",
+        //         toolName: "analyzeCodeStructure",
+        //         args: {
+        //             workspacePath: process.cwd()
+        //         }
+        //     });
+
+        // console.log(
+        //     JSON.stringify(
+        //         response,
+        //         null,
+        //         2
+        //     )
+        // );
+
+        // const response =
+        //     await gateway.executeTool({
+        //         serverId: "filesystem-server",
+        //         toolName: "projectTree",
+        //         args: {
+        //             workspacePath: process.cwd()
+        //         }
+        //     });
+
+        // console.log(
+        //     JSON.stringify(
+        //         response,
+        //         null,
+        //         2
+        //     )
+        // );
 
     }
     catch (error) {

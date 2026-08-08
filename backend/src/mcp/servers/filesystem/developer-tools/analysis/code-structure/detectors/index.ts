@@ -6,3 +6,4 @@ export * from "./service.detector";
 export * from "./route.detector";
 export * from "./model.detector";
 export * from "./entryPoint.detector";
+export * from "./architecture.detector"
