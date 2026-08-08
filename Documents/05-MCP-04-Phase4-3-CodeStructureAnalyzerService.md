@@ -730,3 +730,331 @@ Run the checkpoint after each major change:
 ```bash
 npx tsc --noEmit
 ```
+
+
+Phase 4 is the next step: expose CodeStructureAnalyzerService as an actual Developer/MCP tool.
+
+We should do this in small checkpoints, just like Dependency Analyzer.
+
+Phase 4 — CodeStructureAnalyzerTool
+
+Target flow:
+
+CodeStructureAnalyzerService
+          ↓
+CodeStructureAnalyzerTool
+          ↓
+DeveloperToolRegistry
+          ↓
+FilesystemTools / MCP Server
+          ↓
+MCP Gateway
+          ↓
+analyzeCodeStructure
+Step 1 — Create the tool
+
+Create:
+
+src/mcp/servers/filesystem/developer-tools/analysis/code-structure/codeStructureAnalyzer.tool.ts
+
+Use the same DeveloperTool pattern that your DependencyAnalyzerTool uses.
+
+import {
+    DeveloperToolBase,
+    DeveloperToolContext,
+    DeveloperToolResult,
+    DeveloperToolValidator
+} from "../../base";
+
+import {
+    CodeStructureAnalyzerService
+} from "./services";
+
+export interface AnalyzeCodeStructureArguments {
+    workspacePath: string;
+}
+
+export class CodeStructureAnalyzerTool
+    extends DeveloperToolBase<
+        AnalyzeCodeStructureArguments
+    > {
+
+    readonly name =
+        "analyzeCodeStructure";
+
+    readonly description =
+        "Analyzes project code structure including directories, files, modules, controllers, services, routes, models, entry points, and architecture.";
+
+    private readonly validator:
+        DeveloperToolValidator;
+
+    private readonly codeStructureAnalyzerService:
+        CodeStructureAnalyzerService;
+
+    constructor() {
+
+        super();
+
+        this.validator =
+            new DeveloperToolValidator();
+
+        this.codeStructureAnalyzerService =
+            new CodeStructureAnalyzerService();
+
+    }
+
+    async execute(
+        context: DeveloperToolContext,
+        args: AnalyzeCodeStructureArguments
+    ): Promise<DeveloperToolResult> {
+
+        const workspacePath =
+            args?.workspacePath ||
+            context.workspacePath;
+
+        this.validator.validate(
+            {
+                workspacePath
+            }
+        );
+
+        const result =
+            await this.codeStructureAnalyzerService.analyze(
+                workspacePath
+            );
+
+        return {
+
+            success:
+                result.success,
+
+            data:
+                result,
+
+            warnings:
+                result.warnings ?? [],
+
+            errors:
+                []
+
+        };
+
+    }
+
+}
+Important
+
+Your exact DeveloperToolBase, DeveloperToolContext, and DeveloperToolResult definitions may differ slightly from this because your existing Dependency Analyzer has already established your project's API.
+
+So don't blindly modify the base classes.
+
+Instead, compare this tool against:
+
+src/mcp/servers/filesystem/developer-tools/analysis/dependency/dependencyAnalyzer.tool.ts
+
+The structure should be almost identical.
+
+Step 2 — Factory
+
+Create:
+
+src/mcp/servers/filesystem/developer-tools/analysis/code-structure/codeStructureAnalyzer.factory.ts
+import {
+    CodeStructureAnalyzerTool
+} from "./codeStructureAnalyzer.tool";
+
+export function createCodeStructureAnalyzerTool():
+    CodeStructureAnalyzerTool {
+
+    return new CodeStructureAnalyzerTool();
+
+}
+Step 3 — Export the tool
+
+Open:
+
+src/mcp/servers/filesystem/developer-tools/analysis/code-structure/index.ts
+
+Make sure it contains:
+
+export * from "./codeStructureAnalyzer.tool";
+
+export * from "./codeStructureAnalyzer.factory";
+
+export * from "./models";
+
+export * from "./services";
+
+export * from "./detectors";
+Step 4 — Export from analysis
+
+Open:
+
+src/mcp/servers/filesystem/developer-tools/analysis/index.ts
+
+Add:
+
+export * from "./code-structure";
+
+Your analysis index should expose both analyzers, something conceptually like:
+
+export * from "./analyzeProject.tool";
+export * from "./analyzeProject.factory";
+
+export * from "./code-structure";
+
+export * from "./dependency";
+Step 5 — Register the tool
+
+Open your:
+
+src/mcp/servers/filesystem/developer-tools/registerDeveloperTools.ts
+
+Add:
+
+import {
+    createCodeStructureAnalyzerTool
+} from "./analysis/code-structure";
+
+Then inside registerDeveloperTools():
+
+const analyzeCodeStructureTool =
+    createCodeStructureAnalyzerTool();
+
+registry.register(
+    analyzeCodeStructureTool
+);
+
+Your registration will now conceptually be:
+
+DeveloperToolRegistry
+│
+├── analyzeProject
+├── analyzeDependencies
+└── analyzeCodeStructure
+Step 6 — Compile
+
+Before touching the MCP Gateway:
+
+npx tsc --noEmit
+
+We want:
+
+Found 0 errors
+Step 7 — Expected MCP registration
+
+After the server starts, you should eventually see something similar to:
+
+Registered Developer Tool: analyzeProject
+Registered Developer Tool: analyzeDependencies
+Registered Developer Tool: analyzeCodeStructure
+
+and:
+
+Registered 9 MCP tools.
+
+because you currently have:
+
+7 filesystem tools
++
+2 existing developer tools
++
+1 code structure tool
+=
+10
+
+So actually the expected count is 10, assuming analyzeProject is already registered.
+
+readFile
+listDirectory
+fileExists
+fileMetadata
+readMultipleFiles
+searchFiles
+projectTree
+analyzeProject
+analyzeDependencies
+analyzeCodeStructure
+Step 8 — Gateway test
+
+Once registration succeeds, test:
+
+const response =
+    await gateway.executeTool({
+
+        serverId:
+            "filesystem-server",
+
+        toolName:
+            "analyzeCodeStructure",
+
+        args: {
+
+            workspacePath:
+                process.cwd()
+
+        }
+
+    });
+
+console.log(
+    JSON.stringify(
+        response,
+        null,
+        2
+    )
+);
+
+Expected:
+
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "tool": "analyzeCodeStructure",
+    "data": {
+      "workspacePath": "...",
+      "directories": [],
+      "files": [],
+      "modules": [],
+      "controllers": [],
+      "services": [],
+      "routes": [],
+      "models": [],
+      "entryPoints": [],
+      "architecture": {}
+    }
+  }
+}
+
+The actual arrays should contain the results from your nine detectors.
+
+Our checkpoint
+
+Don't move to the next phase yet.
+
+Run:
+
+npx tsc --noEmit
+
+first.
+
+Then start the backend and verify that:
+
+analyzeCodeStructure
+
+appears in the registered tools.
+
+Once that works, we'll connect the Code Structure Analyzer to the Gateway execution path, completing the third intelligence layer:
+
+                 Project Intelligence
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+   Project Analyzer  Dependency     Code Structure
+                     Analyzer         Analyzer
+          │              │              │
+          ▼              ▼              ▼
+      ProjectInfo   Dependencies    Architecture
+
+This is a significant milestone because your MCP server is moving from filesystem access to actual project intelligence.

@@ -10,6 +10,10 @@ import {
     createDependencyAnalyzerTool
 } from "./analysis/dependency";
 
+import {
+    createCodeStructureAnalyzerTool
+} from "./analysis/code-structure";
+
 
 /**
  * Register all developer tools.
@@ -41,6 +45,13 @@ export function registerDeveloperTools(
 
     registry.register(
         analyzeDependenciesTool
+    );
+
+    const analyzeCodeStructureTool =
+        createCodeStructureAnalyzerTool();
+
+    registry.register(
+        analyzeCodeStructureTool
     );
 
 }
