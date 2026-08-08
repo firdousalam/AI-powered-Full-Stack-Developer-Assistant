@@ -1,16 +1,41 @@
-import { Dependency } from "./dependency.interface";
+import {
+    Dependency
+} from "./dependency.interface";
 
-import { PackageManagerInfo } from "./packageManager.interface";
+import {
+    DependencyProjectMetadata
+} from "./dependencyProjectMetadata.interface";
+
+import {
+    PackageManagerInfo
+} from "./packageManager.interface";
+
+import {
+    LockFileInfo
+} from "./lockFile.interface";
 
 /**
- * Complete dependency analysis.
+ * Complete dependency analysis result.
+ *
+ * This is the aggregated output produced by
+ * DependencyAnalyzerService.
  */
 export interface DependencyAnalysisResult {
 
     /**
-     * Project name.
+     * Basic project information.
      */
-    project: string;
+    metadata: DependencyProjectMetadata;
+
+    /**
+     * Production dependencies.
+     */
+    dependencies: Dependency[];
+
+    /**
+     * Development dependencies.
+     */
+    devDependencies: Dependency[];
 
     /**
      * Package manager information.
@@ -18,27 +43,29 @@ export interface DependencyAnalysisResult {
     packageManager: PackageManagerInfo;
 
     /**
-     * Dependency summary.
+     * Lock file information.
      */
-    summary: {
-
-        dependencies: Dependency[];
-
-        devDependencies: Dependency[];
-
-        peerDependencies: Dependency[];
-
-        optionalDependencies: Dependency[];
-
-    };
+    lockFile: LockFileInfo;
 
     /**
-     * Duplicate package names.
+     * Peer dependencies.
+     */
+    peerDependencies: Dependency[];
+
+    /**
+     * Optional dependencies.
+     */
+    optionalDependencies: Dependency[];
+
+    /**
+     * Dependencies declared in
+     * multiple sections.
      */
     duplicates: string[];
 
     /**
-     * Missing packages.
+     * Dependencies that may be missing
+     * from node_modules.
      */
     missing: string[];
 

@@ -4,6 +4,17 @@ import { logger } from "./utils/logger";
 import dotenv from "dotenv";
 import { bootstrap } from "./mcp/bootstrap";
 import { gateway } from "./mcp/gateway";
+import { FilesystemServer, filesystemService, filesystemTools } from "./mcp/servers/filesystem";
+
+const filesystemServer =
+    new FilesystemServer(
+        filesystemService,
+        filesystemTools
+    );
+
+// IMPORTANT: initialize/connect first
+filesystemServer.initialize();
+
 
 dotenv.config();
 
@@ -13,34 +24,44 @@ async function startServer(): Promise<void> {
 
     try {
 
+        await filesystemServer.initialize();
+
         await bootstrap.initialize();
 
         app.listen(PORT, () => {
 
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
+            console.log(
+                `🚀 Server running on http://localhost:${PORT}`
+            );
 
             logger("Server Started");
 
-            // logger("Running Gateway integration test...");
-
-            // const response = await gateway.executeTool({
-            //     serverId: "filesystem-server",
-            //     toolName: "listDirectory",
-            //     args: {
-            //         path: "."
-            //     }
-            // });
-
-            // logger(
-            //     JSON.stringify(response, null, 2)
-            // );
-
         });
+
+        const result =
+            await gateway.executeTool({
+                serverId: "filesystem-server",
+                toolName: "analyzeDependencies",
+                args: {
+                    workspacePath: process.cwd()
+                }
+            });
+
+        console.log(
+            JSON.stringify(
+                result,
+                null,
+                2
+            )
+        );
 
     }
     catch (error) {
 
-        console.error("Failed to initialize MCP Infrastructure.", error);
+        console.error(
+            "Failed to initialize MCP Infrastructure.",
+            error
+        );
 
         process.exit(1);
 

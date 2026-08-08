@@ -181,14 +181,17 @@ export class FilesystemServer implements MCPServer {
         );
 
         /**
-         * Register all built-in developer tools.
+         * Register all developer tools into
+         * the DeveloperToolRegistry first.
          */
         registerDeveloperTools(
             this.developerToolRegistry
         );
 
         /**
-         * Register every MCP tool.
+         * Register filesystem tools and the
+         * already-registered developer tools
+         * into the MCP tool map.
          */
         this.registerTools();
 
@@ -199,6 +202,9 @@ export class FilesystemServer implements MCPServer {
             "Filesystem MCP Server connected."
         );
 
+        MCPLogger.info(
+            `Registered ${this.tools.size} MCP tools.`
+        );
     }
 
     /**
