@@ -25,3 +25,13 @@ export * from "./codeStructureDetectorResult.interface";
 export * from "./StructureModule.interface";
 
 export * from "./structureController.interface";
+
+export * from "./structureService.interface";
+
+export * from "./structureRoute.interface";
+
+export * from "./structureModel.interface";
+
+export * from "./structureEntryPoint.interface";
+
+export * from "./StructureArchitecture"
