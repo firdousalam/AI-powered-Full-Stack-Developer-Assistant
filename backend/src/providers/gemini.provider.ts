@@ -1,4 +1,9 @@
-import { AIProvider } from "./ai-provider";
+import { LLMToolDefinition } from "../mcp/orchestration/tool-schema/llmTool.types";
+import {
+    AIMessage,
+    AIProvider,
+    AIResponse
+} from "./ai-provider";
 
 export class GeminiProvider implements AIProvider {
     async generate(prompt: string, model: string): Promise<string> {
@@ -41,6 +46,18 @@ export class GeminiProvider implements AIProvider {
     ): Promise<void> {
 
         onToken("Gemini  streaming is not implemented yet.");
+
+    }
+
+    async chatWithTools(
+        messages: AIMessage[],
+        model: string,
+        tools: LLMToolDefinition[]
+    ): Promise<AIResponse> {
+
+        throw new Error(
+            "Tool calling is not implemented for Gemini provider yet."
+        );
 
     }
 

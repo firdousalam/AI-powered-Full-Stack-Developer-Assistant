@@ -8,40 +8,65 @@ import {
 
 export class MCPToolSchemaAdapter {
 
-    /**
-     * Convert one MCP tool into a
-     * provider-neutral LLM tool definition.
-     */
-    public adapt(
+    public toLLMTool(
         tool: MCPTool
     ): LLMToolDefinition {
 
         return {
 
-            name:
-                tool.name,
+            type: "function",
 
-            description:
-                tool.description,
+            function: {
 
-            parameters:
-                tool.inputSchema ?? {}
+                name: tool.name,
+
+                description:
+                    tool.description || "",
+
+                parameters:
+                    tool.inputSchema ?? {
+                        type: "object",
+                        properties: {}
+                    }
+
+            }
 
         };
 
     }
 
-    /**
-     * Convert multiple MCP tools.
-     */
-    public adaptMany(
+    public toLLMTools(
         tools: MCPTool[]
     ): LLMToolDefinition[] {
 
         return tools.map(
-            tool => this.adapt(tool)
+            tool =>
+                this.toLLMTool(tool)
+        );
+
+    }
+
+    public adaptMany(
+        tools: MCPTool[]
+    ): LLMToolDefinition[] {
+
+        return this.toLLMTools(
+            tools
+        );
+
+    }
+
+    public adapt(
+        tool: MCPTool
+    ): LLMToolDefinition {
+
+        return this.toLLMTool(
+            tool
         );
 
     }
 
 }
+
+export const mcpToolSchemaAdapter =
+    new MCPToolSchemaAdapter();

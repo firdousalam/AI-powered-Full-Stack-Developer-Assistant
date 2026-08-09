@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { chatWithAI, streamChat } from "../services/ai.service";
+import { chatWithAI, streamChat, chatWithMCPTools, inspectMCPTools } from "../services/ai.service";
 
 class AIController {
 
@@ -96,6 +96,93 @@ class AIController {
             console.error(error);
 
             res.status(500).end();
+
+        }
+
+    }
+
+    async inspectMCPTools(
+        req: Request,
+        res: Response
+    ) {
+
+        try {
+
+            const tools =
+                await inspectMCPTools();
+
+            res.json({
+
+                success: true,
+
+                count: tools.length,
+
+                tools
+
+            });
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            res.status(500).json({
+
+                success: false,
+
+                message:
+                    "MCP tool discovery failed"
+
+            });
+
+        }
+
+    }
+
+    async chatWithTools(
+        req: Request,
+        res: Response
+    ) {
+
+        try {
+
+            const {
+                prompt,
+                model,
+                browserContext
+            } = req.body;
+
+            const response =
+                await chatWithMCPTools(
+                    prompt,
+                    model,
+                    browserContext
+                );
+
+            res.json({
+
+                success: true,
+
+                response
+
+            });
+
+        }
+        catch (error) {
+
+            console.error(
+                "MCP Tool Chat Error:",
+                error
+            );
+
+            res.status(500).json({
+
+                success: false,
+
+                message:
+                    "MCP tool chat failed"
+
+            });
 
         }
 

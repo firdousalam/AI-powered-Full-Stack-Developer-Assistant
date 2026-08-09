@@ -1,4 +1,14 @@
-import { AIProvider } from "./ai-provider";
+
+import {
+    AIMessage,
+    AIProvider,
+    AIResponse
+} from "./ai-provider";
+
+import {
+    LLMToolDefinition
+} from "../mcp/orchestration/tool-schema";
+
 
 export class OpenAIProvider implements AIProvider {
     async generate(prompt: string, model: string): Promise<string> {
@@ -41,6 +51,18 @@ export class OpenAIProvider implements AIProvider {
     ): Promise<void> {
 
         onToken("OpenAI streaming is not implemented yet.");
+
+    }
+
+    async chatWithTools(
+        messages: AIMessage[],
+        model: string,
+        tools: LLMToolDefinition[]
+    ): Promise<AIResponse> {
+
+        throw new Error(
+            "Tool calling is not implemented for OpenAI provider yet."
+        );
 
     }
 

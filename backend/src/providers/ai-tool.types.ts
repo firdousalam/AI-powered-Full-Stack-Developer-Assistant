@@ -1,4 +1,4 @@
-export interface LLMToolDefinition {
+export interface AITool {
 
     type: "function";
 
@@ -8,8 +8,7 @@ export interface LLMToolDefinition {
 
         description: string;
 
-        parameters:
-        Record<string, unknown>;
+        parameters: Record<string, unknown>;
 
     };
 

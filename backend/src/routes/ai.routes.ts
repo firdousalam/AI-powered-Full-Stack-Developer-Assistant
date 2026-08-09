@@ -19,4 +19,17 @@ router.post(
     AIController.streamChat
 );
 
+router.get(
+    "/mcp/tools",
+    AIController.inspectMCPTools.bind(
+        AIController
+    )
+);
+
+router.post(
+    "/mcp/chat-with-tools",
+    AIController.chatWithTools.bind(
+        AIController
+    )
+);
 export default router;
