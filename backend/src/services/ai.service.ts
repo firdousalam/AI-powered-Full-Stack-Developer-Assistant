@@ -5,6 +5,11 @@ import promptService from "./prompt.service";
 import aiRouter from "./ai-router.service";
 import { AI_CONFIG } from "../config/ai.config";
 import { ProviderFactory } from "../providers/provider.factory";
+import {
+    mcpOrchestratorService
+} from "../mcp/orchestration";
+
+
 const API_URL =
     "http://localhost:3000/api/v1/ai";
 
@@ -119,15 +124,17 @@ export async function streamChat(
     /**
         * Build final AI prompt
         */
-    const finalPrompt =
+    // const finalPrompt =
 
-        promptService.buildPrompt(
+    //     promptService.buildPrompt(
 
-            prompt,
+    //         prompt,
 
-            browserContext
+    //         browserContext
 
-        );
+    //     );
+
+    const finalPrompt = prompt;
     console.log("========== streamChat REQUEST ==========", browserContext)
     /**
      * Select model
@@ -273,5 +280,353 @@ export async function streamChat(
         reader.releaseLock();
 
     }*/
+
+
+}
+
+/*
+Temporary function
+*/
+export async function inspectMCPTools() {
+
+    const tools =
+        mcpOrchestratorService.getTools();
+
+    console.log(
+        "========== MCP TOOLS =========="
+    );
+
+    console.log(
+        tools.map(tool =>
+            tool.function.name
+        )
+    );
+
+    return tools;
+
+}
+
+// export async function chatWithMCPTools(
+
+//     prompt: string,
+
+//     model: string,
+
+//     browserContext: BrowserContext
+
+// ) {
+
+//     const finalPrompt =
+//         promptService.buildPrompt(
+//             prompt,
+//             browserContext
+//         );
+
+//     // const tools =
+//     //     mcpOrchestratorService
+//     //         .getTools()
+//     //         .filter(
+//     //             tool =>
+//     //                 tool.function.name ===
+//     //                 "analyzeDependencies"
+//     //         );
+
+//     const tools =
+//         mcpOrchestratorService
+//             .getTools();
+//     console.log(
+//         "========== OLLAMA TOOL TEST =========="
+//     );
+
+//     console.log(
+//         "Prompt:",
+//         finalPrompt
+//     );
+
+//     console.log(
+//         "Tools:",
+//         tools.map(
+//             tool => tool.function.name
+//         )
+//     );
+
+//     const route =
+//         aiRouter.selectModel(
+//             model ?? prompt
+//         );
+
+//     console.log(
+//         "Model:",
+//         route.model
+//     );
+
+//     const provider =
+//         ProviderFactory.create(
+//             AI_CONFIG.provider
+//         );
+
+//     return provider.chatWithTools(
+//         finalPrompt,
+//         route.model,
+//         tools
+//     );
+// }
+
+export async function chatWithMCPTools(
+
+    prompt: string,
+
+    model: string,
+
+    browserContext: BrowserContext
+
+) {
+
+    const finalPrompt =
+        promptService.buildPrompt(
+            prompt,
+            browserContext
+        );
+
+
+    /**
+     * ==========================================
+     * Get MCP Tools
+     * ==========================================
+     */
+
+    const tools =
+        mcpOrchestratorService.getTools();
+
+
+    console.log(
+        "========== OLLAMA TOOL TEST =========="
+    );
+
+    console.log(
+        "Prompt:",
+        finalPrompt
+    );
+
+    console.log(
+        "Tools:",
+        tools.map(
+            tool =>
+                tool.function.name
+        )
+    );
+
+
+    /**
+     * ==========================================
+     * Select Model
+     * ==========================================
+     */
+
+    const route =
+        aiRouter.selectModel(
+            model ?? prompt
+        );
+
+
+    console.log(
+        "Model:",
+        route.model
+    );
+
+
+    /**
+     * ==========================================
+     * Provider
+     * ==========================================
+     */
+
+    const provider =
+        ProviderFactory.create(
+            AI_CONFIG.provider
+        );
+
+
+    /**
+     * ==========================================
+     * Conversation Messages
+     * ==========================================
+     */
+
+    const messages = [
+
+        {
+            role: "user" as const,
+            content: finalPrompt
+        }
+
+    ];
+
+
+    /**
+     * ==========================================
+     * MCP / LLM Tool Loop
+     * ==========================================
+     */
+
+    for (
+        let iteration = 0;
+        iteration < 5;
+        iteration++
+    ) {
+
+        console.log(
+            `========== TOOL LOOP ${iteration + 1} ==========`
+        );
+
+
+        /**
+         * Ask LLM
+         */
+
+        const response =
+            await provider.chatWithTools(
+                messages,
+                route.model,
+                tools
+            );
+
+
+        console.log(
+            "========== LLM RESPONSE =========="
+        );
+
+        console.log(
+            response
+        );
+
+
+        /**
+         * ======================================
+         * No tool call
+         * ======================================
+         */
+
+        if (
+            !response.toolCalls ||
+            response.toolCalls.length === 0
+        ) {
+
+            console.log(
+                "No tool calls."
+            );
+
+            return response;
+
+        }
+
+
+        /**
+         * ======================================
+         * Process Tool Calls
+         * ======================================
+         */
+
+        for (
+            const toolCall
+            of response.toolCalls
+        ) {
+
+            const toolName =
+                toolCall.function.name;
+
+
+            const toolArguments =
+                toolCall.function.arguments;
+
+
+            console.log(
+                "========== MCP TOOL CALL =========="
+            );
+
+            console.log(
+                "Tool:",
+                toolName
+            );
+
+            console.log(
+                "Arguments:",
+                toolArguments
+            );
+
+
+            /**
+             * Execute MCP Tool
+             */
+
+            const toolResult =
+                await mcpOrchestratorService.executeTool(
+                    toolName,
+                    toolArguments
+                );
+
+
+            console.log(
+                "========== MCP TOOL RESULT =========="
+            );
+
+            console.log(
+                toolResult
+            );
+
+
+            /**
+             * ==================================
+             * Add assistant tool-call message
+             * ==================================
+             */
+
+            messages.push({
+
+                role: "assistant",
+
+                content:
+                    response.content ?? "",
+
+                tool_calls:
+                    response.toolCalls
+
+            } as any);
+
+
+            /**
+             * ==================================
+             * Add tool result
+             * ==================================
+             */
+
+            messages.push({
+
+                role: "tool",
+
+                tool_call_id:
+                    toolCall.id,
+
+                content:
+                    JSON.stringify(
+                        toolResult
+                    )
+
+            } as any);
+
+        }
+
+    }
+
+
+    /**
+     * ==========================================
+     * Safety Limit
+     * ==========================================
+     */
+
+    throw new Error(
+        "Maximum MCP tool execution iterations reached."
+    );
 
 }
