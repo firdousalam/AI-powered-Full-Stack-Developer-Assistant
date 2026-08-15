@@ -3356,3 +3356,401 @@ with no errors, then:
 Paste the complete tsc output next.
 
 After it passes, we'll implement 5.11.3 — MCP Tool Execution, where the selected toolName actually gets routed through your existing MCP Gateway rather than being executed directly by the AI layer.
+
+
+Perfect. This confirms your Gateway API clearly.
+
+Your existing execution contract is:
+
+mcpGateway.executeTool(request: ToolRequest): Promise<ToolResponse>
+
+So 5.11.3 should adapt our SelectedTool into your existing ToolRequest and delegate execution to the Gateway.
+
+However, I don't want to guess the shape of ToolRequest or ToolResponse, because that is exactly where we could introduce another TypeScript mismatch.
+
+Please paste the current contents of:
+
+src/mcp/types/index.ts
+
+or, if the types are in separate files, the files containing:
+
+ToolRequest
+ToolResponse
+
+I specifically need to see something like:
+
+export interface ToolRequest {
+    ...
+}
+
+
+export interface ToolResponse {
+    ...
+}
+
+Once you provide those two interfaces, I'll give you the exact:
+
+5.11.3
+├── MCP Tool Executor
+├── ToolRequest mapping
+├── Gateway execution
+└── ToolExecutionResult mapping
+
+implementation, without changing your existing Gateway.
+
+export * from "./gateway.types";
+
+
+export * from "./health.types";
+
+
+export * from "./logger.types";
+
+
+export * from "./server.types";
+
+
+export * from "./tool.types";
+
+
+export * from "./types";
+
+Good. index.ts is only re-exporting the type modules, so the definitions are most likely in:
+
+src/mcp/types/tool.types.ts
+
+Please paste the contents of tool.types.ts.
+
+I need the exact definitions of:
+
+ToolRequest
+ToolResponse
+
+before implementing 5.11.3 — MCP Tool Execution.
+
+Your Gateway is already correct and we won't modify it:
+
+executeTool(
+    request: ToolRequest
+): Promise<ToolResponse>
+
+Once I see tool.types.ts, I'll wire:
+
+SelectedTool
+    ↓
+ToolRequest
+    ↓
+MCPGateway.executeTool()
+    ↓
+ToolResponse
+    ↓
+ToolExecutionResult
+
+and then we'll run:
+
+npx tsc --noEmit
+
+as the checkpoint.
+
+/**
+ * ==========================================
+ * Tool Request
+ * ==========================================
+ */
+
+export interface ToolRequest {
+
+    /**
+     * Target Server
+     */
+    serverId: string;
+
+    /**
+     * Tool Name
+     */
+    toolName: string;
+
+    /**
+     * Tool Arguments
+     */
+    args?: Record<string, unknown>;
+
+}
+
+/**
+ * ==========================================
+ * Tool Response
+ * ==========================================
+ */
+
+export interface ToolResponse {
+
+    /**
+     * Execution Status
+     */
+    success: boolean;
+
+    /**
+     * Returned Data
+     */
+    data?: unknown;
+
+    /**
+     * Error Message
+     */
+    error?: string;
+
+}
+
+Excellent. Now we have the exact contracts, so we can implement 5.11.3 — MCP Tool Execution without guessing.
+
+Your existing Gateway expects:
+
+ToolRequest {
+    serverId: string;
+    toolName: string;
+    args?: Record<string, unknown>;
+}
+
+and returns:
+
+ToolResponse {
+    success: boolean;
+    data?: unknown;
+    error?: string;
+}
+5.11.3 — MCP Tool Execution
+
+The new layer will be:
+
+ToolSelectionResult
+        │
+        ▼
+MCP Tool Executor
+        │
+        ▼
+ToolRequest
+        │
+        ▼
+MCPGateway.executeTool()
+        │
+        ▼
+ToolResponse
+        │
+        ▼
+ToolExecutionResult[]
+1. Create the executor
+
+Create:
+
+src/mcp/orchestration/services/mcp-tool-executor.service.ts
+import mcpGateway from "../../gateway/mcp.gateway";
+
+
+import {
+    ToolRequest,
+    ToolResponse,
+} from "../../types";
+
+
+import {
+    SelectedTool,
+} from "../interfaces/tool-selection-result.interface";
+
+
+import {
+    ToolExecutionResult,
+} from "../interfaces/orchestration-result.interface";
+
+
+export class McpToolExecutorService {
+
+
+    async execute(
+        tool: SelectedTool,
+        serverId: string,
+    ): Promise<ToolExecutionResult> {
+
+
+        const startTime = Date.now();
+
+
+        const request: ToolRequest = {
+            serverId,
+            toolName: tool.toolName,
+            args: tool.arguments,
+        };
+
+
+        try {
+
+
+            const response: ToolResponse =
+                await mcpGateway.executeTool(request);
+
+
+            const executionTimeMs =
+                Date.now() - startTime;
+
+
+            if (!response.success) {
+
+
+                return {
+                    toolName: tool.toolName,
+                    serverName: serverId,
+                    status: "failed",
+                    error: response.error,
+                    executionTimeMs,
+                };
+
+
+            }
+
+
+            return {
+                toolName: tool.toolName,
+                serverName: serverId,
+                status: "success",
+                data: response.data,
+                executionTimeMs,
+            };
+
+
+        } catch (error) {
+
+
+            const executionTimeMs =
+                Date.now() - startTime;
+
+
+            return {
+                toolName: tool.toolName,
+                serverName: serverId,
+                status: "failed",
+                error: this.getErrorMessage(error),
+                executionTimeMs,
+            };
+
+
+        }
+    }
+
+
+    private getErrorMessage(
+        error: unknown,
+    ): string {
+
+
+        if (error instanceof Error) {
+            return error.message;
+        }
+
+
+        return String(error);
+    }
+}
+2. Important: serverId
+
+There is one architectural detail we need to handle correctly.
+
+Your SelectedTool currently has:
+
+export interface SelectedTool {
+    toolName: string;
+    serverName?: string;
+    reason?: string;
+    arguments?: Record<string, unknown>;
+}
+
+while your Gateway requires:
+
+serverId: string;
+
+Those aren't necessarily the same thing.
+
+For example:
+
+serverName = "filesystem"
+serverId   = "filesystem-server"
+
+So don't blindly assume serverName is the server ID.
+
+For 5.11.3, the cleanest approach is to have the executor explicitly receive the serverId:
+
+execute(
+    tool: SelectedTool,
+    serverId: string,
+)
+
+Later, in 5.11.4/5.11.5, we can introduce proper tool/server resolution through the Gateway's:
+
+discoverTools()
+getServers()
+getServer()
+
+That will let the AI select a tool without having to know internal server IDs.
+
+3. One improvement to SelectedTool
+
+Since the executor currently receives serverId separately, don't change the interface yet.
+
+Keep:
+
+export interface SelectedTool {
+    toolName: string;
+    serverName?: string;
+    reason?: string;
+    arguments?: Record<string, unknown>;
+}
+
+This keeps 5.11.2 stable.
+
+4. Test the execution service through the orchestrator later
+
+Don't modify the Gateway.
+
+Your architecture now becomes:
+
+                    AI
+                     │
+                     ▼
+             Tool Selector
+                     │
+                     ▼
+              SelectedTool
+                     │
+                     ▼
+             Tool Executor
+                     │
+                     ▼
+               ToolRequest
+                     │
+                     ▼
+              MCP Gateway
+                     │
+                     ▼
+               MCP Server
+                     │
+                     ▼
+               ToolResponse
+                     │
+                     ▼
+          ToolExecutionResult
+
+This is exactly the separation we want.
+
+5. TypeScript checkpoint
+
+Now run:
+
+npx tsc --noEmit
+Expected
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+If you get any error, paste the complete output.
+
+If it passes, 5.11.3 is complete.
+
+Then we'll move to 5.11.4 — AI Context Enrichment, where the result returned by the MCP tool gets transformed into structured context that can be supplied to the LLM.
