@@ -10,14 +10,28 @@ import {
     mcpToolExecutorService
 } from "../tool-execution";
 
+import {
+    AIContext,
+} from "../interfaces/ai-context.interface";
+
+import {
+    OrchestrationRequest,
+} from "../interfaces/orchestration-request.interface";
+
+import {
+    ToolExecutionResult,
+} from "../interfaces/orchestration-result.interface";
+
+import {
+    AIContextEnricherService,
+} from "../services/ai-context-enricher.service";
 
 export class McpOrchestratorService {
 
-    /**
-     * ==========================================
-     * Discover available MCP tools
-     * ==========================================
-     */
+    private readonly contextEnricher =
+        new AIContextEnricherService();
+
+
     public getTools(): LLMToolDefinition[] {
 
         return toolCatalogService.getTools();
@@ -25,13 +39,6 @@ export class McpOrchestratorService {
     }
 
 
-    /**
-     * ==========================================
-     * Execute MCP Tool
-     * ==========================================
-     *
-     * AI layer -> Orchestrator -> Executor -> Gateway
-     */
     public async executeTool(
         toolName: string,
         toolArguments: Record<string, unknown>
@@ -51,17 +58,8 @@ export class McpOrchestratorService {
             toolArguments
         );
 
-
-        /**
-         * The current MCP server hosting
-         * the developer/filesystem tools.
-         *
-         * IMPORTANT:
-         * This must match the serverId registered
-         * in your MCP Gateway.
-         */
-        const serverId = "filesystem";
-
+        const serverId =
+            "filesystem";
 
         const result =
             await mcpToolExecutorService.execute(
@@ -69,7 +67,6 @@ export class McpOrchestratorService {
                 toolName,
                 toolArguments
             );
-
 
         console.log(
             "========== MCP TOOL RESULT =========="
@@ -79,12 +76,26 @@ export class McpOrchestratorService {
             result
         );
 
-
         return result;
 
     }
 
+
+    public enrichContext(
+        request: OrchestrationRequest,
+        toolResults: ToolExecutionResult[],
+    ): AIContext {
+
+        return this.contextEnricher.enrich(
+            request,
+            toolResults,
+        );
+
+    }
+
 }
+
+
 
 
 /**

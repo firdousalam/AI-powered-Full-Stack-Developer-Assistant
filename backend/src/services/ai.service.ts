@@ -9,6 +9,20 @@ import {
     mcpOrchestratorService
 } from "../mcp/orchestration";
 
+import {
+    ToolAwarePromptBuilderService,
+} from "../mcp/orchestration/services/tool-aware-prompt-builder.service";
+
+import type {
+    ToolExecutionResult,
+} from "../mcp/orchestration/interfaces/orchestration-result.interface";
+
+import type {
+    OrchestrationRequest,
+} from "../mcp/orchestration/interfaces/orchestration-request.interface";
+
+const promptBuilder =
+    new ToolAwarePromptBuilderService();
 
 const API_URL =
     "http://localhost:3000/api/v1/ai";
@@ -382,6 +396,12 @@ export async function chatWithMCPTools(
 
 ) {
 
+    /**
+     * ==========================================
+     * Build Initial Prompt
+     * ==========================================
+     */
+
     const finalPrompt =
         promptService.buildPrompt(
             prompt,
@@ -465,6 +485,29 @@ export async function chatWithMCPTools(
 
     /**
      * ==========================================
+     * MCP Execution Results
+     * ==========================================
+     */
+
+    const toolResults: ToolExecutionResult[] = [];
+
+
+    /**
+     * ==========================================
+     * Orchestration Request
+     * ==========================================
+     */
+
+    const orchestrationRequest:
+        OrchestrationRequest = {
+
+        userMessage: prompt
+
+    };
+
+
+    /**
+     * ==========================================
      * MCP / LLM Tool Loop
      * ==========================================
      */
@@ -481,7 +524,9 @@ export async function chatWithMCPTools(
 
 
         /**
+         * ======================================
          * Ask LLM
+         * ======================================
          */
 
         const response =
@@ -503,7 +548,7 @@ export async function chatWithMCPTools(
 
         /**
          * ======================================
-         * No tool call
+         * No Tool Call
          * ======================================
          */
 
@@ -556,13 +601,15 @@ export async function chatWithMCPTools(
 
 
             /**
+             * ==================================
              * Execute MCP Tool
+             * ==================================
              */
 
             const toolResult =
                 await mcpOrchestratorService.executeTool(
                     toolName,
-                    toolArguments
+                    toolArguments,
                 );
 
 
@@ -577,13 +624,42 @@ export async function chatWithMCPTools(
 
             /**
              * ==================================
-             * Add assistant tool-call message
+             * Store Execution Result
+             * ==================================
+             */
+
+            const executionResult:
+                ToolExecutionResult = {
+
+                toolName,
+
+                serverName:
+                    "filesystem",
+
+                status:
+                    "success",
+
+                data:
+                    toolResult,
+
+            };
+
+
+            toolResults.push(
+                executionResult
+            );
+
+
+            /**
+             * ==================================
+             * Add Assistant Tool Call
              * ==================================
              */
 
             messages.push({
 
-                role: "assistant",
+                role:
+                    "assistant",
 
                 content:
                     response.content ?? "",
@@ -596,13 +672,14 @@ export async function chatWithMCPTools(
 
             /**
              * ==================================
-             * Add tool result
+             * Add Tool Result
              * ==================================
              */
 
             messages.push({
 
-                role: "tool",
+                role:
+                    "tool",
 
                 tool_call_id:
                     toolCall.id,
@@ -611,6 +688,72 @@ export async function chatWithMCPTools(
                     JSON.stringify(
                         toolResult
                     )
+
+            } as any);
+
+        }
+
+
+        /**
+         * ==========================================
+         * AI Context Enrichment
+         * ==========================================
+         */
+
+        const aiContext =
+            mcpOrchestratorService.enrichContext(
+                orchestrationRequest,
+                toolResults,
+            );
+
+
+        console.log(
+            "========== AI CONTEXT =========="
+        );
+
+        console.log(
+            aiContext
+        );
+
+
+        /**
+         * ==========================================
+         * Build Tool-aware Prompt
+         * ==========================================
+         */
+
+        const aiPrompt =
+            promptBuilder.build(
+                aiContext
+            );
+
+
+        console.log(
+            "========== AI PROMPT =========="
+        );
+
+        console.log(
+            aiPrompt
+        );
+
+
+        /**
+         * ==========================================
+         * Add Enriched Context
+         * ==========================================
+         */
+
+        if (
+            aiPrompt.contextPrompt
+        ) {
+
+            messages.push({
+
+                role:
+                    "system",
+
+                content:
+                    `=== MCP PROJECT CONTEXT ===\n${aiPrompt.contextPrompt}`
 
             } as any);
 
