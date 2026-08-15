@@ -1,95 +1,165 @@
-import { DetectorBase } from "./base/detector.base";
+import { FilesystemService } from "../../../filesystem.service";
 
-import { workspaceReader } from "../readers";
+import {
+    DetectorBase
+} from "./base/detector.base";
 
 export class LanguageDetector
     extends DetectorBase<string> {
 
     readonly name = "LanguageDetector";
 
-    async detect(workspacePath: string) {
+    constructor(
+        private readonly filesystemService: FilesystemService
+    ) {
+        super();
+    }
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "tsconfig.json"
-            )
-        ) {
+    async detect(
+        workspacePath: string
+    ) {
+
+        try {
+
+            const projectTree =
+                await this.filesystemService.buildProjectTree(
+                    "."
+                );
+
+            const languageCounts =
+                new Map<string, number>();
+
+            this.analyzeNodes(
+                projectTree.nodes,
+                languageCounts
+            );
+
+            if (languageCounts.size === 0) {
+
+                return this.success(
+                    "Unknown"
+                );
+
+            }
+
+            const primaryLanguage =
+                [...languageCounts.entries()]
+                    .sort(
+                        (a, b) => b[1] - a[1]
+                    )[0][0];
 
             return this.success(
-                "TypeScript"
+                primaryLanguage
+            );
+
+        } catch (error) {
+
+            return this.failure([
+                error instanceof Error
+                    ? `Unable to detect project language: ${error.message}`
+                    : "Unable to detect project language."
+            ]);
+
+        }
+
+    }
+
+    private analyzeNodes(
+        nodes: any[],
+        languageCounts: Map<string, number>
+    ): void {
+
+        for (const node of nodes) {
+
+            if (node.type === "directory") {
+
+                this.analyzeNodes(
+                    node.children ?? [],
+                    languageCounts
+                );
+
+                continue;
+            }
+
+            const language =
+                this.getLanguageFromExtension(
+                    node.name
+                );
+
+            if (!language) {
+                continue;
+            }
+
+            languageCounts.set(
+                language,
+                (languageCounts.get(language) ?? 0) + 1
             );
 
         }
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "jsconfig.json"
-            )
-        ) {
+    }
 
-            return this.success(
-                "JavaScript"
-            );
+    private getLanguageFromExtension(
+        fileName: string
+    ): string | undefined {
 
-        }
+        const extension =
+            fileName
+                .substring(
+                    fileName.lastIndexOf(".")
+                )
+                .toLowerCase();
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "requirements.txt"
-            )
-        ) {
+        const languageMap: Record<string, string> = {
 
-            return this.success(
-                "Python"
-            );
+            ".ts": "TypeScript",
+            ".tsx": "TypeScript",
 
-        }
+            ".js": "JavaScript",
+            ".jsx": "JavaScript",
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "pom.xml"
-            )
-        ) {
+            ".py": "Python",
 
-            return this.success(
-                "Java"
-            );
+            ".java": "Java",
 
-        }
+            ".go": "Go",
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "go.mod"
-            )
-        ) {
+            ".rs": "Rust",
 
-            return this.success(
-                "Go"
-            );
+            ".cs": "C#",
 
-        }
+            ".cpp": "C++",
+            ".cc": "C++",
+            ".cxx": "C++",
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "Cargo.toml"
-            )
-        ) {
+            ".c": "C",
 
-            return this.success(
-                "Rust"
-            );
+            ".php": "PHP",
 
-        }
+            ".rb": "Ruby",
 
-        return this.success(
-            "Unknown"
-        );
+            ".swift": "Swift",
+
+            ".kt": "Kotlin",
+            ".kts": "Kotlin",
+
+            ".scala": "Scala",
+
+            ".dart": "Dart",
+
+            ".html": "HTML",
+
+            ".css": "CSS",
+            ".scss": "SCSS",
+            ".sass": "Sass",
+
+            ".vue": "Vue",
+
+            ".svelte": "Svelte"
+
+        };
+
+        return languageMap[extension];
 
     }
 
