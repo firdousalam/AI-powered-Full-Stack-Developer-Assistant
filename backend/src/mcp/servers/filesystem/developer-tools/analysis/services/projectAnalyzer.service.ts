@@ -140,7 +140,7 @@ export class ProjectAnalyzerService {
 
             kubernetes: kubernetes.data,
 
-            git: git.data,
+            git: git,
 
             ci: ci.data
 
