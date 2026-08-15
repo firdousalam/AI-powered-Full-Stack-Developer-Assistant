@@ -1456,3 +1456,64 @@ Send me the current
 language.detector.ts
 
 and its Language model/interface.
+
+
+5.6.4 — Framework Detector
+
+The goal now is to answer:
+
+Which framework does this project use?
+
+For your AI developer assistant, this is much more valuable than simply knowing the programming language.
+
+For example:
+
+TypeScript
+    ↓
+FrameworkDetector
+    ↓
+package.json / project files
+    ↓
+NestJS
+
+or:
+
+JavaScript
+    ↓
+FrameworkDetector
+    ↓
+package.json
+    ↓
+Express
+
+or:
+
+TypeScript
+    ↓
+FrameworkDetector
+    ↓
+package.json
+    ↓
+Next.js
+Before coding
+
+Let's follow exactly the same process we've established.
+
+Please paste the current:
+
+backend/src/mcp/servers/filesystem/developer-tools/analysis/detectors/framework.detector.ts
+
+and, if it exists, the framework-related model/interface.
+
+I want to inspect the existing implementation first rather than replacing it with an assumed architecture.
+
+Then I'll give you:
+
+What is wrong/current limitation
+Exact implementation
+Exact file location
+Dependency wiring changes
+npx tsc --noEmit checkpoint
+Then we move to 5.6.5 Runtime Detector
+
+We'll keep building the project incrementally without accumulating TypeScript errors.
