@@ -628,6 +628,15 @@ export async function chatWithMCPTools(
              * ==================================
              */
 
+            const isToolFailure =
+                typeof toolResult === "object" &&
+                toolResult !== null &&
+                "success" in toolResult &&
+                (toolResult as {
+                    success?: unknown
+                }).success === false;
+
+
             const executionResult:
                 ToolExecutionResult = {
 
@@ -637,7 +646,9 @@ export async function chatWithMCPTools(
                     "filesystem",
 
                 status:
-                    "success",
+                    isToolFailure
+                        ? "failed"
+                        : "success",
 
                 data:
                     toolResult,

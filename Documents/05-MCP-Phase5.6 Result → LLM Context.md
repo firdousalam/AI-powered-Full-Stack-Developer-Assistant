@@ -4421,3 +4421,761 @@ Final developer answer
 
 That is the point where your MCP implementation starts functioning as an actual AI developer-assistant orchestration layer rather than a collection of independent tools.
 
+
+
+5.11.7 — Error & Timeout Handling
+
+Now we'll make the AI ↔ MCP loop resilient.
+
+Currently, if this throws:
+
+await mcpOrchestratorService.executeTool(...)
+
+the entire chatWithMCPTools() operation can fail.
+
+For an agent architecture, that's not ideal.
+
+We want:
+
+LLM
+ ↓
+MCP Tool
+ │
+ ├── Success ──────────► continue
+ │
+ ├── Tool Error ───────► return structured error
+ │
+ └── Timeout ──────────► return timeout result
+                              │
+                              ▼
+                         LLM can recover
+
+We'll implement this without changing your existing Gateway API.
+
+1. Add execution status types
+
+Open:
+
+src/mcp/orchestration/interfaces/orchestration-result.interface.ts
+
+Make sure it has:
+
+export type ToolExecutionStatus =
+    | "success"
+    | "failed"
+    | "timeout";
+
+
+export interface ToolExecutionResult {
+
+
+    toolName: string;
+
+
+    serverName?: string;
+
+
+    status: ToolExecutionStatus;
+
+
+    data?: unknown;
+
+
+    error?: string;
+
+
+    executionTimeMs?: number;
+}
+
+If your existing interface already contains these fields, don't duplicate them. Just add the missing timeout status if necessary.
+
+2. Add a timeout utility
+
+Create:
+
+src/mcp/orchestration/services/tool-timeout.service.ts
+export class ToolTimeoutService {
+
+
+    public async execute<T>(
+        operation: Promise<T>,
+        timeoutMs: number,
+    ): Promise<T> {
+
+
+        return new Promise<T>(
+            (resolve, reject) => {
+
+
+                const timer =
+                    setTimeout(() => {
+
+
+                        reject(
+                            new Error(
+                                `Tool execution timed out after ${timeoutMs}ms.`
+                            )
+                        );
+
+
+                    }, timeoutMs);
+
+
+
+
+                operation
+                    .then((result) => {
+
+
+                        clearTimeout(timer);
+
+
+                        resolve(result);
+
+
+                    })
+                    .catch((error) => {
+
+
+                        clearTimeout(timer);
+
+
+                        reject(error);
+
+
+                    });
+
+
+            }
+        );
+
+
+    }
+
+
+}
+
+This is deliberately generic so we can reuse it for:
+
+Filesystem
+Git
+Docker
+Kubernetes
+Future MCP servers
+3. Add an execution error type
+
+Create:
+
+src/mcp/orchestration/services/tool-execution-error.service.ts
+export class ToolExecutionErrorService {
+
+
+    public getMessage(
+        error: unknown,
+    ): string {
+
+
+        if (error instanceof Error) {
+
+
+            return error.message;
+
+
+        }
+
+
+        return String(error);
+
+
+    }
+
+
+}
+
+This prevents ugly things like:
+
+[object Object]
+
+from leaking into the AI context.
+
+4. Update the existing MCP orchestrator
+
+Open:
+
+src/mcp/orchestration/mcp-orchestrator.ts
+
+Add:
+
+import {
+    ToolTimeoutService,
+} from "./services/tool-timeout.service";
+
+
+import {
+    ToolExecutionErrorService,
+} from "./services/tool-execution-error.service";
+
+Inside the class:
+
+private readonly timeoutService =
+    new ToolTimeoutService();
+
+
+private readonly errorService =
+    new ToolExecutionErrorService();
+
+Then replace your current executeTool() with:
+
+public async executeTool(
+    toolName: string,
+    toolArguments: Record<string, unknown>,
+): Promise<unknown> {
+
+
+    console.log(
+        "========== MCP TOOL EXECUTION =========="
+    );
+
+
+    console.log(
+        "Tool:",
+        toolName
+    );
+
+
+    console.log(
+        "Arguments:",
+        toolArguments
+    );
+
+
+
+
+    const serverId =
+        "filesystem";
+
+
+
+
+    const timeoutMs =
+        30_000;
+
+
+
+
+    try {
+
+
+        const result =
+            await this.timeoutService.execute(
+
+
+                mcpToolExecutorService.execute(
+                    serverId,
+                    toolName,
+                    toolArguments,
+                ),
+
+
+                timeoutMs,
+
+
+            );
+
+
+
+
+        console.log(
+            "========== MCP TOOL RESULT =========="
+        );
+
+
+        console.log(
+            result
+        );
+
+
+
+
+        return result;
+
+
+    } catch (error) {
+
+
+        const errorMessage =
+            this.errorService.getMessage(
+                error,
+            );
+
+
+
+
+        console.error(
+            "========== MCP TOOL ERROR =========="
+        );
+
+
+        console.error(
+            errorMessage
+        );
+
+
+
+
+        return {
+
+
+            success: false,
+
+
+            error: errorMessage,
+
+
+        };
+
+
+    }
+
+
+}
+5. Why return an error instead of throwing?
+
+This is important for an AI agent.
+
+Instead of:
+
+MCP failure
+ ↓
+throw
+ ↓
+entire AI request dies
+
+we now have:
+
+MCP failure
+ ↓
+{
+   success: false,
+   error: "..."
+ }
+ ↓
+LLM sees the result
+ ↓
+LLM can explain/retry/adapt
+
+For example, if Docker isn't available:
+
+{
+    "success": false,
+    "error": "Docker daemon is not running."
+}
+
+The model can respond:
+
+Docker appears to be unavailable because the Docker daemon isn't running. Start Docker Desktop and retry the analysis.
+
+That's much more agent-like.
+
+6. Distinguish timeout from normal errors
+
+There's one improvement we should make now.
+
+Create:
+
+src/mcp/orchestration/services/tool-timeout.error.ts
+export class ToolTimeoutError extends Error {
+
+
+    public readonly timeoutMs: number;
+
+
+    constructor(
+        timeoutMs: number,
+    ) {
+
+
+        super(
+            `Tool execution timed out after ${timeoutMs}ms.`
+        );
+
+
+        this.name =
+            "ToolTimeoutError";
+
+
+        this.timeoutMs =
+            timeoutMs;
+
+
+    }
+
+
+}
+
+Now update the timeout service.
+
+import {
+    ToolTimeoutError,
+} from "./tool-timeout.error";
+
+
+export class ToolTimeoutService {
+
+
+    public async execute<T>(
+        operation: Promise<T>,
+        timeoutMs: number,
+    ): Promise<T> {
+
+
+        return new Promise<T>(
+            (resolve, reject) => {
+
+
+                const timer =
+                    setTimeout(() => {
+
+
+                        reject(
+                            new ToolTimeoutError(
+                                timeoutMs,
+                            )
+                        );
+
+
+                    }, timeoutMs);
+
+
+
+
+                operation
+                    .then((result) => {
+
+
+                        clearTimeout(timer);
+
+
+                        resolve(result);
+
+
+                    })
+                    .catch((error) => {
+
+
+                        clearTimeout(timer);
+
+
+                        reject(error);
+
+
+                    });
+
+
+            }
+        );
+
+
+    }
+
+
+}
+7. Handle timeout separately
+
+Now modify the catch block in mcp-orchestrator.ts.
+
+Import:
+
+import {
+    ToolTimeoutError,
+} from "./services/tool-timeout.error";
+
+Then:
+
+catch (error) {
+
+
+    if (error instanceof ToolTimeoutError) {
+
+
+        console.error(
+            "========== MCP TOOL TIMEOUT =========="
+        );
+
+
+        console.error(
+            error.message
+        );
+
+
+
+
+        return {
+
+
+            success: false,
+
+
+            timeout: true,
+
+
+            error: error.message,
+
+
+        };
+
+
+    }
+
+
+
+
+    const errorMessage =
+        this.errorService.getMessage(
+            error,
+        );
+
+
+
+
+    console.error(
+        "========== MCP TOOL ERROR =========="
+    );
+
+
+    console.error(
+        errorMessage
+    );
+
+
+
+
+    return {
+
+
+        success: false,
+
+
+        timeout: false,
+
+
+        error: errorMessage,
+
+
+    };
+
+
+}
+
+Now the AI can distinguish:
+
+{
+    "success": false,
+    "timeout": true,
+    "error": "Tool execution timed out after 30000ms."
+}
+
+from:
+
+{
+    "success": false,
+    "timeout": false,
+    "error": "Directory does not exist."
+}
+8. Update chatWithMCPTools()
+
+There is one issue in our current 5.11.6 implementation.
+
+We're currently assuming:
+
+status: "success"
+
+for every execution.
+
+That's no longer correct.
+
+Find:
+
+const executionResult:
+    ToolExecutionResult = {
+
+
+    toolName,
+
+
+    serverName:
+        "filesystem",
+
+
+    status:
+        "success",
+
+
+    data:
+        toolResult,
+
+
+};
+
+Replace it with:
+
+const isToolFailure =
+    typeof toolResult === "object" &&
+    toolResult !== null &&
+    "success" in toolResult &&
+    (toolResult as {
+        success?: unknown
+    }).success === false;
+
+
+
+
+const executionResult:
+    ToolExecutionResult = {
+
+
+    toolName,
+
+
+    serverName:
+        "filesystem",
+
+
+    status:
+        isToolFailure
+            ? "failed"
+            : "success",
+
+
+    data:
+        toolResult,
+
+
+};
+
+This prevents failed MCP operations from being classified as successful context.
+
+9. Allow the LLM to see errors
+
+This part is already handled by your existing:
+
+messages.push({
+
+
+    role: "tool",
+
+
+    tool_call_id:
+        toolCall.id,
+
+
+    content:
+        JSON.stringify(
+            toolResult
+        )
+
+
+} as any);
+
+So the model receives:
+
+Tool call
+   ↓
+MCP
+   ↓
+ERROR
+   ↓
+tool message
+   ↓
+LLM
+
+That's exactly what we want.
+
+10. One important limitation
+
+The timeout we've implemented is a response timeout, not a true cancellation.
+
+For example:
+
+MCP operation
+───────────────► running
+      │
+      │ 30 seconds
+      ▼
+   timeout
+      │
+      ▼
+LLM receives timeout
+
+The underlying Promise may still continue running in the background because JavaScript Promises cannot automatically cancel arbitrary operations.
+
+For filesystem operations this is usually acceptable.
+
+Later, for long-running Docker/Kubernetes operations, we can introduce:
+
+AbortController
+
+and propagate cancellation through:
+
+AI
+ ↓
+Orchestrator
+ ↓
+Executor
+ ↓
+Gateway
+ ↓
+MCP Server
+
+That's a later hardening step.
+
+11. Resulting architecture
+
+Your Chapter 5.11 pipeline is now:
+
+                       USER
+                         │
+                         ▼
+                        LLM
+                         │
+                   Tool required?
+                    /          \
+                  No            Yes
+                  │              │
+                  │              ▼
+                  │       MCP Orchestrator
+                  │              │
+                  │              ▼
+                  │        Timeout Guard
+                  │              │
+                  │        ┌─────┴─────┐
+                  │        │           │
+                  │      Success     Failure
+                  │        │           │
+                  │        │       Error/Timeout
+                  │        │           │
+                  │        └─────┬─────┘
+                  │              ▼
+                  │       Tool Result
+                  │              │
+                  │              ▼
+                  │       Context Enricher
+                  │              │
+                  │              ▼
+                  │       Prompt Builder
+                  │              │
+                  └──────────────┤
+                                 ▼
+                                LLM
+                                 │
+                                 ▼
+                          FINAL RESPONSE
+12. Checkpoint
+
+Now run:
+
+npx tsc --noEmit
+
+If there are errors, paste the complete output before moving to 5.11.8.
+
+The most likely compile issue, if any, will be an existing ToolExecutionResult interface not matching the timeout status or the exact return type of your current mcpToolExecutorService. We'll adapt to your actual types rather than changing working infrastructure unnecessarily.

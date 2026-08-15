@@ -1,9 +1,10 @@
-import {
-    OrchestrationStatus,
-    ToolExecutionStatus,
-} from "../types/orchestration.types";
+export type ToolExecutionStatus =
+    | "success"
+    | "failed"
+    | "timeout";
 
 export interface ToolExecutionResult {
+
     toolName: string;
 
     serverName?: string;
@@ -15,16 +16,4 @@ export interface ToolExecutionResult {
     error?: string;
 
     executionTimeMs?: number;
-}
-
-export interface OrchestrationResult {
-    status: OrchestrationStatus;
-
-    response?: string;
-
-    toolResults: ToolExecutionResult[];
-
-    context?: Record<string, unknown>;
-
-    error?: string;
 }
