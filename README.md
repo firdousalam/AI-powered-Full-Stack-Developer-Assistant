@@ -1,1123 +1,2062 @@
-# 🚀 Build Zeba AI
-## AI Developer Assistant using Chrome Extension, Ollama, MCP, RAG, Docker & Kubernetes
+# 🚀 AI-Powered Full-Stack Developer Assistant
 
-> Build a production-ready AI Developer Assistant from scratch using **100% free and open-source technologies**.
-
----
-
-# 📖 Course Overview
-
-This course will guide you through building **Zeba AI**, an enterprise-grade AI Developer Assistant capable of:
-
-- AI Chat
-- Local LLMs using Ollama
-- Chrome Extension (Manifest V3)
-- Retrieval-Augmented Generation (RAG)
-- Vector Database (ChromaDB)
-- Model Context Protocol (MCP)
-- GitHub Repository Chat
-- PDF Chat
-- Docker & Kubernetes Assistant
-- Jenkins Assistant
-- Resume Review
-- Job Description Analyzer
-- OCR
-- Voice Assistant
-- Production Deployment
-
-By the end of this course, you will have built a complete AI platform that runs **entirely on your local machine** without requiring paid API keys.
+> **An open-source, project-aware AI Developer Platform that combines Local LLMs, MCP, Developer Tools, Project Intelligence, RAG, and Agentic AI to help developers understand, analyze, debug, modify, test, and maintain software projects.**
 
 ---
 
-# 🎯 Course Objectives
+## 📌 Project Status
 
-After completing this course, you will be able to:
+**Current Phase:** Phase 5 — MCP & Project Intelligence
 
-- Build Chrome Extensions using Manifest V3
-- Develop scalable Node.js backend applications
-- Integrate local AI models using Ollama
-- Implement Retrieval-Augmented Generation (RAG)
-- Work with Vector Databases
-- Build and integrate MCP servers
-- Chat with PDFs and GitHub repositories
-- Deploy applications using Docker and Kubernetes
-- Automate deployments using Jenkins and GitHub Actions
-- Publish a Chrome Extension
+**Current Focus:** Developer Tool Framework + Project Analyzer
+
+**Architecture Status:** Core MCP infrastructure implemented; intelligent project analysis and AI-to-tool orchestration are under active development.
 
 ---
 
-# 🏗 Final System Architecture
+# 📖 Table of Contents
+
+* [1. Project Overview](#1-project-overview)
+* [2. Project Vision](#2-project-vision)
+* [3. Why This Project](#3-why-this-project)
+* [4. What the Project Will Do](#4-what-the-project-will-do)
+* [5. Current Capabilities](#5-current-capabilities)
+* [6. Future Capabilities](#6-future-capabilities)
+* [7. Core Architecture](#7-core-architecture)
+* [8. Complete Request Flow](#8-complete-request-flow)
+* [9. Architecture Layers](#9-architecture-layers)
+* [10. Chrome Extension](#10-chrome-extension)
+* [11. Backend](#11-backend)
+* [12. AI Service](#12-ai-service)
+* [13. Ollama and Local LLMs](#13-ollama-and-local-llms)
+* [14. MCP Architecture](#14-mcp-architecture)
+* [15. MCP Gateway](#15-mcp-gateway)
+* [16. Filesystem MCP Server](#16-filesystem-mcp-server)
+* [17. Developer Tool Framework](#17-developer-tool-framework)
+* [18. Project Analyzer](#18-project-analyzer)
+* [19. AI-MCP Orchestration](#19-ai-mcp-orchestration)
+* [20. RAG Architecture](#20-rag-architecture)
+* [21. AI Developer Agent](#21-ai-developer-agent)
+* [22. Code Modification and Validation](#22-code-modification-and-validation)
+* [23. VS Code Extension](#23-vs-code-extension)
+* [24. Advanced MCP Ecosystem](#24-advanced-mcp-ecosystem)
+* [25. DevOps and Cloud](#25-devops-and-cloud)
+* [26. MCP Marketplace](#26-mcp-marketplace)
+* [27. Phase-Wise Roadmap](#27-phase-wise-roadmap)
+* [28. Current Project Progress](#28-current-project-progress)
+* [29. Technology Stack](#29-technology-stack)
+* [30. Repository Structure](#30-repository-structure)
+* [31. Development Strategy](#31-development-strategy)
+* [32. Testing Strategy](#32-testing-strategy)
+* [33. Local Development](#33-local-development)
+* [34. Hardware Requirements](#34-hardware-requirements)
+* [35. Security and Privacy](#35-security-and-privacy)
+* [36. Design Principles](#36-design-principles)
+* [37. Learning Outcomes](#37-learning-outcomes)
+* [38. Long-Term Vision](#38-long-term-vision)
+* [39. Contribution](#39-contribution)
+* [40. License](#40-license)
+
+---
+
+# 1. Project Overview
+
+The **AI-Powered Full-Stack Developer Assistant** is a full-stack AI development platform designed to assist software developers throughout the software development lifecycle.
+
+The project starts with a browser-based AI assistant and progressively evolves into a **project-aware AI developer assistant**, then into an **AI developer agent**, and eventually into a broader **AI software engineering platform**.
+
+The project combines:
 
 ```text
-                        Chrome Extension
-                   (React + Manifest V3)
+Artificial Intelligence
+        +
+Large Language Models
+        +
+Local AI
+        +
+MCP
+        +
+Developer Tools
+        +
+Project Analysis
+        +
+RAG
+        +
+Agentic Workflows
+        +
+Full-Stack Development
+        +
+DevOps
+        +
+Cloud Native Technologies
+```
 
-          Popup | SidePanel | Context Menu
+The project is intentionally built in phases so that each phase introduces an important engineering concept and produces a working capability.
 
-                         │
-                         ▼
+---
 
-                  Node.js Backend API
+# 2. Project Vision
 
-                         │
+The long-term goal is to build an AI system that can understand and work with real software projects.
 
-        ┌────────────────┼────────────────┐
+A traditional AI chatbot works approximately like:
 
-        ▼                ▼                ▼
+```text
+Developer
+   ↓
+Prompt
+   ↓
+LLM
+   ↓
+Generic Response
+```
 
-   Authentication    AI Router      MCP Gateway
+The goal of this project is to evolve that into:
 
-        ▼                ▼                ▼
+```text
+Developer
+   ↓
+AI Developer Assistant
+   ↓
+Understand Developer Intent
+   ↓
+Understand Project
+   ↓
+Determine Required Context
+   ↓
+Select Developer Tools
+   ↓
+MCP Gateway
+   ↓
+Execute Tools
+   ↓
+Collect Project Information
+   ↓
+Reason Over Context
+   ↓
+Generate Response
+```
 
-     MongoDB         Ollama         MCP Servers
+The eventual agentic workflow becomes:
 
-                         │
-
-        ┌────────────────┼────────────────┐
-
-        ▼                ▼                ▼
-
-   ChromaDB       Embedding Service      RAG
-
-                         │
-
-        ┌────────────────┼──────────────────────────────┐
-
-        ▼                ▼              ▼               ▼
-
- Filesystem MCP    GitHub MCP     Docker MCP    Kubernetes MCP
-
-                         │
-
-                         ▼
-
-                 Docker + Kubernetes
-
-                         │
-
-                         ▼
-
-                  Jenkins + GitHub Actions
+```text
+Understand
+    ↓
+Analyze
+    ↓
+Plan
+    ↓
+Use Tools
+    ↓
+Modify
+    ↓
+Build
+    ↓
+Test
+    ↓
+Observe
+    ↓
+Fix
+    ↓
+Validate
+    ↓
+Deliver
 ```
 
 ---
 
-# 📚 Course Structure
+# 3. Why This Project?
 
-The course consists of **13 chapters**.
+Modern developers work with increasingly complex systems.
 
-Each chapter builds upon the previous one and results in a working feature.
+A single project may contain:
 
----
+* Frontend applications
+* Backend services
+* Databases
+* APIs
+* Containers
+* Kubernetes manifests
+* CI/CD pipelines
+* Cloud infrastructure
+* Configuration files
+* Documentation
+* Tests
+* External services
+* Multiple programming languages
 
-# Chapter 1 - Project Planning & System Architecture
+An LLM alone does not automatically know the structure or current state of such a project.
 
-> Build Zeba AI – AI Developer Assistant using Chrome Extension, Ollama, MCP, RAG, Docker & Kubernetes
+The assistant therefore needs access to project information.
 
----
-
-# Chapter Overview
-
-In this chapter, we will plan the complete project before writing any code.
-
-Professional software projects spend significant time on architecture and planning before development begins. This approach reduces technical debt and provides a clear roadmap for implementation.
-
-By the end of this chapter, we will have:
-
-- Designed the complete system architecture
-- Selected the technology stack
-- Created the GitHub repository
-- Organized the project folder structure
-- Prepared the documentation
-- Installed all development tools
-- Created the roadmap for the remaining chapters
-
----
-
-# Learning Objectives
-
-After completing this chapter, you will understand:
-
-- Project scope
-- Enterprise architecture
-- Technology selection
-- Folder organization
-- Development workflow
-- Git strategy
-- Documentation strategy
-- Development environment setup
-
----
-
-# Project Overview
-
-## What are we building?
-
-Zeba AI is a full-stack AI Developer Assistant that helps software engineers perform daily development tasks directly from a Chrome Extension.
-
-The application supports:
-
-- AI Chat
-- Code Explanation
-- Code Review
-- GitHub Repository Analysis
-- Docker Assistant
-- Kubernetes Assistant
-- Jenkins Assistant
-- Resume Review
-- PDF Chat
-- Website Chat
-- OCR
-- Voice Assistant
-- Prompt Library
-- RAG
-- MCP Integration
-
-The entire application runs locally using Ollama, making it suitable for developers who prefer privacy and want to avoid paid API services.
-
----
-
-# System Architecture
+This project addresses that problem by combining:
 
 ```text
-                        Chrome Extension
-                   (React + Manifest V3)
+LLM
+ +
+MCP
+ +
+Developer Tools
+ +
+Project Analyzer
+ +
+RAG
+```
 
-         Popup | SidePanel | Context Menu
+The LLM provides reasoning.
 
-                        │
-                        ▼
+MCP provides standardized tool access.
 
-                 Node.js Backend API
+Developer Tools provide high-level development capabilities.
 
-                        │
+Project Analyzer provides structured project understanding.
 
-       ┌────────────────┼────────────────┐
+RAG provides semantic retrieval.
 
-       ▼                ▼                ▼
+Together they form the foundation for an AI software engineering assistant.
 
- Authentication     AI Router      MCP Gateway
+---
 
-       ▼                ▼                ▼
+# 4. What the Project Will Do
 
-    MongoDB         Ollama         MCP Servers
+The completed platform is intended to support workflows such as:
 
-                        │
+## Project Understanding
 
-       ┌────────────────┼────────────────┐
+```text
+"Explain this project."
+```
 
-       ▼                ▼                ▼
+The assistant can eventually determine:
 
-  ChromaDB      Embedding Service       RAG
+* Programming languages
+* Frameworks
+* Runtime
+* Package manager
+* Build tools
+* Entry points
+* Architecture
+* Docker usage
+* Kubernetes usage
+* Git configuration
+* CI/CD configuration
 
-                        │
+---
 
-       ┌────────────────┼──────────────────────────┐
+## Code Understanding
 
-       ▼                ▼              ▼           ▼
+```text
+"Where is authentication implemented?"
+```
 
-Filesystem MCP    GitHub MCP    Docker MCP   Kubernetes MCP
+The system can:
+
+```text
+Search Project
+      ↓
+Find Relevant Files
+      ↓
+Analyze Source
+      ↓
+Build Context
+      ↓
+Ask LLM
+      ↓
+Explain Authentication
 ```
 
 ---
 
-# Technology Stack
+## Debugging
 
-## Frontend
+```text
+"Why is my application failing to start?"
+```
 
-- React
-- Vite
-- Tailwind CSS
-- Zustand
-- Axios
+The system can eventually inspect:
 
----
+* Project configuration
+* Entry point
+* Dependencies
+* Source code
+* Build configuration
+* Docker configuration
+* Error information
 
-## Chrome Extension
-
-- Manifest V3
-- Service Worker
-- Content Script
-- Popup
-- Side Panel
-- Context Menu
+and provide a project-specific diagnosis.
 
 ---
 
-## Backend
+## Code Modification
 
-- Node.js
-- Express
-- JWT
-- Swagger
-- Multer
-- Socket.IO
+Future versions will support requests such as:
 
----
+```text
+"Add validation to the registration API."
+```
 
-## AI
+The agent can eventually:
 
-- Ollama
-- LangChain
-- AI Router
-- Prompt Templates
-
----
-
-## Vector Database
-
-- ChromaDB
-
-Future
-
-- Qdrant
-
----
-
-## Database
-
-- MongoDB Community
+```text
+Understand Request
+       ↓
+Analyze Project
+       ↓
+Create Plan
+       ↓
+Modify Code
+       ↓
+Build
+       ↓
+Run Tests
+       ↓
+Analyze Errors
+       ↓
+Fix
+       ↓
+Validate
+```
 
 ---
 
-## MCP Servers
+# 5. Current Capabilities
 
-- Filesystem MCP
-- Docker MCP
-- Kubernetes MCP
-- Git MCP
-- GitHub MCP
+The project currently contains the foundations for:
+
+* Chrome Extension
+* Browser context extraction
+* Node.js backend
+* AI service
+* Ollama/local LLM integration
+* MCP architecture
+* MCP Gateway
+* MCP server registry
+* MCP connection management
+* MCP tool discovery
+* MCP tool execution
+* MCP health checking
+* Filesystem MCP Server
+* Developer Tool Framework foundation
+* Project Analyzer foundation
+* Project detection architecture
+
+The original project documentation also defines broader functionality such as AI chat, browser extension support, RAG, vector databases, GitHub repository chat, Docker/Kubernetes assistance, OCR, voice, and production deployment. These are part of the broader roadmap rather than being treated as all-completed functionality today.
 
 ---
+
+# 6. Future Capabilities
+
+The roadmap includes:
+
+* RAG
+* Vector database
+* Semantic code search
+* Repository chat
+* Documentation chat
+* PDF chat
+* Git integration
+* GitHub integration
+* Docker integration
+* Kubernetes integration
+* CI/CD integration
+* AI developer agent
+* Multi-step tool execution
+* Code modification
+* Automated testing
+* Build/Test/Fix loops
+* VS Code Extension
+* Cloud deployment
+* Advanced MCP ecosystem
+* MCP Marketplace
+
+---
+
+# 7. Core Architecture
+
+The architecture is designed around a reusable AI platform.
+
+```text
+                         ┌──────────────────────┐
+                         │      Developer       │
+                         └──────────┬───────────┘
+                                    │
+                ┌───────────────────┼───────────────────┐
+                │                   │                   │
+                ▼                   ▼                   ▼
+       ┌────────────────┐  ┌────────────────┐  ┌────────────────┐
+       │ Chrome         │  │ VS Code        │  │ Web            │
+       │ Extension      │  │ Extension      │  │ Application    │
+       └───────┬────────┘  └───────┬────────┘  └───────┬────────┘
+               │                   │                   │
+               └───────────────────┼───────────────────┘
+                                   ▼
+                         ┌────────────────────┐
+                         │    Backend API     │
+                         │     Node.js        │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                         ┌────────────────────┐
+                         │    AI Service      │
+                         └─────────┬──────────┘
+                                   │
+                    ┌──────────────┴──────────────┐
+                    │                             │
+                    ▼                             ▼
+           ┌────────────────┐          ┌──────────────────┐
+           │ Ollama / LLM   │          │   MCP Gateway    │
+           └────────────────┘          └────────┬─────────┘
+                                                │
+                        ┌───────────────────────┼──────────────────────┐
+                        │                       │                      │
+                        ▼                       ▼                      ▼
+               ┌────────────────┐     ┌────────────────┐     ┌────────────────┐
+               │ Filesystem MCP │     │ Developer      │     │ Future MCP     │
+               │ Server         │     │ Tools          │     │ Servers        │
+               └────────────────┘     └───────┬────────┘     └────────────────┘
+                                              │
+                          ┌───────────────────┼───────────────────┐
+                          │                   │                   │
+                          ▼                   ▼                   ▼
+                    ┌──────────┐       ┌──────────┐       ┌──────────────┐
+                    │ Project  │       │ Source   │       │ Dependency   │
+                    │ Analyzer │       │ Analyzer │       │ Analyzer     │
+                    └──────────┘       └──────────┘       └──────────────┘
+                                              │
+                                              ▼
+                                      Project Context
+                                              │
+                                              ▼
+                                             LLM
+```
+
+---
+
+# 8. Complete Request Flow
+
+Consider:
+
+> "Explain the authentication flow in this project."
+
+The future request flow is:
+
+```text
+User
+ ↓
+Chrome / VS Code
+ ↓
+Backend API
+ ↓
+AI Service
+ ↓
+Intent Analysis
+ ↓
+Determine Required Context
+ ↓
+MCP Gateway
+ ↓
+Developer Tool
+ ↓
+Project / Source Analysis
+ ↓
+Relevant Context
+ ↓
+AI Prompt Construction
+ ↓
+Ollama / LLM
+ ↓
+Response
+ ↓
+Developer Client
+```
+
+The critical architectural concept is that the LLM does not need to inspect everything.
+
+Only relevant context is collected.
+
+---
+
+# 9. Architecture Layers
+
+The platform consists of several logical layers.
+
+## Layer 1 — Client
+
+Examples:
+
+* Chrome Extension
+* VS Code Extension
+* Web UI
+
+---
+
+## Layer 2 — API
+
+Responsible for:
+
+* Requests
+* Authentication
+* Sessions
+* Streaming
+* API communication
+
+---
+
+## Layer 3 — AI Service
+
+Responsible for:
+
+* Prompt handling
+* Context management
+* Model selection
+* AI reasoning
+* Tool orchestration
+
+---
+
+## Layer 4 — MCP Gateway
+
+Responsible for:
+
+* MCP server registry
+* Connections
+* Tool discovery
+* Tool execution
+* Health monitoring
+
+---
+
+## Layer 5 — Developer Tools
+
+Responsible for higher-level software-development operations.
+
+---
+
+## Layer 6 — Project Intelligence
+
+Responsible for understanding the project.
+
+---
+
+## Layer 7 — External Systems
+
+Potential systems include:
+
+* Filesystem
+* Git
+* GitHub
+* Docker
+* Kubernetes
+* Databases
+* CI/CD
+* Cloud services
+
+---
+
+# 10. Chrome Extension
+
+The Chrome Extension is one of the initial developer interfaces.
+
+The extension uses Chrome Manifest V3.
+
+Architecture:
+
+```text
+Chrome Extension
+│
+├── Popup
+├── Side Panel
+├── Content Script
+├── Background Service Worker
+├── Context Menu
+├── Browser Context Builder
+└── Runtime Messaging
+```
+
+The extension can collect browser context and send it to the backend.
+
+---
+
+## Browser Context
+
+The context system can process:
+
+* Readable page content
+* Headings
+* Links
+* Tables
+* Forms
+* Code blocks
+* Page metadata
+
+The browser context can be used to answer questions such as:
+
+```text
+"Explain this documentation page."
+```
+
+or:
+
+```text
+"Explain this code shown on the page."
+```
+
+---
+
+# 11. Backend
+
+The backend provides the central API layer.
+
+Primary responsibilities:
+
+```text
+Client Request
+     ↓
+API
+     ↓
+Authentication / Validation
+     ↓
+AI Service
+     ↓
+MCP
+     ↓
+Response
+```
+
+Potential backend responsibilities include:
+
+* REST APIs
+* Authentication
+* Request validation
+* Error handling
+* Logging
+* AI communication
+* MCP communication
+* Streaming
+* Workspace management
+
+---
+
+# 12. AI Service
+
+The AI Service is the intelligence layer.
+
+It is responsible for coordinating:
+
+```text
+User Prompt
+     +
+Browser Context
+     +
+Project Context
+     +
+MCP Tool Results
+     +
+RAG Results
+     ↓
+LLM
+```
+
+The AI Service should eventually be able to determine:
+
+```text
+Does this request require a tool?
+        │
+       Yes
+        ↓
+Which tool?
+        ↓
+What arguments?
+        ↓
+Execute
+        ↓
+Analyze result
+        ↓
+Need another tool?
+        │
+       Yes
+        ↓
+Continue
+```
+
+This is the foundation for agentic behavior.
+
+---
+
+# 13. Ollama and Local LLMs
+
+Ollama provides the local model runtime.
+
+The project is designed to support local models instead of requiring paid external APIs for the core development workflow.
+
+Conceptually:
+
+```text
+AI Service
+    ↓
+Ollama
+    ↓
+Local Model
+```
+
+Possible model categories include:
+
+* General-purpose LLM
+* Coding model
+* Reasoning model
+* Embedding model
+
+The exact models may change as the project evolves.
+
+---
+
+# 14. MCP Architecture
+
+MCP stands for **Model Context Protocol**.
+
+In this project, MCP provides the standardized tool integration layer.
+
+Instead of embedding every developer operation directly into the AI Service:
+
+```text
+AI Service
+ ├── Filesystem implementation
+ ├── Git implementation
+ ├── Docker implementation
+ ├── Kubernetes implementation
+ └── GitHub implementation
+```
+
+the architecture becomes:
+
+```text
+AI Service
+     ↓
+MCP Gateway
+     ↓
+MCP Servers
+```
+
+This provides modularity and extensibility.
+
+---
+
+# 15. MCP Gateway
+
+The MCP Gateway acts as the central manager for MCP servers.
+
+Responsibilities include:
+
+### Server Registry
+
+Maintain registered MCP servers.
+
+### Connection Management
+
+```text
+connect()
+disconnect()
+```
+
+### Tool Discovery
+
+```text
+discoverTools()
+```
+
+### Tool Execution
+
+```text
+executeTool()
+```
+
+### Health Monitoring
+
+```text
+healthCheck()
+```
+
+The conceptual architecture is:
+
+```text
+                  MCP Gateway
+                       │
+             ┌─────────┼─────────┐
+             │         │         │
+             ▼         ▼         ▼
+        Filesystem   GitHub    Docker
+           MCP        MCP       MCP
+             │
+             ▼
+       Tool Discovery
+             │
+             ▼
+       Tool Execution
+```
+
+---
+
+# 16. Filesystem MCP Server
+
+The Filesystem MCP Server provides controlled project filesystem operations.
+
+Planned/implemented capabilities include:
+
+```text
+Read File
+List Directory
+File Exists
+Read Multiple Files
+File Metadata
+Search Files
+Project Tree
+```
+
+The architecture is:
+
+```text
+MCP Gateway
+      ↓
+Filesystem MCP Server
+      ↓
+FilesystemService
+      ↓
+Workspace
+```
+
+The filesystem layer is intentionally kept separate from higher-level developer intelligence.
+
+---
+
+# 17. Developer Tool Framework
+
+The Developer Tool Framework is a major architectural improvement over simply exposing raw filesystem functions.
+
+Low-level filesystem operations:
+
+```text
+readFile()
+listDirectory()
+getMetadata()
+searchFiles()
+```
+
+Higher-level developer tools:
+
+```text
+analyzeProject()
+analyzeDependencies()
+searchSourceCode()
+scanRoutes()
+scanTodos()
+analyzeSource()
+getProjectTree()
+getWorkspaceSummary()
+```
+
+The higher-level tools provide structured developer-oriented information.
+
+This allows the AI to work with meaningful concepts rather than repeatedly performing low-level operations.
+
+---
+
+# 18. Project Analyzer
+
+The Project Analyzer discovers the characteristics of a project.
+
+The planned detector architecture is:
+
+```text
+Project Analyzer
+│
+├── Metadata Detector
+├── Language Detector
+├── Framework Detector
+├── Runtime Detector
+├── Package Manager Detector
+├── Build Tool Detector
+├── Entry Point Detector
+├── Docker Detector
+├── Kubernetes Detector
+├── Git Detector
+└── CI/CD Detector
+```
+
+The detectors produce structured information that is aggregated into:
+
+```text
+ProjectAnalysisResult
+```
+
+Example:
+
+```json
+{
+  "language": "TypeScript",
+  "framework": "Express",
+  "runtime": "Node.js",
+  "packageManager": "npm",
+  "buildTool": "tsc",
+  "entryPoint": "src/server.ts",
+  "docker": true,
+  "kubernetes": false,
+  "git": true,
+  "cicd": "GitHub Actions"
+}
+```
+
+This allows the AI to understand a project without reading every file.
+
+---
+
+## Filesystem API Contract
+
+Code-structure and filesystem detectors use the project's actual `FilesystemService` API.
+
+### Directory Listing
+
+```text
+listDirectory()
+```
+
+returns:
+
+```text
+string[]
+```
+
+### Metadata
+
+```text
+getMetadata()
+```
+
+is used for file/directory metadata.
+
+Detectors should not assume older APIs such as:
+
+```text
+DirectoryInfo.entries
+getFileMetadata()
+```
+
+---
+
+## Detector Validation
+
+After implementing each detector:
+
+```bash
+npx tsc --noEmit
+```
+
+should be used as the TypeScript checkpoint.
+
+This keeps detector development incremental and prevents multiple errors from accumulating.
+
+---
+
+# 19. AI-MCP Orchestration
+
+After the Developer Tool Framework is complete, the next major step is intelligent orchestration.
+
+The AI should decide when tools are required.
+
+Example:
+
+```text
+User:
+"Where is authentication implemented?"
+```
+
+The AI can determine:
+
+```text
+Required:
+- Source search
+- Project structure
+- Authentication-related files
+```
+
+Then:
+
+```text
+AI
+ ↓
+MCP Gateway
+ ↓
+Developer Tool
+ ↓
+Results
+ ↓
+AI
+ ↓
+Answer
+```
+
+This is the transition from:
+
+**LLM-powered chatbot**
+
+to:
+
+**tool-using AI assistant**.
+
+---
+
+# 20. RAG Architecture
+
+RAG stands for Retrieval-Augmented Generation.
+
+The purpose of RAG is to retrieve relevant information before generating an answer.
+
+Architecture:
+
+```text
+Documents / Code / PDFs
+        ↓
+Chunking
+        ↓
+Embeddings
+        ↓
+Vector Database
+        ↓
+Similarity Search
+        ↓
+Relevant Context
+        ↓
+LLM
+```
+
+Potential components:
+
+* Ollama embeddings
+* ChromaDB
+* LangChain/custom retrieval
+* Code chunking
+* Document chunking
+
+---
+
+## MCP vs RAG
+
+MCP and RAG have different responsibilities.
+
+### MCP
+
+Useful for:
+
+```text
+Tools
+Actions
+Structured resources
+Filesystem
+Git
+Docker
+Kubernetes
+```
+
+### RAG
+
+Useful for:
+
+```text
+Semantic retrieval
+Documentation
+Large codebases
+PDFs
+Historical information
+Knowledge bases
+```
+
+They can work together:
+
+```text
+MCP
+ +
+RAG
+ +
+LLM
+```
+
+---
+
+# 21. AI Developer Agent
+
+The next evolution is an AI Developer Agent.
+
+Instead of a single tool call:
+
+```text
+Prompt
+ ↓
+Tool
+ ↓
+Answer
+```
+
+the agent can perform multiple steps:
+
+```text
+Prompt
+ ↓
+Understand
+ ↓
+Plan
+ ↓
+Tool
+ ↓
+Observe
+ ↓
+Reason
+ ↓
+Tool
+ ↓
+Observe
+ ↓
+Reason
+ ↓
+Answer
+```
+
+For example:
+
+```text
+"Find why the login API is failing."
+```
+
+Possible agent workflow:
+
+```text
+1. Analyze project
+2. Find authentication module
+3. Find login endpoint
+4. Inspect controller
+5. Inspect service
+6. Inspect database access
+7. Inspect configuration
+8. Analyze error
+9. Form diagnosis
+10. Explain solution
+```
+
+---
+
+# 22. Code Modification and Validation
+
+The eventual goal is not just to explain code.
+
+The agent should eventually be able to modify it.
+
+Example:
+
+```text
+"Add validation to the registration endpoint."
+```
+
+Target workflow:
+
+```text
+Developer Request
+       ↓
+Understand
+       ↓
+Analyze Project
+       ↓
+Find Relevant Files
+       ↓
+Create Plan
+       ↓
+Modify Code
+       ↓
+Build
+       ↓
+Run Tests
+       ↓
+Analyze Results
+       ↓
+Fix Errors
+       ↓
+Run Tests Again
+       ↓
+Validate
+       ↓
+Present Changes
+```
+
+This feedback loop is critical.
+
+The agent should not simply generate code and assume it works.
+
+---
+
+# 23. VS Code Extension
+
+VS Code integration is a major planned part of the project.
+
+The key design principle is:
+
+> **VS Code should be another client of the same AI Developer Platform.**
+
+The architecture should therefore be:
+
+```text
+Chrome Extension ─┐
+                  │
+VS Code Extension ├──→ Backend API
+                  │
+Web Client ───────┘
+                         ↓
+                    AI Service
+                         ↓
+                    MCP Gateway
+                         ↓
+                Developer Tools
+```
+
+The backend and MCP infrastructure should not need to be duplicated.
+
+---
+
+## Planned VS Code Features
+
+### Chat
+
+Ask questions about the project.
+
+### Explain Code
+
+Select code and ask for an explanation.
+
+### Fix Code
+
+Ask the AI to identify and fix problems.
+
+### Refactor
+
+Request improvements to selected code.
+
+### Generate Tests
+
+Generate tests based on the actual implementation.
+
+### Project Analysis
+
+Analyze the complete workspace.
+
+### Code Search
+
+Search for functionality across the repository.
+
+### Debugging
+
+Provide errors and let the AI investigate relevant source files.
+
+### Agent Mode
+
+Eventually allow multi-step development workflows.
+
+---
+
+# 24. Advanced MCP Ecosystem
+
+The long-term MCP ecosystem can include:
+
+```text
+MCP Gateway
+│
+├── Filesystem MCP
+├── Git MCP
+├── GitHub MCP
+├── Docker MCP
+├── Kubernetes MCP
+├── Database MCP
+├── CI/CD MCP
+├── Cloud MCP
+└── Custom MCP Servers
+```
+
+This allows the AI to work across the development lifecycle.
+
+Example:
+
+```text
+GitHub
+   ↓
+CI/CD
+   ↓
+Docker
+   ↓
+Kubernetes
+   ↓
+Logs
+   ↓
+Source Code
+   ↓
+AI
+```
+
+A future request such as:
+
+> "Why did my deployment fail?"
+
+could potentially involve multiple systems automatically.
+
+---
+
+# 25. DevOps and Cloud
+
+The project also has a long-term cloud-native direction.
+
+Potential infrastructure:
+
+```text
+Docker
+   ↓
+Docker Compose
+   ↓
+Kubernetes
+   ↓
+Helm
+   ↓
+CI/CD
+   ↓
+Cloud
+```
+
+Potential operational capabilities:
+
+* Containerization
+* Kubernetes deployment
+* Helm charts
+* Jenkins
+* GitHub Actions
+* Health checks
+* Metrics
+* Logging
+* Monitoring
+
+Potential monitoring stack:
+
+```text
+Prometheus
++
+Grafana
++
+Loki
+```
+
+---
+
+# 26. MCP Marketplace
+
+A long-term goal is to allow developers to extend the platform through an MCP marketplace.
+
+Conceptually:
+
+```text
+                    MCP Marketplace
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+       GitHub           Database          Cloud
+        Tools             Tools            Tools
+          │                │                │
+          └────────────────┼────────────────┘
+                           ▼
+                      MCP Gateway
+                           ↓
+                       AI Agent
+```
+
+Potential future marketplace models include:
+
+* Free MCP tools
+* Premium MCP tools
+* Team tools
+* Enterprise integrations
+* Private MCP servers
+* Developer-published tools
+
+---
+
+# 27. Phase-Wise Roadmap
+
+The complete project roadmap is:
+
+```text
+Phase 1
+Project Foundation
+        ↓
+Phase 2
+Chrome Extension + Browser Context
+        ↓
+Phase 3
+Backend + Ollama
+        ↓
+Phase 4
+AI Context Integration
+        ↓
+Phase 5
+MCP + Project Intelligence
+        ↓
+Phase 6
+AI ↔ MCP Orchestration
+        ↓
+Phase 7
+RAG + Vector Database
+        ↓
+Phase 8
+AI Developer Agent
+        ↓
+Phase 9
+Code Modification + Build/Test/Fix
+        ↓
+Phase 10
+Advanced MCP Ecosystem
+        ↓
+Phase 11
+VS Code Extension
+        ↓
+Phase 12
+Cloud + Production
+        ↓
+Phase 13
+MCP Marketplace
+```
+
+---
+
+# 28. Current Project Progress
+
+| Component                   | Status         |
+| --------------------------- | -------------- |
+| Project Foundation          | ✅ Complete     |
+| Chrome Extension Foundation | ✅ Complete     |
+| Browser Context             | ✅ Complete     |
+| Backend Foundation          | ✅ Complete     |
+| Ollama Integration          | ✅ Complete     |
+| MCP Introduction            | ✅ Complete     |
+| MCP Gateway                 | ✅ Complete     |
+| MCP Server Registry         | ✅ Complete     |
+| MCP Connections             | ✅ Complete     |
+| MCP Tool Discovery          | ✅ Complete     |
+| MCP Tool Execution          | ✅ Complete     |
+| MCP Health Monitoring       | ✅ Complete     |
+| Filesystem MCP Server       | ✅ Complete     |
+| Developer Tool Framework    | 🟡 In Progress |
+| Project Analyzer            | 🟡 In Progress |
+| Project Detectors           | 🟡 In Progress |
+| AI ↔ MCP Orchestration      | ⏳ Next         |
+| RAG                         | ⏳ Planned      |
+| Vector Database             | ⏳ Planned      |
+| AI Developer Agent          | ⏳ Planned      |
+| Code Modification           | ⏳ Planned      |
+| Build/Test/Fix Loop         | ⏳ Planned      |
+| Advanced MCP                | ⏳ Planned      |
+| VS Code Extension           | ⏳ Planned      |
+| Cloud Deployment            | ⏳ Planned      |
+| MCP Marketplace             | ⏳ Future       |
+
+---
+
+# 29. Technology Stack
+
+| Layer             | Technology                   |
+| ----------------- | ---------------------------- |
+| Language          | TypeScript                   |
+| Frontend          | React                        |
+| Build Tool        | Vite                         |
+| Browser Extension | Chrome Manifest V3           |
+| Backend           | Node.js                      |
+| API               | Express                      |
+| AI Runtime        | Ollama                       |
+| LLM               | Local/Open-Source Models     |
+| MCP               | Model Context Protocol       |
+| MCP Gateway       | Node.js / TypeScript         |
+| Vector Database   | ChromaDB                     |
+| RAG               | LangChain / Custom Retrieval |
+| Database          | MongoDB                      |
+| Containers        | Docker                       |
+| Orchestration     | Kubernetes                   |
+| Packaging         | Helm                         |
+| CI/CD             | Jenkins / GitHub Actions     |
+| Monitoring        | Prometheus / Grafana         |
+| Logging           | Loki                         |
+| Version Control   | Git / GitHub                 |
+| Future IDE        | VS Code Extension            |
+
+The initial project documentation also identifies React/Vite/Tailwind/Zustand, Node.js/Express, Ollama, ChromaDB, MongoDB, Docker, Kubernetes, Helm, Jenkins, GitHub Actions, Prometheus, Grafana, and Loki as part of the technology direction.
+
+---
+
+# 30. Repository Structure
+
+The repository is organized around major platform components.
+
+```text
+AI-powered-Full-Stack-Developer-Assistant/
+│
+├── chrome-extension/
+│   ├── src/
+│   ├── manifest
+│   └── ...
+│
+├── backend/
+│   ├── src/
+│   │   ├── ai/
+│   │   ├── mcp/
+│   │   ├── developer-tools/
+│   │   ├── project-analyzer/
+│   │   └── ...
+│   └── ...
+│
+├── dashboard/
+│
+├── docs/
+│
+├── docker/
+│
+├── kubernetes/
+│
+├── helm/
+│
+├── scripts/
+│
+├── .github/
+│
+├── README.md
+├── LICENSE
+├── CHANGELOG.md
+└── CONTRIBUTING.md
+```
+
+The exact structure can evolve as implementation progresses.
+
+---
+
+# 31. Development Strategy
+
+Development follows incremental milestones.
+
+Each milestone should:
+
+1. Introduce one major concept
+2. Implement the architecture
+3. Add working code
+4. Test the implementation
+5. Validate integration
+6. Document the result
+7. Commit the changes
+8. Move to the next milestone
+
+The project should avoid building the entire system at once.
+
+---
+
+# 32. Testing Strategy
+
+Testing should happen continuously.
+
+## TypeScript Validation
+
+```bash
+npx tsc --noEmit
+```
+
+This is especially important while implementing Project Analyzer detectors.
+
+---
+
+## Application Build
+
+```bash
+npm run build
+```
+
+---
+
+## Unit Tests
+
+Individual services, detectors, and tools should eventually have unit tests.
+
+---
+
+## Integration Tests
+
+Important integration boundaries include:
+
+```text
+Chrome → Backend
+Backend → AI
+AI → MCP Gateway
+Gateway → MCP Server
+MCP → Developer Tool
+Developer Tool → Filesystem
+```
+
+---
+
+## End-to-End Testing
+
+Eventually:
+
+```text
+User
+ ↓
+Chrome / VS Code
+ ↓
+Backend
+ ↓
+AI
+ ↓
+MCP
+ ↓
+Project
+ ↓
+Response
+```
+
+should be tested as an end-to-end workflow.
+
+---
+
+# 33. Local Development
+
+The project is designed to support local development.
+
+Typical local architecture:
+
+```text
+Chrome Extension
+       ↓
+Node.js Backend
+       ↓
+Ollama
+       ↓
+MCP Gateway
+       ↓
+Local Workspace
+```
+
+For future RAG:
+
+```text
+Ollama
+   +
+Embedding Model
+   ↓
+ChromaDB
+```
+
+For future infrastructure:
+
+```text
+Docker
+   ↓
+Kubernetes
+```
+
+---
+
+# 34. Hardware Requirements
+
+The initial project direction targets a development environment around:
+
+| Component   | Recommended                         |
+| ----------- | ----------------------------------- |
+| RAM         | 16 GB minimum                       |
+| CPU         | Modern Intel i5 / Ryzen 5 or better |
+| Storage     | SSD                                 |
+| OS          | Windows / Linux                     |
+| Browser     | Chrome                              |
+| Development | VS Code                             |
+| Containers  | Docker                              |
+| Local AI    | Ollama                              |
+
+A 16 GB system should be treated as a practical development target, not a guarantee that every future model or workload will run comfortably.
+
+---
+
+# 35. Security and Privacy
+
+Security becomes increasingly important as the project gains tool execution capabilities.
+
+Future production architecture should consider:
+
+### Authentication
+
+```text
+User
+ ↓
+Authentication
+ ↓
+Authorized Workspace
+```
+
+### Tool Permissions
+
+Not every tool should automatically be allowed to execute every operation.
+
+Potential permission categories:
+
+```text
+Read
+Write
+Execute
+Network
+Infrastructure
+```
+
+### Workspace Isolation
+
+Each user's project/workspace should be isolated.
+
+### Secrets
+
+Sensitive configuration should not be placed directly into source code.
+
+### Audit Logging
+
+Future agent actions should be traceable:
+
+```text
+User Request
+ ↓
+Tool Selected
+ ↓
+Arguments
+ ↓
+Execution
+ ↓
+Result
+```
+
+This becomes especially important when the agent gains code modification and execution capabilities.
+
+---
+
+# 36. Design Principles
+
+The project follows several important principles.
+
+## 1. Local First
+
+Prefer local/open-source AI where practical.
+
+---
+
+## 2. Modular Architecture
+
+Each major capability should be independently replaceable.
+
+---
+
+## 3. Tool-Based Intelligence
+
+The LLM should use tools instead of receiving unnecessary project data.
+
+---
+
+## 4. Project Awareness
+
+The assistant should understand the actual project rather than providing only generic answers.
+
+---
+
+## 5. Incremental Agentic Development
+
+Start with deterministic tool orchestration and progressively introduce more autonomous behavior.
+
+---
+
+## 6. Reusable Backend
+
+Chrome, VS Code, Web, and future clients should use the same AI platform.
+
+---
+
+## 7. Validation
+
+Generated or modified code should eventually be validated through builds and tests.
+
+---
+
+## 8. Extensibility
+
+MCP should make it possible to add new developer capabilities without rewriting the entire AI system.
+
+---
+
+# 37. Learning Outcomes
+
+Completing this project provides practical exposure to several areas of modern software engineering.
+
+## Full Stack
+
+* React
+* Node.js
+* Express
+* TypeScript
+* MongoDB
+* REST APIs
+
+## Browser Development
+
+* Manifest V3
+* Content Scripts
+* Service Workers
+* Chrome APIs
+* Runtime Messaging
+
+## AI Engineering
+
+* LLMs
+* Ollama
+* Prompt Engineering
+* Context Engineering
+* Embeddings
+* RAG
+* Vector Databases
+* AI Routing
+* AI Agents
+
+## MCP
+
+* MCP Clients
+* MCP Servers
+* Tool Discovery
+* Tool Execution
+* MCP Gateway
+* Custom Developer Tools
+
+## Developer Intelligence
+
+* Project Detection
+* Framework Detection
+* Language Detection
+* Dependency Analysis
+* Source Analysis
+* Architecture Detection
+* Code Search
 
 ## DevOps
 
-- Docker
-- Docker Compose
-- Kubernetes
-- Helm
-- Jenkins
-- GitHub Actions
+* Docker
+* Kubernetes
+* Helm
+* Jenkins
+* GitHub Actions
+* Monitoring
+* Logging
+
+## Developer Platforms
+
+* Chrome Extensions
+* VS Code Extensions
+* AI APIs
+* Local AI
+* Cloud Deployment
+* Marketplace Architecture
 
 ---
 
-# Development Workflow
+# 38. Long-Term Vision
 
-The project will follow this development flow:
+The ultimate vision is to create a platform where developers can connect their development environment to an AI agent.
+
+The complete concept is:
 
 ```text
-Planning
+                         DEVELOPER
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              ▼              ▼              ▼
+           Chrome          VS Code         Web
+              │              │              │
+              └──────────────┼──────────────┘
+                             ▼
+                     AI DEVELOPER AGENT
+                             │
+                  ┌──────────┴──────────┐
+                  │                     │
+                  ▼                     ▼
+                 LLM                   MCP
+                                        │
+                ┌───────────────────────┼────────────────────────┐
+                │                       │                        │
+                ▼                       ▼                        ▼
+           Filesystem                 Git                   GitHub
+                │                       │                        │
+                ├───────────────────────┼────────────────────────┤
+                │                       │                        │
+                ▼                       ▼                        ▼
+             Docker               Kubernetes                CI/CD
+                │                       │                        │
+                └───────────────────────┼────────────────────────┘
+                                        ▼
+                                  PROJECT INTELLIGENCE
+                                        │
+                              ┌─────────┴─────────┐
+                              ▼                   ▼
+                            RAG              Project Analyzer
+                              │                   │
+                              └─────────┬─────────┘
+                                        ▼
+                                   AI REASONING
+                                        │
+                                        ▼
+                                      PLAN
+                                        │
+                                        ▼
+                                     MODIFY
+                                        │
+                                        ▼
+                                      BUILD
+                                        │
+                                        ▼
+                                      TEST
+                                        │
+                                  ┌─────┴─────┐
+                                  │           │
+                                FAIL        PASS
+                                  │           │
+                                  ▼           ▼
+                                 FIX       COMPLETE
+                                  │
+                                  └──────→ TEST
+```
 
-↓
+---
 
-GitHub Repository
+# 39. Contribution
 
-↓
+Contributions are welcome.
 
-Chrome Extension
+Potential contribution areas include:
 
-↓
+* MCP servers
+* Developer tools
+* Project detectors
+* AI orchestration
+* RAG
+* Agent workflows
+* Testing
+* Documentation
+* Chrome Extension
+* VS Code Extension
+* Docker
+* Kubernetes
+* CI/CD
+* Monitoring
+* Security
 
+Before contributing, contributors should understand the architectural boundaries between:
+
+```text
+Client
 Backend
+AI Service
+MCP Gateway
+MCP Servers
+Developer Tools
+Project Analyzer
+```
 
-↓
+---
 
-Ollama
+# 40. License
 
-↓
+This project is intended to use open-source technologies.
 
+The repository license should define the terms under which the source code can be used, modified, and distributed.
+
+---
+
+# 🏁 Final Goal
+
+The final goal of the project is to move through the following evolution:
+
+```text
+                  ┌───────────────────┐
+                  │    AI Chatbot     │
+                  └─────────┬─────────┘
+                            ↓
+                  ┌───────────────────┐
+                  │ Context-Aware AI  │
+                  └─────────┬─────────┘
+                            ↓
+                  ┌───────────────────┐
+                  │ Project-Aware AI  │
+                  └─────────┬─────────┘
+                            ↓
+                  ┌───────────────────┐
+                  │ Tool-Using AI     │
+                  └─────────┬─────────┘
+                            ↓
+                  ┌───────────────────┐
+                  │ AI Developer Agent│
+                  └─────────┬─────────┘
+                            ↓
+                  ┌───────────────────┐
+                  │ AI Software       │
+                  │ Engineering Agent │
+                  └───────────────────┘
+```
+
+The project is therefore not simply about integrating an LLM into a Chrome Extension.
+
+It is about building a **complete AI Developer Platform** where:
+
+```text
+AI
++
+Project Understanding
++
 MCP
-
-↓
-
-Vector Database
-
-↓
-
++
+Developer Tools
++
 RAG
-
-↓
-
-AI Features
-
-↓
-
-Docker
-
-↓
-
-Kubernetes
-
-↓
-
-Jenkins
-
-↓
-
-Production
++
+Agentic Workflows
++
+Code Execution
++
+Testing
++
+Developer Interfaces
 ```
+
+work together to help developers build and maintain real software.
 
 ---
 
-# Project Folder Structure
+## 🚀 Current Next Step
+
+The immediate development target is:
 
 ```text
-DevPilot-AI/
-
-├── chrome-extension/
-│
-├── backend/
-│
-├── dashboard/
-│
-├── docs/
-│
-├── docker/
-│
-├── kubernetes/
-│
-├── helm/
-│
-├── scripts/
-│
-├── .github/
-│
-├── README.md
-├── LICENSE
-├── CHANGELOG.md
-└── CONTRIBUTING.md
+Finish Phase 5
+      ↓
+Developer Tool Framework
+      ↓
+Complete Project Analyzer
+      ↓
+Complete Detectors
+      ↓
+Expose Developer Tools through MCP
+      ↓
+Implement AI ↔ MCP Orchestration
 ```
 
----
-
-# Documentation Strategy
-
-Every chapter will have a dedicated document.
-
-```text
-docs/
-
-01-Project-Planning.md
-
-02-Chrome-Extension.md
-
-03-Backend.md
-
-04-Ollama-AI-Router.md
-
-05-MCP.md
-
-06-RAG-ChromaDB.md
-
-07-AI-Features.md
-
-08-OCR-Voice.md
-
-09-Dashboard.md
-
-10-Docker-Kubernetes.md
-
-11-Jenkins-CICD.md
-
-12-Production.md
-
-13-Future-Roadmap.md
-```
-
-Each document includes:
-
-- Objectives
-- Architecture
-- Folder Structure
-- Code Explanation
-- API Documentation
-- Testing
-- Troubleshooting
-- Summary
+Once this is complete, the project will have the foundation required to move from a **project-aware assistant** toward an **AI developer agent**.
 
 ---
 
-# Git Strategy
+## ⭐ Project Philosophy
 
-Use Git from the first chapter.
+> **Don't just ask AI to write code. Give AI the ability to understand the project, use developer tools, reason about the system, validate its work, and progressively become an AI software engineering partner.**
 
-Repository structure:
-
-```text
-main
-
-develop
-
-feature/chrome-extension
-
-feature/backend
-
-feature/ollama
-
-feature/mcp
-
-feature/rag
-
-feature/dashboard
-
-release/v1.0
-```
-
-Recommended commit format:
-
-```text
-feat: initialize project structure
-
-feat: create chrome extension
-
-feat: add backend authentication
-
-feat: integrate ollama
-
-feat: implement mcp gateway
-
-feat: add chromadb
-
-feat: implement rag pipeline
-
-fix: resolve streaming issue
-
-docs: update architecture
-```
-
----
-
-# Development Environment
-
-Install the following software before proceeding:
-
-| Tool | Version |
-|------|----------|
-| Node.js | 22+ |
-| Git | Latest |
-| VS Code | Latest |
-| Docker Desktop | Latest |
-| Kubernetes | Docker Desktop / Minikube |
-| MongoDB Community | Latest |
-| Ollama | Latest |
-| Google Chrome | Latest |
-
----
-
-# Recommended Ollama Models
-
-Install these models:
-
-```bash
-ollama pull llama3.2:3b
-
-ollama pull qwen2.5-coder:7b
-
-ollama pull gemma3:4b
-
-ollama pull deepseek-r1:7b
-
-ollama pull nomic-embed-text
-```
-
-These models are selected to run efficiently on a 16 GB RAM development machine.
-
----
-
-# GitHub Repository Setup
-
-Create a new GitHub repository.
-
-Suggested repository name:
-
-```text
-DevPilot-AI
-```
-
-Initialize with:
-
-- README.md
-- MIT License
-- .gitignore (Node.js)
-
-Clone the repository locally:
-
-```bash
-git clone https://github.com/<username>/DevPilot-AI.git
-
-cd DevPilot-AI
-```
-
----
-
-# Initial Folder Creation
-
-Create the project structure:
-
-```bash
-mkdir chrome-extension
-mkdir backend
-mkdir dashboard
-mkdir docs
-mkdir docker
-mkdir kubernetes
-mkdir helm
-mkdir scripts
-mkdir .github
-```
-
----
-
-# First Git Commit
-
-```bash
-git add .
-
-git commit -m "feat: initialize Zeba AI project"
-
-git push origin main
-```
-
----
-
-# Roadmap
-
-The remaining chapters will build the application in the following order:
-
-1. Chrome Extension
-2. Backend
-3. Ollama & AI Router
-4. MCP Integration
-5. ChromaDB & Embeddings
-6. RAG
-7. AI Features
-8. OCR & Voice
-9. Dashboard
-10. Docker & Kubernetes
-11. Jenkins & GitHub Actions
-12. Production Deployment
-13. Future Enhancements
-
----
-
-# Deliverables
-
-At the end of this chapter, you will have:
-
-- Project architecture designed
-- GitHub repository created
-- Folder structure prepared
-- Documentation strategy established
-- Development environment configured
-- Git workflow defined
-- Roadmap for the complete course
-
----
-
-# Summary
-
-In this chapter, we focused on planning the project before implementation. We defined the system architecture, selected the technology stack, prepared the repository structure, established documentation and Git strategies, and set up the local development environment.
-
-In the next chapter, we will begin building the Chrome Extension using Manifest V3, React, Vite, Tailwind CSS, and Zustand.
-
-# 📘 Chapter 1 – Project Planning & System Architecture
-
-## Objective
-
-Design the complete application before writing any code.
-
-### Topics Covered
-
-- Course Introduction
-- Project Demonstration
-- Enterprise Architecture
-- System Design
-- Feature Planning
-- Folder Structure
-- Technology Selection
-- Git Strategy
-- Documentation Strategy
-
-### Deliverables
-
-- GitHub Repository
-- README.md
-- Architecture Diagram
-- Roadmap
-- Development Environment Setup
-
----
-
-# 📘 Chapter 2 – Chrome Extension Development
-
-## Objective
-
-Build the Chrome Extension using Manifest V3.
-
-### Topics Covered
-
-- Manifest V3
-- React + Vite
-- Tailwind CSS
-- Zustand
-- Popup
-- Side Panel API
-- Background Service Worker
-- Content Script
-- Context Menu
-- Chrome Storage API
-- Runtime Messaging
-
-### Deliverables
-
-- Popup Chat
-- Side Panel
-- Context Menu
-- Chrome Storage
-- Message Passing
-
----
-
-# 📘 Chapter 3 – Backend Development
-
-## Objective
-
-Develop the backend API using Node.js and Express.
-
-### Topics Covered
-
-- Express.js
-- Project Architecture
-- MongoDB
-- Mongoose
-- REST APIs
-- JWT Authentication
-- Refresh Tokens
-- Middleware
-- Validation
-- Logging
-- Error Handling
-- Swagger Documentation
-- WebSocket
-
-### Deliverables
-
-- Authentication APIs
-- Chat APIs
-- User Management
-- API Documentation
-
----
-
-# 📘 Chapter 4 – Ollama & AI Router
-
-## Objective
-
-Integrate local Large Language Models.
-
-### Topics Covered
-
-- Installing Ollama
-- Model Management
-- Prompt Engineering
-- AI Router
-- Streaming Responses
-- Memory Optimization
-- Multi-Model Support
-
-### Recommended Models
-
-- llama3.2:3b
-- qwen2.5-coder:7b
-- gemma3:4b
-- deepseek-r1:7b
-- nomic-embed-text
-
-### Deliverables
-
-- AI Chat
-- Model Selection
-- Streaming Responses
-- AI Routing
-
----
-
-# 📘 Chapter 5 – Model Context Protocol (MCP)
-
-## Objective
-
-Integrate external developer tools using MCP.
-
-### Topics Covered
-
-- Introduction to MCP
-- MCP Architecture
-- MCP Gateway
-- Tool Discovery
-- Tool Execution
-- Filesystem MCP
-- GitHub MCP
-- Docker MCP
-- Kubernetes MCP
-- Git MCP
-
-### Deliverables
-
-- Local File Analysis
-- Repository Analysis
-- Docker Integration
-- Kubernetes Integration
-
----
-
-# 📘 Chapter 6 – Embeddings, ChromaDB & RAG
-
-## Objective
-
-Implement semantic search using Retrieval-Augmented Generation.
-
-### Topics Covered
-
-- Embeddings
-- Chunking
-- ChromaDB
-- Similarity Search
-- Retrieval Pipeline
-- Semantic Search
-- Codebase Chat
-- Documentation Chat
-- PDF Chat
-
-### Deliverables
-
-- Code Search
-- PDF Chat
-- Documentation Search
-- Repository Chat
-
----
-
-# 📘 Chapter 7 – AI Productivity Features
-
-## Objective
-
-Develop productivity tools for developers.
-
-### Topics Covered
-
-- Prompt Library
-- Chat History
-- Favorites
-- Bookmarks
-- Resume Review
-- Job Description Analyzer
-- Interview Questions
-- Code Review
-- Documentation Generator
-- Architecture Generator
-
-### Deliverables
-
-- AI Developer Toolkit
-
----
-
-# 📘 Chapter 8 – OCR, Voice & File Processing
-
-## Objective
-
-Implement multimodal AI capabilities.
-
-### Topics Covered
-
-- Image Upload
-- OCR using Tesseract
-- Speech-to-Text
-- Text-to-Speech
-- Voice Commands
-- Drag & Drop Upload
-- Markdown Rendering
-- Code Highlighting
-
-### Deliverables
-
-- OCR Assistant
-- Voice Chat
-- Image Analysis
-
----
-
-# 📘 Chapter 9 – Dashboard & User Interface
-
-## Objective
-
-Build a production-ready frontend dashboard.
-
-### Topics Covered
-
-- Dashboard Layout
-- Responsive UI
-- Theme Switching
-- Chat Interface
-- Markdown Viewer
-- Code Highlighting
-- User Profile
-- Settings
-- Notification System
-
-### Deliverables
-
-- Complete Dashboard
-- Responsive UI
-- User Settings
-
----
-
-# 📘 Chapter 10 – Docker & Kubernetes
-
-## Objective
-
-Containerize and orchestrate the application.
-
-### Topics Covered
-
-- Docker
-- Docker Compose
-- Multi-stage Builds
-- Kubernetes
-- Deployments
-- Services
-- Ingress
-- ConfigMaps
-- Secrets
-- Helm Charts
-
-### Deliverables
-
-- Docker Images
-- Kubernetes Deployment
-- Helm Chart
-
----
-
-# 📘 Chapter 11 – Jenkins, GitHub Actions & Monitoring
-
-## Objective
-
-Automate CI/CD and monitor the application.
-
-### Topics Covered
-
-- Jenkins Pipelines
-- GitHub Actions
-- Continuous Integration
-- Continuous Deployment
-- Prometheus
-- Grafana
-- Loki
-- Application Logging
-- Metrics
-- Health Checks
-
-### Deliverables
-
-- Automated CI/CD
-- Monitoring Dashboard
-- Logging System
-
----
-
-# 📘 Chapter 12 – Security & Production Deployment
-
-## Objective
-
-Prepare the application for production.
-
-### Topics Covered
-
-- JWT Security
-- Rate Limiting
-- Input Validation
-- CORS
-- Environment Variables
-- Performance Optimization
-- Packaging Chrome Extension
-- Chrome Web Store
-- Production Deployment
-
-### Deliverables
-
-- Production Build
-- Chrome Extension Package
-- Public GitHub Repository
-
----
-
-# 📘 Chapter 13 – Future Enhancements
-
-## Objective
-
-Explore advanced AI capabilities and future improvements.
-
-### Topics Covered
-
-- AI Agents
-- Multi-Agent Systems
-- LangGraph
-- Advanced MCP
-- VS Code Extension
-- Electron Desktop Application
-- Mobile Application
-- Plugin Marketplace
-- Future Roadmap
-
-### Deliverables
-
-- Future Enhancement Plan
-- Advanced Architecture
-
----
-
-# 🗂 Final Project Structure
-
-```text
-DevPilot-AI/
-
-├── chrome-extension/
-│
-├── backend/
-│
-├── dashboard/
-│
-├── docs/
-│
-├── docker/
-│
-├── kubernetes/
-│
-├── helm/
-│
-├── scripts/
-│
-├── .github/
-│
-├── README.md
-├── LICENSE
-├── CHANGELOG.md
-└── CONTRIBUTING.md
-```
-
----
-
-# 📄 Documentation Structure
-
-Each chapter includes a dedicated Markdown guide.
-
-```text
-docs/
-
-01-Project-Planning.md
-02-Chrome-Extension.md
-03-Backend.md
-04-Ollama-AI-Router.md
-05-MCP.md
-06-RAG-ChromaDB.md
-07-AI-Features.md
-08-OCR-Voice.md
-09-Dashboard.md
-10-Docker-Kubernetes.md
-11-Jenkins-CICD.md
-12-Production.md
-13-Future-Roadmap.md
-```
-
-Each guide should contain:
-
-- Introduction
-- Learning Objectives
-- Architecture Diagrams
-- Folder Structure
-- Implementation Steps
-- Source Code Explanation
-- API Documentation
-- Testing Guide
-- Troubleshooting
-- Git Commit Reference
-- Next Chapter Preview
-
----
-
-# 🛠 Technology Stack
-
-| Layer | Technology |
-|--------|------------|
-| Chrome Extension | Manifest V3 |
-| UI | React + Vite |
-| Styling | Tailwind CSS |
-| State Management | Zustand |
-| Backend | Node.js + Express |
-| Database | MongoDB |
-| AI Models | Ollama |
-| Embeddings | nomic-embed-text |
-| Vector Database | ChromaDB |
-| RAG | LangChain |
-| OCR | Tesseract |
-| Authentication | JWT |
-| API Documentation | Swagger |
-| Containers | Docker |
-| Orchestration | Kubernetes |
-| Package Manager | Helm |
-| CI/CD | Jenkins + GitHub Actions |
-| Monitoring | Prometheus + Grafana |
-| Logging | Loki |
-| Version Control | Git + GitHub |
-
----
-
-# 💻 Recommended Hardware
-
-| Component | Recommendation |
-|-----------|----------------|
-| Operating System | Windows 11 / Ubuntu 24.04 |
-| RAM | 16 GB Minimum |
-| CPU | Intel i5 / Ryzen 5 or better |
-| Storage | 100 GB SSD |
-| Docker | Docker Desktop |
-| Kubernetes | Docker Desktop Kubernetes / Minikube |
-| Browser | Google Chrome |
-
----
-
-# 🤖 Recommended Ollama Models
-
-```bash
-ollama pull llama3.2:3b
-ollama pull qwen2.5-coder:7b
-ollama pull gemma3:4b
-ollama pull deepseek-r1:7b
-ollama pull nomic-embed-text
-```
-
-These models are selected to run efficiently on a **16 GB RAM** development machine while providing strong support for coding, documentation, reasoning, and embeddings.
-
----
-
-# 🎯 Final Outcome
-
-By the end of this course, you will have built a production-ready AI Developer Assistant capable of:
-
-- ✅ Chrome Extension (Manifest V3)
-- ✅ AI Chat with Ollama
-- ✅ Multi-Model AI Router
-- ✅ Model Context Protocol (MCP)
-- ✅ Retrieval-Augmented Generation (RAG)
-- ✅ ChromaDB Vector Database
-- ✅ GitHub Repository Chat
-- ✅ PDF Chat
-- ✅ OCR & Voice Assistant
-- ✅ Docker & Kubernetes Assistant
-- ✅ Jenkins & CI/CD Integration
-- ✅ Production Deployment
-- ✅ Chrome Web Store Ready Extension
-
-This project demonstrates modern AI engineering, full-stack development, browser extension development, DevOps, and cloud-native practices using free and open-source technologies.
+**Built with open-source technologies. Designed for developers. Evolving toward an AI software engineering platform.**
