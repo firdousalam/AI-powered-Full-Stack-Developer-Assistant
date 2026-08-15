@@ -3754,3 +3754,291 @@ If you get any error, paste the complete output.
 If it passes, 5.11.3 is complete.
 
 Then we'll move to 5.11.4 — AI Context Enrichment, where the result returned by the MCP tool gets transformed into structured context that can be supplied to the LLM.
+
+
+5.11.4 — AI Context Enrichment
+
+Now we connect the MCP tool results to the context that will eventually be supplied to the LLM.
+
+The flow becomes:
+
+User Request
+     ↓
+Tool Selector
+     ↓
+MCP Tool Executor
+     ↓
+ToolExecutionResult
+     ↓
+┌──────────────────────────┐
+│ AI Context Enricher      │
+│                          │
+│ • normalize tool data    │
+│ • collect useful context │
+│ • add metadata           │
+│ • prepare LLM context    │
+└────────────┬─────────────┘
+             ↓
+      Enriched AI Context
+             ↓
+        Future LLM
+
+We don't call Ollama/OpenAI yet. This milestone only prepares the context.
+
+1. Create the interface
+
+Create:
+
+src/mcp/orchestration/interfaces/ai-context.interface.ts
+export interface AIContextItem {
+    source: string;
+
+
+    toolName: string;
+
+
+    data: unknown;
+
+
+    metadata?: Record<string, unknown>;
+}
+
+
+export interface AIContext {
+    userMessage: string;
+
+
+    workspacePath?: string;
+
+
+    items: AIContextItem[];
+
+
+    metadata?: Record<string, unknown>;
+}
+
+This gives us a generic context format that can accommodate:
+
+Project Analyzer
+Filesystem
+Git
+Docker
+Kubernetes
+CI/CD
+Future MCP servers
+
+without coupling the AI layer to a particular MCP server.
+
+2. Create the Context Enricher
+
+Create:
+
+src/mcp/orchestration/services/ai-context-enricher.service.ts
+import { OrchestrationRequest } from "../interfaces/orchestration-request.interface";
+import { AIContext } from "../interfaces/ai-context.interface";
+import { ToolExecutionResult } from "../interfaces/orchestration-result.interface";
+
+
+export class AIContextEnricherService {
+
+
+    enrich(
+        request: OrchestrationRequest,
+        toolResults: ToolExecutionResult[],
+    ): AIContext {
+
+
+        const items = toolResults
+            .filter((result) => result.status === "success")
+            .map((result) => ({
+                source: result.serverName ?? "mcp",
+                toolName: result.toolName,
+                data: result.data,
+                metadata: {
+                    executionTimeMs: result.executionTimeMs,
+                },
+            }));
+
+
+        return {
+            userMessage: request.userMessage,
+
+
+            workspacePath: request.workspacePath,
+
+
+            items,
+
+
+            metadata: {
+                toolCount: toolResults.length,
+                successfulToolCount: items.length,
+            },
+        };
+    }
+}
+3. What this does
+
+Suppose the MCP tool returns:
+
+{
+    toolName: "analyzeProject",
+    serverName: "filesystem",
+    status: "success",
+    data: {
+        framework: {
+            name: "NestJS"
+        },
+        language: {
+            name: "TypeScript"
+        },
+        docker: {
+            detected: true
+        },
+        kubernetes: {
+            detected: true
+        }
+    }
+}
+
+The enricher converts that into:
+
+{
+    userMessage: "Why is my Kubernetes deployment failing?",
+
+
+    workspacePath: "/project",
+
+
+    items: [
+        {
+            source: "filesystem",
+            toolName: "analyzeProject",
+            data: {
+                framework: {
+                    name: "NestJS"
+                },
+                language: {
+                    name: "TypeScript"
+                },
+                docker: {
+                    detected: true
+                },
+                kubernetes: {
+                    detected: true
+                }
+            },
+            metadata: {
+                executionTimeMs: 42
+            }
+        }
+    ],
+
+
+    metadata: {
+        toolCount: 1,
+        successfulToolCount: 1
+    }
+}
+
+The important thing is that the AI layer now has project-aware information without knowing how the MCP tool obtained it.
+
+4. Add an index export
+
+If your orchestration directory uses barrel files, create:
+
+src/mcp/orchestration/interfaces/index.ts
+export * from "./orchestration-request.interface";
+export * from "./orchestration-result.interface";
+export * from "./tool-selection-result.interface";
+export * from "./ai-context.interface";
+
+If you already have an interfaces/index.ts, simply add:
+
+export * from "./ai-context.interface";
+
+Don't create a duplicate file if one already exists.
+
+5. Why we don't convert everything to a prompt yet
+
+It's tempting to immediately produce:
+
+You are an AI developer assistant...
+
+
+Project:
+...
+
+Don't do that yet.
+
+We're separating data/context preparation from prompt construction.
+
+The architecture will eventually be:
+
+MCP Results
+     ↓
+AIContextEnricher
+     ↓
+AIContext
+     ↓
+Prompt Builder
+     ↓
+LLM
+
+This gives us flexibility later for:
+
+Ollama
+OpenAI-compatible APIs
+local models
+RAG
+structured tool calling
+agent loops
+
+without coupling those technologies to MCP execution.
+
+6. Don't modify the MCP Gateway
+
+The Gateway remains:
+
+MCPGateway
+    │
+    └── executeTool()
+
+The new layer is entirely above it:
+
+MCP Gateway
+     ↑
+Tool Executor
+     ↑
+Context Enricher
+7. TypeScript checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+If it passes with no output, then:
+
+5.11.4 — AI Context Enrichment ✅
+
+Your current orchestration architecture will be:
+
+5.11.1
+Interfaces
+   ↓
+5.11.2
+Tool Selection
+   ↓
+5.11.3
+Tool Execution
+   ↓
+5.11.4
+AI Context Enrichment
+   ↓
+5.11.5
+Tool-aware Prompt Builder
+   ↓
+5.11.6
+AI → MCP → AI Loop
+
+The next step, 5.11.5 — Tool-aware Prompt Builder, will turn this structured AIContext into the context/prompt structure that your existing AI service can consume.
