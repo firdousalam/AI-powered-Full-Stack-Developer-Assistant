@@ -4042,3 +4042,382 @@ Tool-aware Prompt Builder
 AI → MCP → AI Loop
 
 The next step, 5.11.5 — Tool-aware Prompt Builder, will turn this structured AIContext into the context/prompt structure that your existing AI service can consume.
+
+
+
+5.11.5 — Tool-aware Prompt Builder
+
+Now we convert the structured AIContext from 5.11.4 into a prompt that the LLM can understand.
+
+The architecture becomes:
+
+User Request
+     ↓
+Tool Selector
+     ↓
+MCP Tool Executor
+     ↓
+AI Context Enricher
+     ↓
+AIContext
+     ↓
+┌──────────────────────────┐
+│ Tool-aware Prompt Builder│
+└────────────┬─────────────┘
+             ↓
+       LLM-ready prompt
+             ↓
+        Future AI Service
+
+The important design decision: the Prompt Builder should not know about MCP Gateway, servers, or tool execution. It only knows about AIContext.
+
+1. Create the prompt interface
+
+Create:
+
+src/mcp/orchestration/interfaces/ai-prompt.interface.ts
+export interface AIPrompt {
+    systemPrompt: string;
+
+
+    userPrompt: string;
+
+
+    contextPrompt?: string;
+}
+
+This separates the system instructions, user's original request, and project/tool context.
+
+2. Create the Prompt Builder
+
+Create:
+
+src/mcp/orchestration/services/tool-aware-prompt-builder.service.ts
+import { AIContext } from "../interfaces/ai-context.interface";
+import { AIPrompt } from "../interfaces/ai-prompt.interface";
+
+
+export class ToolAwarePromptBuilderService {
+
+
+    build(
+        context: AIContext,
+    ): AIPrompt {
+
+
+        const contextPrompt = this.buildContextPrompt(
+            context,
+        );
+
+
+        return {
+            systemPrompt: this.buildSystemPrompt(),
+
+
+            userPrompt: context.userMessage,
+
+
+            contextPrompt,
+        };
+    }
+
+
+    private buildSystemPrompt(): string {
+        return [
+            "You are an AI-powered full-stack developer assistant.",
+            "Answer developer questions using the available project context.",
+            "Do not invent project-specific information.",
+            "When project context is available, prioritize it over assumptions.",
+            "Clearly distinguish between detected project information and general recommendations.",
+        ].join(" ");
+    }
+
+
+    private buildContextPrompt(
+        context: AIContext,
+    ): string {
+
+
+        if (context.items.length === 0) {
+            return "";
+        }
+
+
+        const sections = context.items.map(
+            (item, index) => {
+
+
+                return [
+                    `Context Source ${index + 1}: ${item.source}`,
+                    `Tool: ${item.toolName}`,
+                    "Data:",
+                    this.serializeData(item.data),
+                ].join("\n");
+
+
+            },
+        );
+
+
+        return [
+            "PROJECT CONTEXT",
+            "==============",
+            `Workspace: ${context.workspacePath ?? "Not provided"}`,
+            "",
+            sections.join("\n\n"),
+        ].join("\n");
+    }
+
+
+    private serializeData(
+        data: unknown,
+    ): string {
+
+
+        if (typeof data === "string") {
+            return data;
+        }
+
+
+        try {
+            return JSON.stringify(
+                data,
+                null,
+                2,
+            );
+        } catch {
+            return String(data);
+        }
+    }
+}
+3. Example
+
+Suppose the user asks:
+
+Why is my Kubernetes deployment failing?
+
+And 5.11.4 generated:
+
+{
+    userMessage: "Why is my Kubernetes deployment failing?",
+
+
+    workspacePath: "/my-project",
+
+
+    items: [
+        {
+            source: "filesystem",
+            toolName: "analyzeProject",
+            data: {
+                language: "TypeScript",
+                framework: "NestJS",
+                docker: {
+                    detected: true
+                },
+                kubernetes: {
+                    detected: true
+                }
+            }
+        }
+    ]
+}
+
+The Prompt Builder generates an object similar to:
+
+{
+    systemPrompt:
+        "You are an AI-powered full-stack developer assistant...",
+
+
+    userPrompt:
+        "Why is my Kubernetes deployment failing?",
+
+
+    contextPrompt:
+        `
+        PROJECT CONTEXT
+        ==============
+
+
+        Workspace: /my-project
+
+
+        Context Source 1: filesystem
+        Tool: analyzeProject
+
+
+        Data:
+        {
+          "language": "TypeScript",
+          "framework": "NestJS",
+          "docker": {
+            "detected": true
+          },
+          "kubernetes": {
+            "detected": true
+          }
+        }
+        `
+}
+4. Add the interface export
+
+If you already have:
+
+src/mcp/orchestration/interfaces/index.ts
+
+add:
+
+export * from "./ai-prompt.interface";
+
+So it contains:
+
+export * from "./orchestration-request.interface";
+export * from "./orchestration-result.interface";
+export * from "./tool-selection-result.interface";
+export * from "./ai-context.interface";
+export * from "./ai-prompt.interface";
+5. Why AIPrompt is separate from AIContext
+
+This distinction is important for the future architecture.
+
+AIContext
+
+Contains structured information:
+
+Project
+ ├── framework
+ ├── language
+ ├── docker
+ ├── kubernetes
+ └── git
+AIPrompt
+
+Contains information formatted for the LLM:
+
+System instructions
++
+Project context
++
+User question
+
+So:
+
+MCP
+ ↓
+Structured data
+ ↓
+AIContext
+ ↓
+AIPrompt
+ ↓
+LLM
+
+This gives you a clean boundary between developer tools and AI/model providers.
+
+6. One important future improvement
+
+Currently we're using:
+
+JSON.stringify(data, null, 2)
+
+That's intentionally simple.
+
+Later, when your Project Analyzer becomes larger, dumping the entire analysis into every prompt could waste tokens.
+
+We'll eventually introduce something like:
+
+User question
+     ↓
+Context relevance
+     ↓
+Only relevant detector results
+     ↓
+Compact prompt
+
+For example:
+
+Question:
+"Why is my Docker build failing?"
+
+
+Relevant:
+✓ Docker
+✓ Package manager
+✓ Runtime
+✓ Build tool
+
+
+Possibly irrelevant:
+✗ Git
+✗ Kubernetes
+✗ CI/CD
+
+That optimization becomes particularly important when you start using local Ollama models.
+
+7. Don't connect the LLM yet
+
+At this point:
+
+5.11.1 Interfaces
+        ↓
+5.11.2 Tool Selection
+        ↓
+5.11.3 Tool Execution
+        ↓
+5.11.4 Context Enrichment
+        ↓
+5.11.5 Prompt Builder
+        ↓
+      [LLM]
+
+The [LLM] connection is intentionally still missing.
+
+That will be handled when we implement 5.11.6 — AI → MCP → AI Loop.
+
+8. TypeScript checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+If it returns no errors, then:
+
+5.11.5 — Tool-aware Prompt Builder ✅
+
+At that point, the project has the complete preparation pipeline:
+
+User
+ ↓
+Tool Selection
+ ↓
+MCP Execution
+ ↓
+Context Enrichment
+ ↓
+Prompt Construction
+
+Next is the major milestone:
+
+5.11.6 — AI → MCP → AI Loop
+
+That's where we finally connect the orchestration pipeline to your existing AI service so the flow becomes:
+
+User
+ ↓
+AI
+ ↓
+MCP decision
+ ↓
+MCP tool
+ ↓
+Project data
+ ↓
+AI context
+ ↓
+LLM
+ ↓
+Final developer answer
+
+That is the point where your MCP implementation starts functioning as an actual AI developer-assistant orchestration layer rather than a collection of independent tools.
+
