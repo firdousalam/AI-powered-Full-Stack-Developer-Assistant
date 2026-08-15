@@ -3059,3 +3059,300 @@ MCP Server / Developer Tool
 That separation will make it much easier later to add RAG, agents, Ollama, OpenAI-compatible models, VS Code integration, additional MCP servers, and eventually autonomous multi-step workflows.
 
 For the next coding step, we should implement 5.11.1 — MCP Orchestrator Interfaces first, and keep npx tsc --noEmit as the checkpoint before moving to 5.11.2.
+
+
+5.11.2 — MCP Tool Selection
+
+Now we build the component that decides whether an MCP/developer tool is needed and which tool should be selected.
+
+For this milestone, keep the implementation deterministic. We are not connecting the LLM yet. That comes later, and keeping selection separate will make the architecture much easier to evolve.
+
+1. Target architecture
+User Message
+     │
+     ▼
+MCP Tool Selector
+     │
+     ├── No tool required
+     │
+     ├── One tool
+     │
+     └── Multiple tools
+            │
+            ▼
+   ToolSelectionResult
+
+We'll create:
+
+src/mcp/orchestration/
+├── interfaces/
+│   ├── orchestration-request.interface.ts
+│   ├── orchestration-result.interface.ts
+│   └── tool-selection-result.interface.ts
+├── services/
+│   └── mcp-tool-selector.service.ts
+└── types/
+    └── orchestration.types.ts
+2. Create mcp-tool-selector.service.ts
+
+Create:
+
+src/mcp/orchestration/services/mcp-tool-selector.service.ts
+
+Use:
+
+import { OrchestrationRequest } from "../interfaces/orchestration-request.interface";
+import {
+    SelectedTool,
+    ToolSelectionResult,
+} from "../interfaces/tool-selection-result.interface";
+
+
+export class McpToolSelectorService {
+    select(
+        request: OrchestrationRequest,
+    ): ToolSelectionResult {
+        const message = request.userMessage.toLowerCase();
+
+
+        const tools: SelectedTool[] = [];
+
+
+        if (this.requiresProjectAnalysis(message)) {
+            tools.push({
+                toolName: "analyzeProject",
+                reason: "The request requires project-level analysis.",
+            });
+        }
+
+
+        if (this.requiresFileSearch(message)) {
+            tools.push({
+                toolName: "searchFiles",
+                reason: "The request requires searching project files.",
+            });
+        }
+
+
+        if (tools.length === 0) {
+            return {
+                strategy: "none",
+                tools: [],
+                reasoning: "No MCP tool is required for this request.",
+            };
+        }
+
+
+        return {
+            strategy: tools.length === 1 ? "single" : "multiple",
+            tools,
+            reasoning: `Selected ${tools.length} MCP tool(s) based on the user request.`,
+        };
+    }
+
+
+    private requiresProjectAnalysis(
+        message: string,
+    ): boolean {
+        const keywords = [
+            "project",
+            "architecture",
+            "framework",
+            "technology",
+            "tech stack",
+            "docker",
+            "kubernetes",
+            "k8s",
+            "git",
+            "cicd",
+            "ci/cd",
+            "deployment",
+            "repository",
+            "repo",
+        ];
+
+
+        return this.containsKeyword(message, keywords);
+    }
+
+
+    private requiresFileSearch(
+        message: string,
+    ): boolean {
+        const keywords = [
+            "find file",
+            "find files",
+            "search file",
+            "search files",
+            "where is",
+            "which file",
+            "locate",
+            "search for",
+        ];
+
+
+        return this.containsKeyword(message, keywords);
+    }
+
+
+    private containsKeyword(
+        message: string,
+        keywords: string[],
+    ): boolean {
+        return keywords.some((keyword) =>
+            message.includes(keyword),
+        );
+    }
+}
+3. Why we use a separate selector
+
+Don't put this logic directly inside the orchestrator.
+
+We want:
+
+McpToolSelectorService
+        │
+        │ decides
+        ▼
+ToolSelectionResult
+        │
+        ▼
+McpOrchestratorService
+        │
+        │ executes
+        ▼
+MCP Gateway
+
+This separation becomes very important when we introduce an LLM.
+
+Today:
+
+Rules
+ ↓
+Tool selection
+
+Later:
+
+User request
+ ↓
+LLM
+ ↓
+Structured tool-selection decision
+ ↓
+Validation
+ ↓
+MCP Gateway
+
+The orchestrator doesn't need to change dramatically.
+
+4. Example
+
+Given:
+
+Why is my Kubernetes deployment failing?
+
+The selector sees:
+
+kubernetes
+deployment
+
+and produces:
+
+{
+    strategy: "single",
+    tools: [
+        {
+            toolName: "analyzeProject",
+            reason: "The request requires project-level analysis."
+        }
+    ]
+}
+
+For:
+
+Find the Dockerfile and tell me where it is used.
+
+the selector can produce:
+
+{
+    strategy: "multiple",
+    tools: [
+        {
+            toolName: "analyzeProject"
+        },
+        {
+            toolName: "searchFiles"
+        }
+    ]
+}
+
+And for:
+
+What is JavaScript?
+
+it produces:
+
+{
+    strategy: "none",
+    tools: [],
+    reasoning: "No MCP tool is required for this request."
+}
+5. One important limitation
+
+The current implementation is intentionally simple.
+
+For example:
+
+"How do I configure Kubernetes?"
+
+may trigger analyzeProject because of the word Kubernetes, even though the user might only be asking a general conceptual question.
+
+That's okay at 5.11.2.
+
+We are establishing the orchestration architecture first.
+
+Later, the LLM-based selector can distinguish:
+
+"What is Kubernetes?"
+        ↓
+No MCP
+
+
+"Is Kubernetes configured in my project?"
+        ↓
+MCP required
+
+That will be a major improvement.
+
+6. Don't wire it into the AI Service yet
+
+For this milestone, don't modify the existing AI service.
+
+We're first validating:
+
+OrchestrationRequest
+        ↓
+McpToolSelectorService
+        ↓
+ToolSelectionResult
+
+The next milestone will connect selection to actual MCP execution.
+
+7. TypeScript checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+If you get:
+
+PS ...\backend> npx tsc --noEmit
+PS ...\backend>
+
+with no errors, then:
+
+5.11.2 — MCP Tool Selection is complete.
+
+Paste the complete tsc output next.
+
+After it passes, we'll implement 5.11.3 — MCP Tool Execution, where the selected toolName actually gets routed through your existing MCP Gateway rather than being executed directly by the AI layer.
