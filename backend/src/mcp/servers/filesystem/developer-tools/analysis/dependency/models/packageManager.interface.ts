@@ -2,15 +2,21 @@
  * Supported package managers.
  */
 export type PackageManagerType =
-
     | "npm"
-
     | "yarn"
-
     | "pnpm"
-
     | "bun"
-
+    | "pip"
+    | "poetry"
+    | "pipenv"
+    | "uv"
+    | "maven"
+    | "gradle"
+    | "cargo"
+    | "go"
+    | "bundler"
+    | "composer"
+    | "pub"
     | "unknown";
 
 /**
