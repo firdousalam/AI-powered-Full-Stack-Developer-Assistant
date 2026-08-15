@@ -1966,3 +1966,223 @@ export class BuildToolDetector
 }
 
 ```
+
+
+5.6.7 — Entry Point Detector
+File
+backend/
+└── src/
+    └── mcp/
+        └── servers/
+            └── filesystem/
+                └── developer-tools/
+                    └── analysis/
+                        └── detectors/
+                            └── entryPoint.detector.ts
+Replace the current detector with
+import {
+
+
+
+
+        /*
+         * ============================================================
+         * Rust
+         * ============================================================
+         */
+
+
+        const rustEntryPoints = [
+
+
+            "src/main.rs",
+            "src/lib.rs"
+
+
+        ];
+
+
+
+
+        for (
+            const entryPoint
+            of rustEntryPoints
+        ) {
+
+
+            if (
+                await workspaceReader.exists(
+                    workspacePath,
+                    entryPoint
+                )
+            ) {
+
+
+                return this.success(
+                    entryPoint
+                );
+
+
+            }
+
+
+        }
+
+
+
+
+        /*
+         * ============================================================
+         * C / C++
+         * ============================================================
+         */
+
+
+        const cppEntryPoints = [
+
+
+            "main.cpp",
+            "main.cc",
+            "main.cxx",
+            "main.c",
+
+
+            "src/main.cpp",
+            "src/main.cc",
+            "src/main.cxx",
+            "src/main.c"
+
+
+        ];
+
+
+
+
+        for (
+            const entryPoint
+            of cppEntryPoints
+        ) {
+
+
+            if (
+                await workspaceReader.exists(
+                    workspacePath,
+                    entryPoint
+                )
+            ) {
+
+
+                return this.success(
+                    entryPoint
+                );
+
+
+            }
+
+
+        }
+
+
+
+
+        /*
+         * ============================================================
+         * Unknown
+         * ============================================================
+         */
+
+
+        return this.success(
+            "Unknown"
+        );
+
+
+    }
+
+
+}
+Why we're doing it this way
+
+The important point is that 5.6.7 should not try to find every source file.
+
+For example, if the project contains:
+
+src/
+├── controllers/
+│   ├── user.controller.ts
+│   └── product.controller.ts
+├── services/
+│   ├── user.service.ts
+│   └── product.service.ts
+├── routes/
+│   └── user.routes.ts
+└── server.ts
+
+we want:
+
+Entry Point
+    ↓
+src/server.ts
+
+rather than randomly returning a controller or service.
+
+This information will eventually become part of the AI-ready project context:
+
+Project
+├── Language       → TypeScript
+├── Framework      → Express
+├── Runtime        → Node.js
+├── Package Manager→ npm
+├── Build Tool     → Vite
+├── Entry Point    → src/server.ts
+├── Docker         → detected
+├── Kubernetes     → detected
+├── Git            → detected
+└── CI/CD          → detected
+
+That is exactly what makes your Developer Tool Framework more useful than simply exposing raw filesystem operations to the LLM.
+
+Important limitation
+
+At this stage, this is a convention-based detector. It does not yet inspect package.json:
+
+{
+  "scripts": {
+    "start": "node dist/server.js"
+  }
+}
+
+or:
+
+{
+  "main": "dist/index.js"
+}
+
+We can make the detector considerably smarter later by combining:
+
+package.json
+framework conventions
+source-file conventions
+build configuration
+runtime configuration
+
+But I recommend not adding that complexity yet. We're implementing the detectors incrementally and keeping npx tsc --noEmit green after each one.
+
+Checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS ...\backend> npx tsc --noEmit
+PS ...\backend>
+
+If that passes, 5.6.7 is complete.
+
+Then our next step is:
+
+5.6.8 — Docker Detector
+
+where we'll detect things such as Dockerfile, docker-compose.yml, Compose variants, and Docker-related
