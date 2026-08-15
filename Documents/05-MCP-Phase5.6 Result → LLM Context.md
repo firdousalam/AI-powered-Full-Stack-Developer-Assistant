@@ -2410,3 +2410,652 @@ Chart.yaml
 And preserve your existing KubernetesInfo model/contract rather than inventing a new one.
 
 Next coding step: 5.6.9 — Kubernetes Detector.
+
+5.6.10 — Git Detector
+
+Now we’ll implement the Git Detector as the next Project Analyzer detector.
+
+The goal is to detect whether the project is a Git repository and extract useful Git-related information without executing destructive Git commands.
+
+1. Create
+
+backend/src/mcp/servers/filesystem/developer-tools/analysis/detectors/git.detector.ts
+
+import { execFile } from "child_process";
+            const entries = await this.filesystemService.listDirectory(
+                workspacePath,
+            );
+
+
+            return entries.some(
+                (entry) =>
+                    entry === ".git" ||
+                    entry.endsWith("/.git") ||
+                    entry.endsWith("\\.git"),
+            );
+        } catch {
+            return false;
+        }
+    }
+
+
+    private async getCurrentBranch(
+        workspacePath: string,
+    ): Promise<string | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["rev-parse", "--abbrev-ref", "HEAD"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+
+            const branch = stdout.trim();
+
+
+            return branch || undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+
+    private async getRemote(
+        workspacePath: string,
+    ): Promise<string | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["config", "--get", "remote.origin.url"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+
+            const remote = stdout.trim();
+
+
+            return remote || undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+
+    private async isWorkingTreeDirty(
+        workspacePath: string,
+    ): Promise<boolean | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["status", "--porcelain"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+
+            return stdout.trim().length > 0;
+        } catch {
+            return undefined;
+        }
+    }
+}
+2. Important API decision
+
+Notice that this uses the current FilesystemService API:
+
+listDirectory()
+
+and treats its result as:
+
+string[]
+
+We are not using the older:
+
+DirectoryInfo.entries
+
+or:
+
+getFileMetadata()
+
+APIs.
+
+The detector first checks for .git, then uses Git itself for branch/remote/status information.
+
+3. Add the detector to ProjectAnalyzer
+
+Open your existing:
+
+project-analyzer.service.ts
+
+Add the import:
+
+import { GitDetector } from "./detectors/git.detector";
+
+Then inject it into the constructor alongside your existing detectors:
+
+private readonly gitDetector: GitDetector,
+
+For example:
+
+constructor(
+    private readonly metadataDetector: MetadataDetector,
+    private readonly languageDetector: LanguageDetector,
+    private readonly frameworkDetector: FrameworkDetector,
+    private readonly runtimeDetector: RuntimeDetector,
+    private readonly packageManagerDetector: PackageManagerDetector,
+    private readonly buildToolDetector: BuildToolDetector,
+    private readonly entryPointDetector: EntryPointDetector,
+    private readonly dockerDetector: DockerDetector,
+    private readonly kubernetesDetector: KubernetesDetector,
+    private readonly gitDetector: GitDetector,
+) {}
+
+Use your actual existing constructor structure if it differs.
+
+4. Add Git to the analysis result
+
+Your ProjectAnalysisResult should contain Git information.
+
+If your result currently has detector-specific properties, add:
+
+git?: GitInfo;
+
+and import:
+
+import { GitInfo } from "../analysis/detectors/git.detector";
+
+Adjust the relative path to match the location of your interface.
+
+The resulting structure should conceptually look like:
+
+export interface ProjectAnalysisResult {
+    metadata?: MetadataInfo;
+    language?: LanguageInfo;
+    framework?: FrameworkInfo;
+    runtime?: RuntimeInfo;
+    packageManager?: PackageManagerInfo;
+    buildTool?: BuildToolInfo;
+    entryPoint?: EntryPointInfo;
+    docker?: DockerInfo;
+    kubernetes?: KubernetesInfo;
+    git?: GitInfo;
+}
+5. Execute the detector
+
+Where your ProjectAnalyzer runs the individual detectors, add:
+
+const git = await this.gitDetector.detect(context);
+
+Then include it in the returned result:
+
+return {
+    metadata,
+    language,
+    framework,
+    runtime,
+    packageManager,
+    buildTool,
+    entryPoint,
+    docker,
+    kubernetes,
+    git,
+};
+
+Again, preserve your existing implementation rather than replacing the entire method.
+
+6. Expected output
+
+For your current GitHub project, the detector should be capable of producing something similar to:
+
+{
+    "git": {
+        "isGitRepository": true,
+        "branch": "main",
+        "remote": "https://github.com/firdousalam/AI-powered-Full-Stack-Developer-Assistant.git",
+        "isDirty": true
+    }
+}
+
+isDirty: true simply means there are uncommitted changes.
+
+7. TypeScript checkpoint
+
+After implementing 5.6.10, run:
+
+npx tsc --noEmit
+
+This is our mandatory checkpoint.
+
+Do not move to 5.6.11 yet. Paste the complete tsc output here. If it is clean, we'll proceed to the next detector.
+
+npx tsc --noEmit
+src/mcp/servers/filesystem/developer-tools/analysis/analyzeProject.factory.ts:62:13 - error TS2554: Expected 1 arguments, but got 0.
+
+62             new GitDetector(),
+               ~~~~~~~~~~~~~~~~~
+
+  src/mcp/servers/filesystem/developer-tools/analysis/detectors/git.detector.ts:18:9 - An argument for 'filesystemService' was not provided.
+    18         private readonly filesystemService: FilesystemService,
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/mcp/servers/filesystem/developer-tools/analysis/detectors/git.detector.ts:52:28 - error TS2339: Property 'some' does not exist on type 'DirectoryInfo'.
+
+52             return entries.some(
+                              ~~~~
+
+src/mcp/servers/filesystem/developer-tools/analysis/detectors/git.detector.ts:53:18 - error TS7006: Parameter 'entry' implicitly has an 'any' type.
+
+53                 (entry) =>
+                    ~~~~~
+
+src/mcp/servers/filesystem/developer-tools/analysis/services/index.ts:43:9 - error TS2554: Expected 1 arguments, but got 0.
+
+43         new GitDetector(),
+           ~~~~~~~~~~~~~~~~~
+
+  src/mcp/servers/filesystem/developer-tools/analysis/detectors/git.detector.ts:18:9 - An argument for 'filesystemService' was not provided.
+    18         private readonly filesystemService: FilesystemService,
+               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/mcp/servers/filesystem/developer-tools/analysis/services/projectAnalyzer.service.ts:114:17 - error TS2345: Argument of type 'string' is not assignable to parameter of type 'DeveloperToolContext'.
+
+114                 workspacePath
+                    ~~~~~~~~~~~~~
+
+src/mcp/servers/filesystem/developer-tools/analysis/services/projectAnalyzer.service.ts:143:22 - error TS2339: Property 'data' does not exist on type 'GitInfo'.
+
+143             git: git.data,
+                         ~~~~
+
+
+Found 6 errors in 4 files.
+
+Errors  Files
+     1  src/mcp/servers/filesystem/developer-tools/analysis/analyzeProject.factory.ts:62
+     2  src/mcp/servers/filesystem/developer-tools/analysis/detectors/git.detector.ts:52
+     1  src/mcp/servers/filesystem/developer-tools/analysis/services/index.ts:43
+     2  src/mcp/servers/filesystem/developer-tools/analysis/services/projectAnalyzer.service.ts:114
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> 
+
+Good — these errors show that my previous Git Detector implementation did not match your existing detector architecture. We should fix it rather than changing the rest of your framework.
+
+There are 3 root causes:
+
+GitDetector should be instantiated with no constructor dependency.
+Your ProjectAnalyzer calls detectors with workspacePath: string, not DeveloperToolContext.
+Your GitDetector.detect() returns GitInfo directly, so git.data is incorrect.
+
+Also, your current compiler says listDirectory() returns DirectoryInfo in this codebase, so we should not use it at all for Git detection. Git itself can reliably determine whether the workspace is a repository.
+
+Fix 5.6.10 — Git Detector
+1. Replace git.detector.ts
+
+Replace the complete contents of:
+
+src/mcp/servers/filesystem/developer-tools/analysis/detectors/git.detector.ts
+
+with:
+
+import { execFile } from "child_process";
+    ): Promise<boolean> {
+        try {
+            await execFileAsync(
+                "git",
+                ["rev-parse", "--is-inside-work-tree"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+
+    private async getCurrentBranch(
+        workspacePath: string,
+    ): Promise<string | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["branch", "--show-current"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+
+            const branch = stdout.trim();
+
+
+            return branch || undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+
+    private async getRemote(
+        workspacePath: string,
+    ): Promise<string | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["config", "--get", "remote.origin.url"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+
+            const remote = stdout.trim();
+
+
+            return remote || undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+
+    private async isWorkingTreeDirty(
+        workspacePath: string,
+    ): Promise<boolean | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["status", "--porcelain"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+
+            return stdout.trim().length > 0;
+        } catch {
+            return undefined;
+        }
+    }
+}
+Why this version is better
+
+It removes:
+
+FilesystemService
+
+completely.
+
+We don't need filesystem inspection to detect Git. This command:
+
+git rev-parse --is-inside-work-tree
+
+is the correct source of truth.
+
+It also makes the detector match your existing architecture:
+
+detect(workspacePath: string)
+
+instead of:
+
+detect(context: DeveloperToolContext)
+2. analyzeProject.factory.ts
+
+Your error:
+
+new GitDetector()
+Expected 1 arguments, but got 0
+
+will disappear because the new GitDetector has no constructor.
+
+So keep:
+
+new GitDetector(),
+
+No additional change is required there.
+
+3. analysis/services/index.ts
+
+Same issue:
+
+new GitDetector()
+
+will now compile because GitDetector doesn't require FilesystemService.
+
+Again, no change required.
+
+4. Fix projectAnalyzer.service.ts
+
+You currently have something around line 114 like:
+
+const git = await this.gitDetector.detect(
+    workspacePath,
+);
+
+This is now correct with the new detector signature.
+
+The error:
+
+Argument of type 'string' is not assignable to parameter of type 'DeveloperToolContext'
+
+will disappear.
+
+5. Fix git.data
+
+Your line 143 currently appears to be:
+
+git: git.data,
+
+Change it to:
+
+git,
+
+Because:
+
+GitDetector.detect()
+
+returns:
+
+GitInfo
+
+directly.
+
+It does not return:
+
+{
+    data: GitInfo;
+}
+
+So your final section should be:
+
+return {
+    metadata,
+    language,
+    framework,
+    runtime,
+    packageManager,
+    buildTool,
+    entryPoint,
+    docker,
+    kubernetes,
+    git,
+};
+6. Don't change DirectoryInfo
+
+The previous error:
+
+Property 'some' does not exist on type 'DirectoryInfo'
+
+came from my earlier assumption that your current listDirectory() returned string[].
+
+Your actual TypeScript compiler is the authoritative source for the current checkout, so we won't modify FilesystemService or DirectoryInfo just for this detector.
+
+The new Git detector doesn't use either one.
+
+7. Run the checkpoint again
+
+Now run:
+
+npx tsc --noEmit
+Expected result
+
+Ideally:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+No TypeScript errors.
+
+Once this passes, 5.6.10 — Git Detector is complete and we'll move to 5.6.11 — CI/CD Detector.
+
+-noEmit
+src/mcp/servers/filesystem/developer-tools/analysis/services/projectAnalyzer.service.ts:143:22 - error TS2339: Property 'data' does not exist on type 'GitInfo'.
+
+143             git: git.data,
+                         ~~~~
+
+
+Found 1 error in src/mcp/servers/filesystem/developer-tools/analysis/services/projectAnalyzer.service.ts:143
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> 
+
+Exactly — now there is only one error, and it is straightforward.
+
+Your GitDetector.detect() returns GitInfo directly, but projectAnalyzer.service.ts is still accessing .data.
+
+Fix
+
+Open:
+
+src/mcp/servers/filesystem/developer-tools/analysis/services/projectAnalyzer.service.ts
+
+At line 143, change:
+
+git: git.data,
+
+to:
+
+git,
+
+So the return section should be:
+
+return {
+    metadata: metadata.data,
+    language: language.data,
+    framework: framework.data,
+    runtime: runtime.data,
+    packageManager: packageManager.data,
+    buildTool: buildTool.data,
+    entryPoint: entryPoint.data,
+    docker: docker.data,
+    kubernetes: kubernetes.data,
+    git,
+};
+
+Important: Don't change the other .data properties unless TypeScript reports an error. Your existing detectors apparently return wrapper objects, while our new GitDetector returns GitInfo directly.
+
+Then run the checkpoint again:
+
+npx tsc --noEmit
+
+If there is no output, we've successfully completed 5.6.10 — Git Detector.
+
+
+5.11 milestones
+
+I recommend breaking 5.11 into these smaller steps:
+
+Step	Component	Purpose
+5.11.1	MCP Orchestrator interfaces	Define orchestration contracts
+5.11.2	MCP Tool Selection	Decide which developer tool is relevant
+5.11.3	Tool Execution	Execute selected tools through MCP Gateway
+5.11.4	AI Context Enrichment	Inject tool results into LLM context
+5.11.5	Tool-aware Prompt Builder	Build structured prompts
+5.11.6	AI → MCP → AI loop	Complete orchestration cycle
+5.11.7	Error & timeout handling	Make orchestration reliable
+5.11.8	Orchestration tests	Validate the complete flow
+Architecture after 5.11
+                    ┌──────────────────┐
+                    │      User        │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │    AI Service    │
+                    └────────┬─────────┘
+                             │
+                             ▼
+              ┌─────────────────────────────┐
+              │   AI ↔ MCP Orchestrator     │
+              │                             │
+              │  • Intent Analysis          │
+              │  • Tool Selection           │
+              │  • Tool Execution           │
+              │  • Context Enrichment       │
+              └──────────────┬──────────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │   MCP Gateway    │
+                    └────────┬─────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              ▼              ▼              ▼
+        Filesystem      Developer       Future MCP
+        MCP Server      Tools            Servers
+              │              │
+              └───────┬──────┘
+                      ▼
+                Project Context
+                      │
+                      ▼
+              ┌──────────────────┐
+              │       LLM        │
+              └────────┬─────────┘
+                       │
+                       ▼
+                    Response
+Start with 5.11.1
+
+Before writing the orchestrator, don't jump directly into LLM calls.
+
+First we'll establish the contracts.
+
+The first files should be approximately:
+
+src/
+└── mcp/
+    └── orchestration/
+        ├── ai-mcp-orchestrator.service.ts
+        ├── interfaces/
+        │   ├── orchestration-request.interface.ts
+        │   ├── orchestration-result.interface.ts
+        │   └── tool-selection-result.interface.ts
+        └── types/
+            └── orchestration.types.ts
+
+The key design principle is:
+
+The LLM should not directly know how to communicate with individual MCP servers.
+
+Instead:
+
+AI Service
+    ↓
+Orchestrator
+    ↓
+MCP Gateway
+    ↓
+MCP Server / Developer Tool
+
+That separation will make it much easier later to add RAG, agents, Ollama, OpenAI-compatible models, VS Code integration, additional MCP servers, and eventually autonomous multi-step workflows.
+
+For the next coding step, we should implement 5.11.1 — MCP Orchestrator Interfaces first, and keep npx tsc --noEmit as the checkpoint before moving to 5.11.2.
