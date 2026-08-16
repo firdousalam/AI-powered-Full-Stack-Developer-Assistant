@@ -1,181 +1,191 @@
-import {
-    GITHUB_CONFIG
-} from "./github.constants";
+import type { GitHubConfig } from "./github.types";
 
-import {
-    GitHubConfig,
-    GitHubErrorResponse,
-    GitHubRepositoryReference
-} from "./github.types";
+export interface GitHubRepository {
+    id: number;
+    name: string;
+    full_name: string;
+    private: boolean;
+    html_url: string;
+    description: string | null;
+    default_branch: string;
+}
 
-/**
- * Service responsible for communicating with the GitHub REST API.
- *
- * This service contains GitHub-specific API logic.
- * MCP tool logic should remain inside github.tools.ts.
- */
+export interface GitHubContent {
+    name: string;
+    path: string;
+    sha: string;
+    size?: number;
+    type: "file" | "dir";
+    html_url?: string;
+    download_url?: string | null;
+}
+
+export interface GitHubBranch {
+    name: string;
+    protected: boolean;
+}
+
+export interface GitHubApiError {
+    message: string;
+    documentation_url?: string;
+    status?: number;
+}
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
-
-    constructor(config?: Partial<GitHubConfig>) {
+    constructor(config: GitHubConfig) {
         this.config = {
-            apiUrl: config?.apiUrl ?? GITHUB_CONFIG.API_URL,
-            token: config?.token ?? process.env[GITHUB_CONFIG.TOKEN_ENV]
+            ...config,
+            apiUrl: config.apiUrl.replace(/\/+$/, ""),
         };
     }
 
     /**
- * Returns the configured GitHub API URL.
- */
+     * Returns the configured GitHub API URL.
+     */
     public getApiUrl(): string {
         return this.config.apiUrl;
     }
 
     /**
-     * Performs a lightweight health check for the GitHub service.
+     * Returns whether authentication is configured.
+     */
+    public isAuthenticated(): boolean {
+        return Boolean(this.config.token);
+    }
+
+    /**
+     * Builds headers for GitHub API requests.
+     */
+    private getHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        };
+
+        if (this.config.token) {
+            headers.Authorization = `Bearer ${this.config.token}`;
+        }
+
+        return headers;
+    }
+
+    /**
+     * Performs a GitHub API request.
+     */
+    private async request<T>(
+        path: string,
+        options: RequestInit = {},
+    ): Promise<T> {
+        const url = `${this.config.apiUrl}/${path.replace(/^\/+/, "")}`;
+
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                ...this.getHeaders(),
+                ...(options.headers ?? {}),
+            },
+        });
+
+        if (!response.ok) {
+            let errorMessage = `GitHub API request failed with status ${response.status}`;
+
+            try {
+                const error = (await response.json()) as GitHubApiError;
+
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+            } catch {
+                // Keep the default HTTP error message.
+            }
+
+            throw new Error(errorMessage);
+        }
+
+        return (await response.json()) as T;
+    }
+
+    /**
+     * Gets a GitHub repository.
+     */
+    public async getRepository(
+        owner: string,
+        repository: string,
+    ): Promise<GitHubRepository> {
+        return this.request<GitHubRepository>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}`,
+        );
+    }
+
+    /**
+     * Gets repository contents.
+     */
+    public async getContents(
+        owner: string,
+        repository: string,
+        path = "",
+        ref?: string,
+    ): Promise<GitHubContent | GitHubContent[]> {
+        const encodedPath = path
+            .split("/")
+            .filter(Boolean)
+            .map((segment) => encodeURIComponent(segment))
+            .join("/");
+
+        const query = ref
+            ? `?ref=${encodeURIComponent(ref)}`
+            : "";
+
+        return this.request<GitHubContent | GitHubContent[]>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/contents/${encodedPath}${query}`,
+        );
+    }
+
+    /**
+     * Gets repository branches.
+     */
+    public async getBranches(
+        owner: string,
+        repository: string,
+    ): Promise<GitHubBranch[]> {
+        return this.request<GitHubBranch[]>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/branches`,
+        );
+    }
+
+    /**
+     * Performs a lightweight GitHub health check.
      */
     public async health(): Promise<{
         status: "healthy" | "unhealthy";
         apiUrl: string;
+        authenticated: boolean;
     }> {
         try {
+            await this.request<{
+                current_user_url: string;
+            }>("/");
+
             return {
                 status: "healthy",
                 apiUrl: this.config.apiUrl,
+                authenticated: this.isAuthenticated(),
             };
         } catch {
             return {
                 status: "unhealthy",
                 apiUrl: this.config.apiUrl,
+                authenticated: this.isAuthenticated(),
             };
         }
     }
 
     /**
-     * Releases GitHub service resources.
+     * Releases resources used by the service.
      */
     public async dispose(): Promise<void> {
-        // No resources currently require explicit cleanup.
-    }
-    /**
-     * Execute an authenticated or unauthenticated GitHub API request.
-     */
-    private async request<T>(
-        endpoint: string,
-        options: RequestInit = {}
-    ): Promise<T> {
-        const url = `${this.config.apiUrl}${endpoint}`;
-
-        const headers = new Headers(options.headers);
-
-        headers.set("Accept", "application/vnd.github+json");
-        headers.set("X-GitHub-Api-Version", "2022-11-28");
-
-        if (this.config.token) {
-            headers.set(
-                "Authorization",
-                `Bearer ${this.config.token}`
-            );
-        }
-
-        const response = await fetch(url, {
-            ...options,
-            headers
-        });
-
-        if (!response.ok) {
-            let error: GitHubErrorResponse = {
-                message: response.statusText,
-                status: response.status
-            };
-
-            try {
-                const body = await response.json();
-
-                if (body?.message) {
-                    error = {
-                        message: body.message,
-                        status: response.status
-                    };
-                }
-            } catch {
-                // Keep the default error when the response is not JSON.
-            }
-
-            throw new Error(
-                `GitHub API request failed (${error.status}): ${error.message}`
-            );
-        }
-
-        return response.json() as Promise<T>;
-    }
-
-    /**
-     * Get basic information about a GitHub repository.
-     */
-    async getRepository(
-        repository: GitHubRepositoryReference
-    ): Promise<unknown> {
-        return this.request(
-            `/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}`
-        );
-    }
-
-    /**
-     * Get the contents of a repository directory or file.
-     *
-     * When path is omitted, the repository root is returned.
-     */
-    async getRepositoryContents(
-        repository: GitHubRepositoryReference,
-        path = ""
-    ): Promise<unknown> {
-        const encodedPath = path
-            .split("/")
-            .filter(Boolean)
-            .map(segment => encodeURIComponent(segment))
-            .join("/");
-
-        const endpoint =
-            `/repos/${encodeURIComponent(repository.owner)}` +
-            `/${encodeURIComponent(repository.name)}/contents` +
-            (encodedPath ? `/${encodedPath}` : "");
-
-        return this.request(endpoint);
-    }
-
-    /**
-     * Get a specific file from a GitHub repository.
-     */
-    async getFileContent(
-        repository: GitHubRepositoryReference,
-        path: string
-    ): Promise<unknown> {
-        return this.getRepositoryContents(repository, path);
-    }
-
-    /**
-     * Get repository branches.
-     */
-    async listBranches(
-        repository: GitHubRepositoryReference
-    ): Promise<unknown> {
-        return this.request(
-            `/repos/${encodeURIComponent(repository.owner)}` +
-            `/${encodeURIComponent(repository.name)}/branches`
-        );
-    }
-
-    /**
-     * Get repository commits.
-     */
-    async listCommits(
-        repository: GitHubRepositoryReference
-    ): Promise<unknown> {
-        return this.request(
-            `/repos/${encodeURIComponent(repository.owner)}` +
-            `/${encodeURIComponent(repository.name)}/commits`
-        );
+        // No persistent resources currently require cleanup.
     }
 }
