@@ -18,6 +18,16 @@ export interface GitHubContent {
     type: "file" | "dir";
     html_url?: string;
     download_url?: string | null;
+
+    /**
+     * Base64 encoded file content returned by GitHub.
+     */
+    content?: string;
+
+    /**
+     * Encoding used by GitHub for the content.
+     */
+    encoding?: string;
 }
 
 export interface GitHubBranch {
