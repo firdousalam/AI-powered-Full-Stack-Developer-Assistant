@@ -99,6 +99,34 @@ export interface GitHubIssue {
     }>;
 }
 
+export interface GitHubPullRequestUser {
+    login: string;
+}
+
+export interface GitHubPullRequest {
+    id: number;
+    number: number;
+    title: string;
+    body: string | null;
+    state: "open" | "closed";
+    html_url: string;
+    user: GitHubPullRequestUser;
+    created_at: string;
+    updated_at: string;
+    closed_at: string | null;
+    merged_at: string | null;
+    draft: boolean;
+    head: {
+        ref: string;
+        sha: string;
+    };
+    base: {
+        ref: string;
+        sha: string;
+    };
+}
+
+
 
 export class GitHubService {
     private readonly config: GitHubConfig;
@@ -341,5 +369,36 @@ export class GitHubService {
         );
     }
 
+    /**
+ * List pull requests from a GitHub repository.
+ */
+    public async listPullRequests(
+        owner: string,
+        repository: string,
+        state: "open" | "closed" | "all" = "open"
+    ): Promise<GitHubPullRequest[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const params =
+            new URLSearchParams({
+                state,
+                per_page: "100"
+            });
+
+        return this.request<GitHubPullRequest[]>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/pulls?${params.toString()}`
+        );
+    }
 
 }

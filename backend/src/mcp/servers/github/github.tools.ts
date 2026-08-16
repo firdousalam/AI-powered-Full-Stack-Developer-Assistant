@@ -10,7 +10,8 @@ import {
     GitHubContent,
     GitHubBranch,
     GitHubCodeSearchResponse,
-    GitHubIssue
+    GitHubIssue,
+    GitHubPullRequest
 } from "./github.service";
 
 /**
@@ -55,6 +56,11 @@ export interface GitHubListIssuesArgs {
     repository: string;
     state?: "open" | "closed" | "all";
 }
+export interface GitHubListPullRequestsArgs {
+    owner: string;
+    repository: string;
+    state?: "open" | "closed" | "all";
+}
 
 /**
  * ============================================================
@@ -81,7 +87,8 @@ export class GitHubTools {
             this.listBranchesTool(),
             this.readFileTool(),
             this.searchCodeTool(),
-            this.listIssuesTool()
+            this.listIssuesTool(),
+            this.listPullRequestsTool()
         ];
     }
 
@@ -805,6 +812,119 @@ export class GitHubTools {
             ) {
                 throw new Error(
                     "GitHub issue state must be open, closed, or all."
+                );
+            }
+
+            result.state =
+                value.state;
+        }
+
+        return result;
+    }
+    public async listPullRequests(
+        args: GitHubListPullRequestsArgs
+    ): Promise<GitHubPullRequest[]> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        const state =
+            args.state ?? "open";
+
+        return this.githubService.listPullRequests(
+            args.owner,
+            args.repository,
+            state
+        );
+    }
+
+    private listPullRequestsTool(): MCPTool {
+
+        return {
+            name: "github_list_pull_requests",
+
+            description:
+                "List pull requests from a GitHub repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization that owns the repository."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "Name of the GitHub repository."
+                    },
+
+                    state: {
+                        type: "string",
+                        description:
+                            "Pull request state to return. Defaults to open.",
+
+                        enum: [
+                            "open",
+                            "closed",
+                            "all"
+                        ]
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateListPullRequestsArguments(
+                        args
+                    );
+
+                return this.listPullRequests(
+                    validatedArgs
+                );
+            }
+        };
+    }
+
+    private validateListPullRequestsArguments(
+        args: unknown
+    ): GitHubListPullRequestsArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        const result: GitHubListPullRequestsArgs = {
+            ...repositoryArgs
+        };
+
+        if (
+            value.state !== undefined
+        ) {
+
+            if (
+                value.state !== "open" &&
+                value.state !== "closed" &&
+                value.state !== "all"
+            ) {
+                throw new Error(
+                    "GitHub pull request state must be open, closed, or all."
                 );
             }
 
