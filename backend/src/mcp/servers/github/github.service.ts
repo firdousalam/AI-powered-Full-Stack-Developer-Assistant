@@ -60,6 +60,46 @@ export interface GitHubApiError {
     status?: number;
 }
 
+export interface GitHubIssueUser {
+    login: string;
+}
+
+export interface GitHubIssue {
+    id: number;
+    number: number;
+    title: string;
+    body: string | null;
+    state: "open" | "closed";
+    html_url: string;
+    user: GitHubIssueUser;
+    created_at: string;
+    updated_at: string;
+    closed_at: string | null;
+    labels: Array<{
+        name: string;
+    }>;
+}
+export interface GitHubIssueUser {
+    login: string;
+}
+
+export interface GitHubIssue {
+    id: number;
+    number: number;
+    title: string;
+    body: string | null;
+    state: "open" | "closed";
+    html_url: string;
+    user: GitHubIssueUser;
+    created_at: string;
+    updated_at: string;
+    closed_at: string | null;
+    labels: Array<{
+        name: string;
+    }>;
+}
+
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -249,5 +289,57 @@ export class GitHubService {
             `/search/code?q=${encodeURIComponent(searchQuery)}`
         );
     }
+
+    /**
+ * List issues from a GitHub repository.
+ *
+ * Pull requests are also returned by GitHub's
+ * issues API, so they are explicitly filtered out.
+ */
+    public async listIssues(
+        owner: string,
+        repository: string,
+        state: "open" | "closed" | "all" = "open"
+    ): Promise<GitHubIssue[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const params =
+            new URLSearchParams({
+                state,
+                per_page: "100"
+            });
+
+        const issues =
+            await this.request<GitHubIssue[]>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/issues?${params.toString()}`
+            );
+
+        /*
+         * GitHub's /issues endpoint includes pull requests.
+         *
+         * Pull requests contain a pull_request property.
+         * Our GitHubIssue interface intentionally does not
+         * expose that property, so use a small runtime check.
+         */
+        return issues.filter(
+            issue =>
+                !(
+                    "pull_request" in
+                    (issue as unknown as Record<string, unknown>)
+                )
+        );
+    }
+
 
 }

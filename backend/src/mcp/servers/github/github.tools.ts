@@ -9,7 +9,8 @@ import {
     GitHubRepository,
     GitHubContent,
     GitHubBranch,
-    GitHubCodeSearchResponse
+    GitHubCodeSearchResponse,
+    GitHubIssue
 } from "./github.service";
 
 /**
@@ -49,6 +50,12 @@ export interface GitHubSearchCodeArgs {
     query: string;
 }
 
+export interface GitHubListIssuesArgs {
+    owner: string;
+    repository: string;
+    state?: "open" | "closed" | "all";
+}
+
 /**
  * ============================================================
  * GitHub MCP Tools
@@ -73,9 +80,13 @@ export class GitHubTools {
             this.getContentsTool(),
             this.listBranchesTool(),
             this.readFileTool(),
-            this.searchCodeTool()
+            this.searchCodeTool(),
+            this.listIssuesTool()
         ];
     }
+
+
+
     private validateReadFileArguments(
         args: unknown
     ): GitHubReadFileArgs {
@@ -691,6 +702,117 @@ export class GitHubTools {
             ...repositoryArgs,
             query: value.query.trim()
         };
+    }
+    public async listIssues(
+        args: GitHubListIssuesArgs
+    ): Promise<GitHubIssue[]> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        const state =
+            args.state ?? "open";
+
+        return this.githubService.listIssues(
+            args.owner,
+            args.repository,
+            state
+        );
+    }
+
+    private listIssuesTool(): MCPTool {
+
+        return {
+            name: "github_list_issues",
+
+            description:
+                "List issues from a GitHub repository. Pull requests are excluded from the results.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization that owns the repository."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "Name of the GitHub repository."
+                    },
+
+                    state: {
+                        type: "string",
+                        description:
+                            "Issue state to return. Defaults to open.",
+                        enum: [
+                            "open",
+                            "closed",
+                            "all"
+                        ]
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateListIssuesArguments(
+                        args
+                    );
+
+                return this.listIssues(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private validateListIssuesArguments(
+        args: unknown
+    ): GitHubListIssuesArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        const result: GitHubListIssuesArgs = {
+            ...repositoryArgs
+        };
+
+        if (
+            value.state !== undefined
+        ) {
+
+            if (
+                value.state !== "open" &&
+                value.state !== "closed" &&
+                value.state !== "all"
+            ) {
+                throw new Error(
+                    "GitHub issue state must be open, closed, or all."
+                );
+            }
+
+            result.state =
+                value.state;
+        }
+
+        return result;
     }
 
 }

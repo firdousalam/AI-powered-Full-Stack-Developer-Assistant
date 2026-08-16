@@ -2508,3 +2508,987 @@ Agent reasoning
 
 That starts making your GitHub MCP server genuinely useful for AI-powered repository exploration and code understanding.
 
+5.7.8 — GitHub Code Search Tool
+
+This is the right next step. github_read_file lets the agent read a known file; code search lets it first find where relevant code exists.
+
+The new MCP tool will be:
+
+github_search_code
+Target flow
+AI Agent
+   ↓
+github_search_code
+   ↓
+GitHubTools.searchCode()
+   ↓
+GitHubService.searchCode()
+   ↓
+GitHub Code Search API
+   ↓
+matching files
+
+We'll keep the same separation you've established:
+
+GitHubService → GitHub API
+GitHubTools → validation + developer-oriented response
+GitHubServer → MCP registration/execution
+1. Add search types to github.service.ts
+
+In:
+
+src/mcp/servers/github/github.service.ts
+
+add these interfaces near your other GitHub response models:
+
+export interface GitHubCodeSearchItem {
+    name: string;
+    path: string;
+    sha: string;
+    html_url: string;
+    repository: {
+        id: number;
+        name: string;
+        full_name: string;
+    };
+}
+
+
+export interface GitHubCodeSearchResponse {
+    total_count: number;
+    incomplete_results: boolean;
+    items: GitHubCodeSearchItem[];
+}
+2. Add searchCode() to GitHubService
+
+Add this method inside GitHubService:
+
+/**
+ * Search code across a GitHub repository.
+ *
+ * GitHub search queries support GitHub's code-search syntax.
+ *
+ * Examples:
+ *
+ *   getRepository
+ *   filename:package.json
+ *   extension:ts MCPTool
+ *   path:src githubService
+ */
+public async searchCode(
+    owner: string,
+    repository: string,
+    query: string,
+): Promise<GitHubCodeSearchResponse> {
+
+
+    if (!query?.trim()) {
+        throw new Error(
+            "GitHub code search query is required."
+        );
+    }
+
+
+    const searchQuery =
+        `${query.trim()} repo:${owner}/${repository}`;
+
+
+    return this.request<GitHubCodeSearchResponse>(
+        `/search/code?q=${encodeURIComponent(searchQuery)}`
+    );
+}
+Why add repo: automatically?
+
+The MCP tool should be repository-oriented.
+
+The agent can provide:
+
+MCPTool
+query = "GitHubService"
+
+and the service turns it into:
+
+GitHub API query:
+GitHubService repo:firdousalam/AI-powered-Full-Stack-Developer-Assistant
+
+This prevents the agent from accidentally searching unrelated repositories.
+
+3. Add search arguments to github.tools.ts
+
+In:
+
+src/mcp/servers/github/github.tools.ts
+
+add:
+
+export interface GitHubSearchCodeArgs {
+    owner: string;
+    repository: string;
+    query: string;
+}
+4. Add the search operation
+
+Inside GitHubTools, add:
+
+public async searchCode(
+    args: GitHubSearchCodeArgs
+): Promise<GitHubCodeSearchResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    if (
+        !args.query ||
+        !args.query.trim()
+    ) {
+        throw new Error(
+            "GitHub code search query is required."
+        );
+    }
+
+
+    return this.githubService.searchCode(
+        args.owner,
+        args.repository,
+        args.query.trim()
+    );
+}
+
+Because we're returning the service response, import the type at the top:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse
+} from "./github.service";
+5. Add the MCP tool
+
+Add this method:
+
+private searchCodeTool(): MCPTool {
+
+
+    return {
+        name: "github_search_code",
+
+
+        description:
+            "Search for source code, symbols, filenames, or text within a GitHub repository.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                },
+
+
+                query: {
+                    type: "string",
+                    description:
+                        "Code search query. Can search for symbols, text, filenames, extensions, or other GitHub-supported code search terms."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "query"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateSearchCodeArguments(
+                    args
+                );
+
+
+            return this.searchCode(
+                validatedArgs
+            );
+        }
+    };
+}
+6. Add validation
+
+Add:
+
+private validateSearchCodeArguments(
+    args: unknown
+): GitHubSearchCodeArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    if (
+        typeof value.query !== "string" ||
+        !value.query.trim()
+    ) {
+        throw new Error(
+            "GitHub code search query is required."
+        );
+    }
+
+
+    return {
+        ...repositoryArgs,
+        query: value.query.trim()
+    };
+}
+7. Register the tool
+
+Your existing getTools() currently looks like:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool()
+    ];
+}
+
+Change it to:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool()
+    ];
+}
+
+Now your GitHub MCP server exposes:
+
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+github_search_code
+8. Example agent queries
+
+The agent can now perform:
+
+Find a class
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "query": "GitHubService"
+}
+Find TypeScript MCP tools
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "query": "MCPTool extension:ts"
+}
+Search a filename
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "query": "filename:github.service.ts"
+}
+Search a specific path
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "query": "path:src/mcp/servers/github GitHubService"
+}
+Important GitHub API consideration
+
+There is one thing to be aware of: GitHub's code-search API has authentication and rate-limit requirements. Since your GitHubService already supports an optional token, the service layer is the correct place for those concerns.
+
+Don't put token handling into searchCodeTool().
+
+The architecture remains:
+
+                  GitHub MCP
+                      │
+       ┌──────────────┼───────────────┐
+       ▼              ▼               ▼
+ Repository       Read File       Search Code
+    Tool             Tool             Tool
+       │              │               │
+       └──────────────┼───────────────┘
+                      ▼
+                GitHubService
+                      │
+              Authentication
+                      │
+                      ▼
+                GitHub REST API
+5.7.8 checkpoint
+
+Now run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS ...\backend> npx tsc --noEmit
+PS ...\backend>
+
+If it passes, 5.7.8 — GitHub Code Search Tool is TypeScript-clean.
+
+Then the next milestone should be 5.7.9 — GitHub Issues Tool, which will start expanding your MCP server from repository inspection into actual GitHub project/issue intelligence.
+
+npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> 
+
+✅ 5.7.8 — GitHub Code Search Tool checkpoint passed.
+
+npx tsc --noEmit
+
+No output means the TypeScript compilation is clean.
+
+GitHub MCP status
+5.7.1  GitHub MCP Foundation          ✅
+5.7.2  GitHub Configuration/Types     ✅
+5.7.3  GitHubService                  ✅
+5.7.4  Repository Tool                ✅
+5.7.5  Repository Contents Tool       ✅
+5.7.6  Branches Tool                  ✅
+5.7.7  File Reading Tool              ✅
+5.7.8  Code Search Tool               ✅
+
+Your GitHub MCP toolset now contains:
+
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+github_search_code
+Why 5.7.8 is important
+
+You now have the basic repository exploration loop:
+
+        ┌──────────────────────┐
+        │   GitHub Repository   │
+        └──────────┬───────────┘
+                   │
+          ┌────────┴─────────┐
+          ▼                  ▼
+    Search Code          Read File
+          │                  │
+          └────────┬─────────┘
+                   ▼
+              AI Agent
+                   │
+                   ▼
+          Code Understanding
+
+For example, your future agent can reason:
+
+Find where ProjectAnalyzer is implemented.
+
+→ github_search_code
+
+Read that implementation.
+
+→ github_read_file
+
+Analyze how it works.
+
+→ LLM reasoning.
+
+That's a meaningful foundation for your eventual coding agent.
+
+Next: 5.7.9 — GitHub Issues Tool
+
+We'll add:
+
+github_list_issues
+
+so the agent can inspect repository issues and eventually understand project bugs/tasks alongside the source code.
+
+After implementation, we'll continue your standard checkpoint:
+
+npx tsc --noEmit
+
+5.7.8 is complete.
+
+
+5.7.8 — GitHub Code Search Tool checkpoint passed.
+
+npx tsc --noEmit
+
+No output means the TypeScript compilation is clean.
+
+GitHub MCP status
+5.7.1  GitHub MCP Foundation          ✅
+5.7.2  GitHub Configuration/Types     ✅
+5.7.3  GitHubService                  ✅
+5.7.4  Repository Tool                ✅
+5.7.5  Repository Contents Tool       ✅
+5.7.6  Branches Tool                  ✅
+5.7.7  File Reading Tool              ✅
+5.7.8  Code Search Tool               ✅
+
+Your GitHub MCP toolset now contains:
+
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+github_search_code
+Why 5.7.8 is important
+
+You now have the basic repository exploration loop:
+
+        ┌──────────────────────┐
+        │   GitHub Repository   │
+        └──────────┬───────────┘
+                   │
+          ┌────────┴─────────┐
+          ▼                  ▼
+    Search Code          Read File
+          │                  │
+          └────────┬─────────┘
+                   ▼
+              AI Agent
+                   │
+                   ▼
+          Code Understanding
+
+For example, your future agent can reason:
+
+Find where ProjectAnalyzer is implemented.
+
+→ github_search_code
+
+Read that implementation.
+
+→ github_read_file
+
+Analyze how it works.
+
+→ LLM reasoning.
+
+That's a meaningful foundation for your eventual coding agent.
+
+Next: 5.7.9 — GitHub Issues Tool
+
+We'll add:
+
+github_list_issues
+
+so the agent can inspect repository issues and eventually understand project bugs/tasks alongside the source code.
+
+After implementation, we'll continue your standard checkpoint:
+
+npx tsc --noEmit
+
+5.7.8 is complete.
+
+5.7.9 — GitHub Issues Tool
+5.7.9 — GitHub Issues Tool
+
+This milestone adds repository issue awareness to your GitHub MCP server.
+
+The new tool will be:
+
+github_list_issues
+
+This lets the agent ask things like:
+
+What open issues are in this repository?
+
+Show me the bugs reported for this project.
+
+Find recently updated issues.
+
+The architecture remains:
+
+AI Agent
+   ↓
+GitHubServer
+   ↓
+github_list_issues
+   ↓
+GitHubTools.listIssues()
+   ↓
+GitHubService.listIssues()
+   ↓
+GitHub REST API
+1. Add GitHub issue types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add these interfaces near your other GitHub response types:
+
+export interface GitHubIssueUser {
+    login: string;
+}
+
+
+export interface GitHubIssue {
+    id: number;
+    number: number;
+    title: string;
+    body: string | null;
+    state: "open" | "closed";
+    html_url: string;
+    user: GitHubIssueUser;
+    created_at: string;
+    updated_at: string;
+    closed_at: string | null;
+    labels: Array<{
+        name: string;
+    }>;
+}
+2. Add listIssues() to GitHubService
+
+Inside GitHubService, add:
+
+/**
+ * List issues from a GitHub repository.
+ *
+ * Pull requests are also returned by GitHub's
+ * issues API, so they are explicitly filtered out.
+ */
+public async listIssues(
+    owner: string,
+    repository: string,
+    state: "open" | "closed" | "all" = "open"
+): Promise<GitHubIssue[]> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams({
+            state,
+            per_page: "100"
+        });
+
+
+    const issues =
+        await this.request<GitHubIssue[]>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/issues?${params.toString()}`
+        );
+
+
+    /*
+     * GitHub's /issues endpoint includes pull requests.
+     *
+     * Pull requests contain a pull_request property.
+     * Our GitHubIssue interface intentionally does not
+     * expose that property, so use a small runtime check.
+     */
+    return issues.filter(
+        issue =>
+            !(
+                "pull_request" in
+                (issue as unknown as Record<string, unknown>)
+            )
+    );
+}
+Why filter pull requests?
+
+GitHub's:
+
+/repos/{owner}/{repo}/issues
+
+endpoint returns both:
+
+Issues
++
+Pull Requests
+
+For your MCP abstraction, github_list_issues should return actual issues only.
+
+3. Add issue arguments to github.tools.ts
+
+In:
+
+src/mcp/servers/github/github.tools.ts
+
+add:
+
+export interface GitHubListIssuesArgs {
+    owner: string;
+    repository: string;
+    state?: "open" | "closed" | "all";
+}
+4. Import GitHubIssue
+
+Update your service imports:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse,
+    GitHubIssue
+} from "./github.service";
+5. Add listIssues() to GitHubTools
+
+Inside GitHubTools:
+
+public async listIssues(
+    args: GitHubListIssuesArgs
+): Promise<GitHubIssue[]> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    const state =
+        args.state ?? "open";
+
+
+    return this.githubService.listIssues(
+        args.owner,
+        args.repository,
+        state
+    );
+}
+6. Add the MCP tool
+
+Add:
+
+private listIssuesTool(): MCPTool {
+
+
+    return {
+        name: "github_list_issues",
+
+
+        description:
+            "List issues from a GitHub repository. Pull requests are excluded from the results.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                },
+
+
+                state: {
+                    type: "string",
+                    description:
+                        "Issue state to return. Defaults to open.",
+                    enum: [
+                        "open",
+                        "closed",
+                        "all"
+                    ]
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateListIssuesArguments(
+                    args
+                );
+
+
+            return this.listIssues(
+                validatedArgs
+            );
+        }
+    };
+}
+7. Add validation
+
+Add this method:
+
+private validateListIssuesArguments(
+    args: unknown
+): GitHubListIssuesArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    const result: GitHubListIssuesArgs = {
+        ...repositoryArgs
+    };
+
+
+    if (
+        value.state !== undefined
+    ) {
+
+
+        if (
+            value.state !== "open" &&
+            value.state !== "closed" &&
+            value.state !== "all"
+        ) {
+            throw new Error(
+                "GitHub issue state must be open, closed, or all."
+            );
+        }
+
+
+        result.state =
+            value.state;
+    }
+
+
+    return result;
+}
+
+This prevents invalid calls such as:
+
+{
+    "state": "pending"
+}
+8. Register the tool
+
+Your current getTools() should be:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool()
+    ];
+}
+
+Change it to:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool()
+    ];
+}
+
+You now have six GitHub MCP tools:
+
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+github_search_code
+github_list_issues
+9. Example calls
+Open issues
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant"
+}
+
+Defaults to:
+
+state = open
+Closed issues
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "state": "closed"
+}
+All issues
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "state": "all"
+}
+10. Why this matters for your agent
+
+Your agent can now combine code + project tasks:
+
+User:
+"Find the issue related to Docker deployment
+and inspect the relevant implementation."
+
+
+        ↓
+
+
+github_list_issues
+        ↓
+Find relevant issue
+        ↓
+github_search_code
+        ↓
+Find implementation
+        ↓
+github_read_file
+        ↓
+Read source code
+        ↓
+LLM analysis
+
+This is exactly the direction we want for your developer assistant.
+
+5.7.9 checkpoint
+
+Now run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS ...\backend> npx tsc --noEmit
+PS ...\backend>
+
+If it passes, 5.7.9 — GitHub Issues Tool is complete.
+
+One important note: this implementation intentionally starts with listing issues. We should keep issue creation/update/delete for a later milestone because those are write operations and deserve explicit validation and authorization handling before your agent can perform them.
+
+npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> 
+
+✅ 5.7.9 — GitHub Issues Tool checkpoint passed.
+
+npx tsc --noEmit
+
+No output means the TypeScript compilation is clean.
+
+GitHub MCP progress
+5.7.1  GitHub MCP Foundation          ✅
+5.7.2  GitHub Configuration/Types     ✅
+5.7.3  GitHubService                  ✅
+5.7.4  Repository Tool                ✅
+5.7.5  Repository Contents Tool       ✅
+5.7.6  Branches Tool                  ✅
+5.7.7  File Reading Tool              ✅
+5.7.8  Code Search Tool               ✅
+5.7.9  Issues Tool                    ✅
+Current GitHub MCP tools
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+github_search_code
+github_list_issues
+
+Your GitHub server is now moving beyond basic API access into developer-oriented repository intelligence.
+
+The important combined workflow is now:
+
+                  GitHub Repository
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+       Search          Read           Issues
+        Code           Files          /Tasks
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+                    AI Agent
+                         │
+                         ▼
+                  Code reasoning
+Next: 5.7.10
+
+I'd recommend GitHub Pull Requests Tool next:
+
+github_list_pull_requests
+
+That gives your agent awareness of:
+
+Pull requests
+PR state
+PR titles/descriptions
+Authors
+Review/development workflow
+
+Then your GitHub MCP layer will cover the three major repository dimensions:
+
+Code       → search/read
+Issues     → project problems/tasks
+PRs        → proposed code changes
+
+After implementation, we'll continue the same checkpoint:
+
+npx tsc --noEmit
