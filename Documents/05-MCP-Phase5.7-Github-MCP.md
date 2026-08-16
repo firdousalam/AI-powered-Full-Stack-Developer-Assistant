@@ -3492,3 +3492,1474 @@ PRs        → proposed code changes
 After implementation, we'll continue the same checkpoint:
 
 npx tsc --noEmit
+
+
+5.7.13 — GitHub Repository Tree Tool
+
+This milestone adds:
+
+github_get_tree
+
+The purpose is to let your AI agent obtain the repository-wide file/folder structure in one operation.
+
+This is especially useful before code search or file reading.
+
+AI Agent
+   ↓
+github_get_tree
+   ↓
+GitHub repository tree
+   ↓
+Project structure
+   ↓
+Search / Read relevant files
+1. Add Repository Tree types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubTreeItem {
+    path: string;
+    mode: string;
+    type: "blob" | "tree" | "commit";
+    sha: string;
+    size?: number;
+    url?: string;
+}
+
+
+export interface GitHubTreeResponse {
+    sha: string;
+    url: string;
+    tree: GitHubTreeItem[];
+    truncated: boolean;
+}
+Meaning
+
+GitHub represents:
+
+blob
+
+as a file.
+
+And:
+
+tree
+
+as a directory.
+
+So your agent can understand:
+
+src/server.ts      → blob
+src/services       → tree
+package.json       → blob
+2. Add getTree() to GitHubService
+
+Inside GitHubService, add:
+
+/**
+ * Get the complete Git tree for a repository.
+ *
+ * The recursive option allows the agent to receive
+ * the repository structure in a single request.
+ *
+ * ref can be a branch, tag, or commit SHA.
+ */
+public async getTree(
+    owner: string,
+    repository: string,
+    ref?: string
+): Promise<GitHubTreeResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    const treeRef =
+        ref?.trim() || "HEAD";
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}` +
+        `/git/trees/${encodeURIComponent(treeRef)}?recursive=1`;
+
+
+    return this.request<GitHubTreeResponse>(
+        endpoint
+    );
+}
+
+This uses GitHub's Git Trees API rather than recursively calling the contents API.
+
+That's important because the agent can get the repository structure in a single logical operation.
+
+3. Add tool arguments
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubGetTreeArgs {
+    owner: string;
+    repository: string;
+    ref?: string;
+}
+4. Import the tree response
+
+Update your service import:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse,
+    GitHubIssue,
+    GitHubPullRequest,
+    GitHubCommit,
+    GitHubCompareResponse,
+    GitHubTreeResponse
+} from "./github.service";
+5. Add getTree() to GitHubTools
+
+Inside GitHubTools:
+
+public async getTree(
+    args: GitHubGetTreeArgs
+): Promise<GitHubTreeResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getTree(
+        args.owner,
+        args.repository,
+        args.ref
+    );
+}
+6. Add the MCP tool
+
+Add:
+
+private getTreeTool(): MCPTool {
+
+
+    return {
+        name: "github_get_tree",
+
+
+        description:
+            "Get the repository-wide file and directory tree from GitHub.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                },
+
+
+                ref: {
+                    type: "string",
+                    description:
+                        "Optional branch, tag, or commit SHA. Defaults to HEAD."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateGetTreeArguments(
+                    args
+                );
+
+
+            return this.getTree(
+                validatedArgs
+            );
+        }
+    };
+}
+7. Add validation
+
+Add:
+
+private validateGetTreeArguments(
+    args: unknown
+): GitHubGetTreeArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    const result: GitHubGetTreeArgs = {
+        ...repositoryArgs
+    };
+
+
+    if (
+        value.ref !== undefined
+    ) {
+
+
+        if (
+            typeof value.ref !== "string"
+        ) {
+            throw new Error(
+                "GitHub tree ref must be a string."
+            );
+        }
+
+
+        result.ref =
+            value.ref.trim();
+    }
+
+
+    return result;
+}
+8. Register the tool
+
+Your getTools() currently has nine tools:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool()
+    ];
+}
+
+Add the tree tool:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool()
+    ];
+}
+
+You now have 10 GitHub MCP tools.
+
+9. Example call
+
+The AI agent can call:
+
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant"
+}
+
+Or inspect a particular branch:
+
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "ref": "main"
+}
+
+The GitHub response will contain entries such as:
+
+{
+    "path": "backend/src/mcp/servers/github/github.service.ts",
+    "mode": "100644",
+    "type": "blob",
+    "sha": "abc123",
+    "size": 15234
+}
+
+and:
+
+{
+    "path": "backend/src/mcp/servers/github",
+    "mode": "040000",
+    "type": "tree",
+    "sha": "def456"
+}
+10. Important: truncated
+
+GitHub may return:
+
+{
+    "truncated": true
+}
+
+for very large repositories.
+
+Don't ignore this field.
+
+Your agent should know that:
+
+truncated = false
+
+means it received the complete tree.
+
+Whereas:
+
+truncated = true
+
+means the repository is too large for the response and the agent should use more targeted operations such as:
+
+github_get_contents
+github_search_code
+
+This is one reason we're keeping the tree response faithful to GitHub instead of pretending it is always complete.
+
+11. Why this tool is important
+
+This completes the basic repository discovery layer.
+
+Your agent can now start with:
+
+github_get_tree
+        ↓
+Understand project structure
+        ↓
+github_search_code
+        ↓
+Find relevant implementation
+        ↓
+github_read_file
+        ↓
+Understand code
+        ↓
+github_list_commits
+        ↓
+Understand history
+        ↓
+github_compare_commits
+        ↓
+Understand changes
+
+That's a much better foundation for the agent than blindly sending files to the LLM.
+
+12. Current GitHub MCP architecture
+                    GitHub MCP
+                        │
+ ┌──────────────────────┼────────────────────────┐
+ │                      │                        │
+ ▼                      ▼                        ▼
+Repository          Source Code             Development
+ │                      │                        │
+ ├─ Repository           ├─ Contents             ├─ Issues
+ ├─ Branches             ├─ Read File            ├─ Pull Requests
+ └─ Tree                 └─ Search               ├─ Commits
+                                                 └─ Diff
+
+This is now a strong read-only GitHub developer intelligence layer.
+
+5.7.13 checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+If clean:
+
+5.7.13 — GitHub Repository Tree Tool ✅
+
+Next milestone
+
+I recommend 5.7.14 — GitHub Releases/Tags Tool.
+
+That will allow your agent to understand repository versions:
+
+v1.0.0
+v1.1.0
+v2.0.0
+
+and eventually correlate:
+
+Release → commits → files → changes
+
+which becomes useful for release analysis and debugging regressions.
+
+5.7.14 — GitHub Releases/Tags Tool.
+
+5.7.14 — GitHub Releases / Tags Tool
+
+This milestone adds repository version awareness.
+
+We'll expose two MCP tools:
+
+github_list_releases
+github_list_tags
+
+This lets the agent understand:
+
+Release → Tag → Version → Commit
+
+and answer questions such as:
+
+"What releases does this repository have?"
+"What is the latest release?"
+"Show me the available tags."
+"Which version should I inspect?"
+"What tags exist around a particular release?"
+1. Add Release and Tag types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubRelease {
+    id: number;
+    tag_name: string;
+    name: string | null;
+    body: string | null;
+    draft: boolean;
+    prerelease: boolean;
+    created_at: string;
+    published_at: string | null;
+    html_url: string;
+    target_commitish: string;
+    author: GitHubIssueUser;
+}
+
+
+export interface GitHubTag {
+    name: string;
+    commit: {
+        sha: string;
+        url: string;
+    };
+    zipball_url?: string;
+    tarball_url?: string;
+}
+Why keep releases and tags separate?
+
+A GitHub release is a published release object.
+
+A tag is a Git reference.
+
+For example:
+
+Release:
+v1.2.0
+    │
+    └── Tag: v1.2.0
+             │
+             └── Commit SHA
+
+Not every tag necessarily has a release.
+
+2. Add listReleases() to GitHubService
+
+Inside GitHubService, add:
+
+/**
+ * List releases from a GitHub repository.
+ */
+public async listReleases(
+    owner: string,
+    repository: string
+): Promise<GitHubRelease[]> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    return this.request<GitHubRelease[]>(
+        `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/releases?per_page=100`
+    );
+}
+3. Add listTags() to GitHubService
+
+Add:
+
+/**
+ * List Git tags from a GitHub repository.
+ */
+public async listTags(
+    owner: string,
+    repository: string
+): Promise<GitHubTag[]> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    return this.request<GitHubTag[]>(
+        `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/tags?per_page=100`
+    );
+}
+4. Add tool arguments
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubListReleasesArgs {
+    owner: string;
+    repository: string;
+}
+
+
+export interface GitHubListTagsArgs {
+    owner: string;
+    repository: string;
+}
+5. Import the new types
+
+Update the existing service import:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse,
+    GitHubIssue,
+    GitHubPullRequest,
+    GitHubCommit,
+    GitHubCompareResponse,
+    GitHubTreeResponse,
+    GitHubRelease,
+    GitHubTag
+} from "./github.service";
+6. Add release operation to GitHubTools
+
+Inside GitHubTools:
+
+public async listReleases(
+    args: GitHubListReleasesArgs
+): Promise<GitHubRelease[]> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listReleases(
+        args.owner,
+        args.repository
+    );
+}
+7. Add tag operation
+
+Also add:
+
+public async listTags(
+    args: GitHubListTagsArgs
+): Promise<GitHubTag[]> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listTags(
+        args.owner,
+        args.repository
+    );
+}
+8. Add Release MCP Tool
+
+Add:
+
+private listReleasesTool(): MCPTool {
+
+
+    return {
+        name: "github_list_releases",
+
+
+        description:
+            "List published releases from a GitHub repository.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateListReleasesArguments(
+                    args
+                );
+
+
+            return this.listReleases(
+                validatedArgs
+            );
+        }
+    };
+}
+9. Add Release validation
+private validateListReleasesArguments(
+    args: unknown
+): GitHubListReleasesArgs {
+
+
+    return this.validateRepositoryArguments(
+        args
+    );
+}
+
+This reuses your existing repository validation.
+
+10. Add Tags MCP Tool
+
+Add:
+
+private listTagsTool(): MCPTool {
+
+
+    return {
+        name: "github_list_tags",
+
+
+        description:
+            "List Git tags from a GitHub repository.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateListTagsArguments(
+                    args
+                );
+
+
+            return this.listTags(
+                validatedArgs
+            );
+        }
+    };
+}
+11. Add Tags validation
+private validateListTagsArguments(
+    args: unknown
+): GitHubListTagsArgs {
+
+
+    return this.validateRepositoryArguments(
+        args
+    );
+}
+12. Register both tools
+
+Your current getTools() should contain 10 tools:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool()
+    ];
+}
+
+Change it to:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool()
+    ];
+}
+
+You now have 12 GitHub MCP tools.
+
+13. Example calls
+List releases
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant"
+}
+
+The agent can receive:
+
+v1.0.0
+v1.1.0
+v1.2.0
+
+along with release metadata.
+
+List tags
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant"
+}
+
+The response can contain:
+
+[
+    {
+        "name": "v1.2.0",
+        "commit": {
+            "sha": "abc123..."
+        }
+    }
+]
+14. Useful agent workflow
+
+This unlocks a useful version-analysis flow:
+
+              GitHub Repository
+                      │
+                      ▼
+               github_list_releases
+                      │
+                      ▼
+                 Version
+                      │
+             ┌────────┴────────┐
+             ▼                 ▼
+       github_list_tags   github_list_commits
+             │                 │
+             └────────┬────────┘
+                      ▼
+              github_compare_commits
+                      │
+                      ▼
+                AI Analysis
+
+For example:
+
+"What changed between v1.0.0 and v1.1.0?"
+
+The agent can eventually:
+
+1. list releases
+2. identify tags
+3. compare v1.0.0...v1.1.0
+4. inspect changed files
+5. read relevant source
+6. explain the changes
+
+That is exactly the kind of multi-tool reasoning we want later when we introduce the agent orchestration layer.
+
+5.7.14 checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+If it passes:
+
+5.7.14 — GitHub Releases/Tags Tool ✅
+
+Current GitHub MCP toolset
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+github_search_code
+github_list_issues
+github_list_pull_requests
+github_list_commits
+github_compare_commits
+github_get_tree
+github_list_releases
+github_list_tags
+
+At this point your GitHub MCP server has a strong read-only repository intelligence foundation. The next milestone I'd recommend is 5.7.15 — GitHub Repository Search / Discovery Tool, allowing the agent to find repositories before it even knows the exact repository name.
+
+5.7.15 — GitHub Repository Search / Discovery Tool
+
+5.7.15 — GitHub Repository Search / Discovery Tool
+
+This milestone adds repository discovery to your GitHub MCP layer.
+
+New MCP tool:
+
+github_search_repositories
+
+This is important because your agent currently assumes it already knows:
+
+owner + repository
+
+After 5.7.15, the workflow can become:
+
+User
+ ↓
+"What repositories relate to authentication?"
+ ↓
+github_search_repositories
+ ↓
+Find repositories
+ ↓
+github_get_repository
+ ↓
+github_get_tree
+ ↓
+github_search_code
+ ↓
+github_read_file
+ ↓
+AI reasoning
+1. Add GitHub repository search types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubRepositorySearchItem
+    extends GitHubRepository {
+    score?: number;
+    full_name: string;
+}
+
+
+export interface GitHubRepositorySearchResponse {
+    total_count: number;
+    incomplete_results: boolean;
+    items: GitHubRepositorySearchItem[];
+}
+
+If your existing GitHubRepository already contains full_name, this is still fine as long as the interface remains structurally compatible.
+
+2. Add searchRepositories() to GitHubService
+
+Inside GitHubService, add:
+
+/**
+ * Search GitHub repositories using GitHub's
+ * repository search API.
+ *
+ * The query can contain GitHub search qualifiers,
+ * for example:
+ *
+ *   typescript
+ *   nodejs language:typescript
+ *   mcp stars:>100
+ *   react topic:frontend
+ */
+public async searchRepositories(
+    query: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubRepositorySearchResponse> {
+
+
+    if (!query?.trim()) {
+        throw new Error(
+            "GitHub repository search query is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "GitHub repository search page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "GitHub repository search perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "q",
+        query.trim()
+    );
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    const endpoint =
+        `/search/repositories?${params.toString()}`;
+
+
+    return this.request<GitHubRepositorySearchResponse>(
+        endpoint
+    );
+}
+Why support pagination?
+
+GitHub repository search can return many repositories.
+
+We don't want your MCP tool to dump hundreds of repositories into the LLM context.
+
+Instead:
+
+page = 1
+perPage = 30
+
+is a reasonable default.
+
+3. Add tool arguments
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubSearchRepositoriesArgs {
+    query: string;
+    page?: number;
+    perPage?: number;
+}
+4. Import the search response
+
+Add GitHubRepositorySearchResponse to your service imports:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse,
+    GitHubIssue,
+    GitHubPullRequest,
+    GitHubCommit,
+    GitHubCompareResponse,
+    GitHubTreeResponse,
+    GitHubRelease,
+    GitHubTag,
+    GitHubRepositorySearchResponse
+} from "./github.service";
+5. Add operation to GitHubTools
+
+Inside GitHubTools:
+
+public async searchRepositories(
+    args: GitHubSearchRepositoriesArgs
+): Promise<GitHubRepositorySearchResponse> {
+
+
+    if (
+        !args.query ||
+        !args.query.trim()
+    ) {
+        throw new Error(
+            "GitHub repository search query is required."
+        );
+    }
+
+
+    return this.githubService.searchRepositories(
+        args.query,
+        args.page,
+        args.perPage
+    );
+}
+6. Add MCP tool
+
+Add:
+
+private searchRepositoriesTool(): MCPTool {
+
+
+    return {
+        name: "github_search_repositories",
+
+
+        description:
+            "Search GitHub repositories using a search query and optional GitHub search qualifiers.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                query: {
+                    type: "string",
+                    description:
+                        "GitHub repository search query. GitHub search qualifiers such as language:, stars:, topic:, and user: may be used."
+                },
+
+
+                page: {
+                    type: "number",
+                    description:
+                        "Page number. Defaults to 1."
+                },
+
+
+                perPage: {
+                    type: "number",
+                    description:
+                        "Number of repositories to return per page. Defaults to 30 and has a maximum of 100."
+                }
+            },
+
+
+            required: [
+                "query"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateSearchRepositoriesArguments(
+                    args
+                );
+
+
+            return this.searchRepositories(
+                validatedArgs
+            );
+        }
+    };
+}
+7. Add validation
+
+Add:
+
+private validateSearchRepositoriesArguments(
+    args: unknown
+): GitHubSearchRepositoriesArgs {
+
+
+    if (
+        !args ||
+        typeof args !== "object"
+    ) {
+        throw new Error(
+            "GitHub repository search arguments are required."
+        );
+    }
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    if (
+        typeof value.query !== "string" ||
+        !value.query.trim()
+    ) {
+        throw new Error(
+            "GitHub repository search query is required."
+        );
+    }
+
+
+    const result:
+        GitHubSearchRepositoriesArgs = {
+        query:
+            value.query.trim()
+    };
+
+
+    if (
+        value.page !== undefined
+    ) {
+
+
+        if (
+            typeof value.page !== "number" ||
+            !Number.isInteger(value.page) ||
+            value.page < 1
+        ) {
+            throw new Error(
+                "GitHub repository search page must be a positive integer."
+            );
+        }
+
+
+        result.page =
+            value.page;
+    }
+
+
+    if (
+        value.perPage !== undefined
+    ) {
+
+
+        if (
+            typeof value.perPage !== "number" ||
+            !Number.isInteger(value.perPage) ||
+            value.perPage < 1 ||
+            value.perPage > 100
+        ) {
+            throw new Error(
+                "GitHub repository search perPage must be between 1 and 100."
+            );
+        }
+
+
+        result.perPage =
+            value.perPage;
+    }
+
+
+    return result;
+}
+8. Register the tool
+
+Your getTools() currently contains 12 tools:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool()
+    ];
+}
+
+Add:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool(),
+        this.searchRepositoriesTool()
+    ];
+}
+
+You now have 13 GitHub MCP tools.
+
+9. Example queries
+Search for MCP repositories
+{
+    "query": "MCP"
+}
+TypeScript MCP repositories
+{
+    "query": "MCP language:typescript"
+}
+Popular React repositories
+{
+    "query": "react stars:>1000"
+}
+Repositories belonging to a user
+{
+    "query": "user:firdousalam"
+}
+Search with pagination
+{
+    "query": "nodejs language:typescript",
+    "page": 2,
+    "perPage": 20
+}
+10. Important AI-agent design
+
+This tool should not replace github_search_code.
+
+They solve different problems:
+
+github_search_repositories
+        ↓
+"What repositories are relevant?"
+
+versus:
+
+github_search_code
+        ↓
+"Where is this code inside the repository?"
+
+So your agent can now perform a two-stage discovery process:
+
+User:
+"Find GitHub projects implementing MCP in TypeScript."
+
+
+             ↓
+
+
+github_search_repositories
+             ↓
+Repository candidates
+             ↓
+Select relevant repository
+             ↓
+github_get_repository
+             ↓
+github_get_tree
+             ↓
+github_search_code
+
+This is an important capability for a future autonomous developer agent.
+
+11. Current GitHub MCP architecture
+
+You now have:
+
+                    GitHub MCP
+                        │
+       ┌────────────────┼─────────────────┐
+       │                │                 │
+       ▼                ▼                 ▼
+   Discovery          Code            History
+       │                │                 │
+       ├─ Search        ├─ Contents        ├─ Commits
+       ├─ Repository    ├─ Read File       ├─ Diff
+       ├─ Tree          └─ Code Search     ├─ Releases
+       └─ Branches                         └─ Tags
+                        │
+                        ▼
+                    Workflow
+                        │
+                 ┌──────┴──────┐
+                 ▼             ▼
+              Issues           PRs
+
+That's becoming a genuine GitHub developer intelligence MCP server, not just a collection of API wrappers.
+
+12. 5.7.15 checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+If it passes:
+
+5.7.15 — GitHub Repository Search / Discovery Tool ✅
+
+GitHub MCP tool count
+1.  github_get_repository
+2.  github_get_contents
+3.  github_list_branches
+4.  github_read_file
+5.  github_search_code
+6.  github_list_issues
+7.  github_list_pull_requests
+8.  github_list_commits
+9.  github_compare_commits
+10. github_get_tree
+11. github_list_releases
+12. github_list_tags
+13. github_search_repositories
+
+Next recommended milestone: 5.7.16 — GitHub User/Organization Tool.
+
+That would allow the agent to inspect repository ownership and discover organizations/users before drilling into their repositories.
+

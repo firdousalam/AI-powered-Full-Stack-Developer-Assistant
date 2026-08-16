@@ -126,6 +126,118 @@ export interface GitHubPullRequest {
     };
 }
 
+export interface GitHubCommitAuthor {
+    name: string;
+    email: string;
+    date: string;
+}
+
+export interface GitHubCommitUser {
+    login: string;
+}
+
+export interface GitHubCommit {
+    sha: string;
+
+    html_url: string;
+
+    commit: {
+        message: string;
+
+        author: GitHubCommitAuthor;
+
+        committer: GitHubCommitAuthor;
+    };
+
+    author: GitHubCommitUser | null;
+
+    committer: GitHubCommitUser | null;
+}
+
+export interface GitHubFileChange {
+    filename: string;
+    status:
+    | "added"
+    | "modified"
+    | "deleted"
+    | "renamed"
+    | "copied"
+    | "changed";
+
+    additions: number;
+    deletions: number;
+    changes: number;
+
+    blob_url?: string;
+    raw_url?: string;
+    previous_filename?: string;
+
+    patch?: string;
+}
+
+export interface GitHubCompareResponse {
+    status: string;
+
+    ahead_by: number;
+    behind_by: number;
+
+    total_commits: number;
+
+    commits: GitHubCommit[];
+
+    files: GitHubFileChange[];
+}
+
+export interface GitHubTreeItem {
+    path: string;
+    mode: string;
+    type: "blob" | "tree" | "commit";
+    sha: string;
+    size?: number;
+    url?: string;
+}
+
+export interface GitHubTreeResponse {
+    sha: string;
+    url: string;
+    tree: GitHubTreeItem[];
+    truncated: boolean;
+}
+
+export interface GitHubRelease {
+    id: number;
+    tag_name: string;
+    name: string | null;
+    body: string | null;
+    draft: boolean;
+    prerelease: boolean;
+    created_at: string;
+    published_at: string | null;
+    html_url: string;
+    target_commitish: string;
+    author: GitHubIssueUser;
+}
+
+export interface GitHubTag {
+    name: string;
+    commit: {
+        sha: string;
+        url: string;
+    };
+    zipball_url?: string;
+    tarball_url?: string;
+}
+export interface GitHubRepositorySearchItem
+    extends GitHubRepository {
+    score?: number;
+    full_name: string;
+}
+
+export interface GitHubRepositorySearchResponse {
+    total_count: number;
+    incomplete_results: boolean;
+    items: GitHubRepositorySearchItem[];
+}
 
 
 export class GitHubService {
@@ -398,6 +510,272 @@ export class GitHubService {
 
         return this.request<GitHubPullRequest[]>(
             `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/pulls?${params.toString()}`
+        );
+    }
+
+    /**
+ * List commits from a GitHub repository.
+ *
+ * An optional path can be supplied to retrieve
+ * the history of a specific file or directory.
+ *
+ * An optional ref can be supplied to retrieve
+ * history for a specific branch, tag, or commit SHA.
+ */
+    public async listCommits(
+        owner: string,
+        repository: string,
+        path?: string,
+        ref?: string
+    ): Promise<GitHubCommit[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        if (path?.trim()) {
+            params.set(
+                "path",
+                path.trim()
+            );
+        }
+
+        if (ref?.trim()) {
+            params.set(
+                "sha",
+                ref.trim()
+            );
+        }
+
+        params.set(
+            "per_page",
+            "100"
+        );
+
+        const query =
+            params.toString();
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits` +
+            (query ? `?${query}` : "");
+
+        return this.request<GitHubCommit[]>(
+            endpoint
+        );
+    }
+    /**
+ * Compare two commits, branches, or tags in a GitHub repository.
+ *
+ * Examples:
+ *
+ *   main...feature-branch
+ *   abc123...def456
+ *   v1.0.0...v1.1.0
+ */
+    public async compareCommits(
+        owner: string,
+        repository: string,
+        base: string,
+        head: string
+    ): Promise<GitHubCompareResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (!base?.trim()) {
+            throw new Error(
+                "GitHub comparison base is required."
+            );
+        }
+
+        if (!head?.trim()) {
+            throw new Error(
+                "GitHub comparison head is required."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}` +
+            `/compare/${encodeURIComponent(base.trim())}...${encodeURIComponent(head.trim())}`;
+
+        return this.request<GitHubCompareResponse>(
+            endpoint
+        );
+    }
+
+    /**
+ * Get the complete Git tree for a repository.
+ *
+ * The recursive option allows the agent to receive
+ * the repository structure in a single request.
+ *
+ * ref can be a branch, tag, or commit SHA.
+ */
+    public async getTree(
+        owner: string,
+        repository: string,
+        ref?: string
+    ): Promise<GitHubTreeResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const treeRef =
+            ref?.trim() || "HEAD";
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}` +
+            `/git/trees/${encodeURIComponent(treeRef)}?recursive=1`;
+
+        return this.request<GitHubTreeResponse>(
+            endpoint
+        );
+    }
+
+    /**
+ * List Git tags from a GitHub repository.
+ */
+    public async listTags(
+        owner: string,
+        repository: string
+    ): Promise<GitHubTag[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        return this.request<GitHubTag[]>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/tags?per_page=100`
+        );
+    }
+    /**
+ * List releases from a GitHub repository.
+ */
+    public async listReleases(
+        owner: string,
+        repository: string
+    ): Promise<GitHubRelease[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        return this.request<GitHubRelease[]>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/releases?per_page=100`
+        );
+    }
+
+    /**
+ * Search GitHub repositories using GitHub's
+ * repository search API.
+ *
+ * The query can contain GitHub search qualifiers,
+ * for example:
+ *
+ *   typescript
+ *   nodejs language:typescript
+ *   mcp stars:>100
+ *   react topic:frontend
+ */
+    public async searchRepositories(
+        query: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubRepositorySearchResponse> {
+
+        if (!query?.trim()) {
+            throw new Error(
+                "GitHub repository search query is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "GitHub repository search page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "GitHub repository search perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "q",
+            query.trim()
+        );
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        const endpoint =
+            `/search/repositories?${params.toString()}`;
+
+        return this.request<GitHubRepositorySearchResponse>(
+            endpoint
         );
     }
 
