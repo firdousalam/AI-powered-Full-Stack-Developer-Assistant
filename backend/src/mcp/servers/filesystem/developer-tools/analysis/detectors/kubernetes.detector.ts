@@ -157,8 +157,7 @@ export class KubernetesDetector
          * Helm
          * ============================================================
          *
-         * Chart.yaml is the primary indicator that a directory
-         * represents a Helm chart.
+         * Chart.yaml / Chart.yml is the primary Helm indicator.
          */
 
         const helm =
@@ -169,10 +168,6 @@ export class KubernetesDetector
             await workspaceReader.exists(
                 workspacePath,
                 "Chart.yml"
-            ) ||
-            await workspaceReader.exists(
-                workspacePath,
-                "helm"
             );
 
 
@@ -188,6 +183,12 @@ export class KubernetesDetector
             helm ||
             kustomize;
 
+
+        /*
+         * ============================================================
+         * Result
+         * ============================================================
+         */
 
         return this.success({
 
