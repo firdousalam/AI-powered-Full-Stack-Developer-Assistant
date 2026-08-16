@@ -8,7 +8,8 @@ import {
     GitHubService,
     GitHubRepository,
     GitHubContent,
-    GitHubBranch
+    GitHubBranch,
+    GitHubCodeSearchResponse
 } from "./github.service";
 
 /**
@@ -42,6 +43,12 @@ export interface GitHubBranchesArgs {
     repository: string;
 }
 
+export interface GitHubSearchCodeArgs {
+    owner: string;
+    repository: string;
+    query: string;
+}
+
 /**
  * ============================================================
  * GitHub MCP Tools
@@ -65,10 +72,10 @@ export class GitHubTools {
             this.getRepositoryTool(),
             this.getContentsTool(),
             this.listBranchesTool(),
-            this.readFileTool()
+            this.readFileTool(),
+            this.searchCodeTool()
         ];
     }
-
     private validateReadFileArguments(
         args: unknown
     ): GitHubReadFileArgs {
@@ -582,4 +589,108 @@ export class GitHubTools {
 
         return result;
     }
+
+    public async searchCode(
+        args: GitHubSearchCodeArgs
+    ): Promise<GitHubCodeSearchResponse> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        if (
+            !args.query ||
+            !args.query.trim()
+        ) {
+            throw new Error(
+                "GitHub code search query is required."
+            );
+        }
+
+        return this.githubService.searchCode(
+            args.owner,
+            args.repository,
+            args.query.trim()
+        );
+    }
+    private searchCodeTool(): MCPTool {
+
+        return {
+            name: "github_search_code",
+
+            description:
+                "Search for source code, symbols, filenames, or text within a GitHub repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization that owns the repository."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "Name of the GitHub repository."
+                    },
+
+                    query: {
+                        type: "string",
+                        description:
+                            "Code search query. Can search for symbols, text, filenames, extensions, or other GitHub-supported code search terms."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "query"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateSearchCodeArguments(
+                        args
+                    );
+
+                return this.searchCode(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private validateSearchCodeArguments(
+        args: unknown
+    ): GitHubSearchCodeArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        if (
+            typeof value.query !== "string" ||
+            !value.query.trim()
+        ) {
+            throw new Error(
+                "GitHub code search query is required."
+            );
+        }
+
+        return {
+            ...repositoryArgs,
+            query: value.query.trim()
+        };
+    }
+
 }

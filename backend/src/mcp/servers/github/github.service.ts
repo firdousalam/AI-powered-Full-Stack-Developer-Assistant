@@ -30,6 +30,25 @@ export interface GitHubContent {
     encoding?: string;
 }
 
+export interface GitHubCodeSearchItem {
+    name: string;
+    path: string;
+    sha: string;
+    html_url: string;
+    repository: {
+        id: number;
+        name: string;
+        full_name: string;
+    };
+}
+
+export interface GitHubCodeSearchResponse {
+    total_count: number;
+    incomplete_results: boolean;
+    items: GitHubCodeSearchItem[];
+}
+
+
 export interface GitHubBranch {
     name: string;
     protected: boolean;
@@ -198,4 +217,37 @@ export class GitHubService {
     public async dispose(): Promise<void> {
         // No persistent resources currently require cleanup.
     }
+
+    /**
+ * Search code across a GitHub repository.
+ *
+ * GitHub search queries support GitHub's code-search syntax.
+ *
+ * Examples:
+ *
+ *   getRepository
+ *   filename:package.json
+ *   extension:ts MCPTool
+ *   path:src githubService
+ */
+    public async searchCode(
+        owner: string,
+        repository: string,
+        query: string,
+    ): Promise<GitHubCodeSearchResponse> {
+
+        if (!query?.trim()) {
+            throw new Error(
+                "GitHub code search query is required."
+            );
+        }
+
+        const searchQuery =
+            `${query.trim()} repo:${owner}/${repository}`;
+
+        return this.request<GitHubCodeSearchResponse>(
+            `/search/code?q=${encodeURIComponent(searchQuery)}`
+        );
+    }
+
 }

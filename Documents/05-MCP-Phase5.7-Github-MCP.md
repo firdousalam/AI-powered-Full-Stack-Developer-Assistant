@@ -2011,3 +2011,500 @@ If there is no output, 5.7.6 — Branches Tool is complete.
 
 After this, your initial GitHub MCP foundation will be complete enough to start adding more developer-oriented capabilities, with 5.7.7 — File Reading Tool being the most valuable next step for your AI coding assistant.
 
+5.7.7 — File Reading Tool
+
+This is an important milestone because this is where GitHub becomes useful to your AI coding assistant.
+
+Instead of returning GitHub's raw contents API response, we'll expose a developer-friendly MCP tool:
+
+github_read_file
+
+The agent can then ask:
+
+Read package.json from this repository.
+
+and receive actual text rather than GitHub's Base64-encoded response.
+
+Architecture
+AI Agent
+   ↓
+GitHubServer
+   ↓
+github_read_file
+   ↓
+GitHubTools.readFile()
+   ↓
+GitHubService.getContents()
+   ↓
+GitHub REST API
+   ↓
+Base64 content
+   ↓
+Decode
+   ↓
+Plain text
+1. Update GitHubContent
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Your current GitHubContent interface should be extended.
+
+Use:
+
+export interface GitHubContent {
+    name: string;
+    path: string;
+    sha: string;
+    size?: number;
+    type: "file" | "dir";
+    html_url?: string;
+    download_url?: string | null;
+
+
+    /**
+     * Base64 encoded file content returned by GitHub.
+     */
+    content?: string;
+
+
+    /**
+     * Encoding used by GitHub for the content.
+     */
+    encoding?: string;
+}
+
+This is important because github_get_contents can return either a directory listing or a file object.
+
+2. Add the file-reading arguments
+
+In:
+
+src/mcp/servers/github/github.tools.ts
+
+add:
+
+export interface GitHubReadFileArgs {
+    owner: string;
+    repository: string;
+    path: string;
+    ref?: string;
+}
+
+The tool requires:
+
+owner
+repository
+path
+
+and optionally accepts:
+
+ref
+3. Add readFile() to GitHubTools
+
+Add this method inside the GitHubTools class:
+
+public async readFile(
+    args: GitHubReadFileArgs
+): Promise<{
+    owner: string;
+    repository: string;
+    path: string;
+    ref?: string;
+    content: string;
+}> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    if (
+        !args.path ||
+        !args.path.trim()
+    ) {
+        throw new Error(
+            "GitHub file path is required."
+        );
+    }
+
+
+    const result =
+        await this.githubService.getContents(
+            args.owner,
+            args.repository,
+            args.path,
+            args.ref
+        );
+
+
+    if (
+        Array.isArray(result)
+    ) {
+        throw new Error(
+            `The specified path '${args.path}' is a directory, not a file.`
+        );
+    }
+
+
+    if (
+        result.type !== "file"
+    ) {
+        throw new Error(
+            `The specified path '${args.path}' is not a file.`
+        );
+    }
+
+
+    if (
+        !result.content
+    ) {
+        throw new Error(
+            `GitHub did not return content for '${args.path}'.`
+        );
+    }
+
+
+    if (
+        result.encoding &&
+        result.encoding !== "base64"
+    ) {
+        throw new Error(
+            `Unsupported GitHub content encoding: ${result.encoding}`
+        );
+    }
+
+
+    const content =
+        Buffer.from(
+            result.content.replace(/\s/g, ""),
+            "base64"
+        ).toString("utf-8");
+
+
+    return {
+        owner: args.owner,
+        repository: args.repository,
+        path: result.path,
+        ref: args.ref,
+        content
+    };
+}
+Why decode here?
+
+The GitHub API returns file content approximately like:
+
+content:
+SGVsbG8gV29ybGQ=
+
+The AI agent should receive:
+
+Hello World
+
+not the encoded representation.
+
+This is exactly the kind of transformation that belongs in your developer tool layer.
+
+4. Add the MCP tool
+
+Add this method to GitHubTools:
+
+private readFileTool(): MCPTool {
+
+
+    return {
+        name: "github_read_file",
+
+
+        description:
+            "Read and return the text content of a file from a GitHub repository.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                },
+
+
+                path: {
+                    type: "string",
+                    description:
+                        "Path of the file inside the repository."
+                },
+
+
+                ref: {
+                    type: "string",
+                    description:
+                        "Git branch, tag, or commit SHA. If omitted, the repository default branch is used."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "path"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateReadFileArguments(
+                    args
+                );
+
+
+            return this.readFile(
+                validatedArgs
+            );
+        }
+    };
+}
+5. Add the validator
+
+Add:
+
+private validateReadFileArguments(
+    args: unknown
+): GitHubReadFileArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    if (
+        typeof value.path !== "string" ||
+        !value.path.trim()
+    ) {
+        throw new Error(
+            "GitHub file path is required."
+        );
+    }
+
+
+    const result: GitHubReadFileArgs = {
+        ...repositoryArgs,
+        path: value.path.trim()
+    };
+
+
+    if (
+        value.ref !== undefined
+    ) {
+
+
+        if (
+            typeof value.ref !== "string"
+        ) {
+            throw new Error(
+                "GitHub repository ref must be a string."
+            );
+        }
+
+
+        result.ref =
+            value.ref.trim();
+    }
+
+
+    return result;
+}
+6. Register the new tool
+
+This part is easy to miss.
+
+Your existing getTools() currently has:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool()
+    ];
+}
+
+Change it to:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool()
+    ];
+}
+
+Now the GitHub MCP server exposes four tools:
+
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+7. Example
+
+The AI agent can call:
+
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "path": "backend/package.json"
+}
+
+The result becomes:
+
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant",
+    "path": "backend/package.json",
+    "content": "{\n  \"name\": \"backend\",\n  ...\n}"
+}
+
+Instead of exposing the raw GitHub response.
+
+8. Important limitation
+
+Don't try to make this tool handle directories.
+
+If the agent calls:
+
+github_read_file
+path = "backend/src"
+
+and GitHub returns a directory, we deliberately return:
+
+The specified path 'backend/src' is a directory, not a file.
+
+The agent should use:
+
+github_get_contents
+
+for directories.
+
+That gives us a clean separation:
+
+github_get_contents
+        │
+        ├── directory → list contents
+        └── file      → GitHub metadata/raw response
+
+
+github_read_file
+        │
+        └── file      → decoded text
+5.7.7 checkpoint
+
+After making these changes:
+
+npx tsc --noEmit
+
+Expected:
+
+PS ...\backend> npx tsc --noEmit
+PS ...\backend>
+
+If that passes, 5.7.7 — File Reading Tool is complete at the TypeScript level.
+
+This is also the first GitHub tool that becomes directly valuable to your later RAG/code-analysis/agent workflow, because the agent can now retrieve actual source code from a remote repository.
+
+npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> 
+
+✅ 5.7.7 — File Reading Tool checkpoint passed.
+
+npx tsc --noEmit
+
+No output = TypeScript compilation successful.
+
+GitHub MCP status
+5.7.1  GitHub MCP Foundation          ✅
+5.7.2  GitHub Configuration/Types     ✅
+5.7.3  GitHubService                  ✅
+5.7.4  Repository Tool                ✅
+5.7.5  Repository Contents Tool       ✅
+5.7.6  Branches Tool                  ✅
+5.7.7  File Reading Tool              ✅
+
+Your GitHub MCP server now exposes:
+
+github_get_repository
+github_get_contents
+github_list_branches
+github_read_file
+
+The particularly important new capability is:
+
+AI Agent
+   ↓
+github_read_file
+   ↓
+GitHub repository
+   ↓
+source code
+   ↓
+plain text
+   ↓
+AI reasoning / code analysis
+
+That gives your future agent the ability to inspect real source files, which is a major step toward the developer-agent functionality you're building.
+
+Recommended checkpoint commit
+git add src/mcp/servers/github
+git commit -m "feat: add GitHub file reading tool"
+Next milestone
+
+I'd recommend 5.7.8 — GitHub Code Search Tool.
+
+That will be more powerful than simply reading known files because the agent will be able to ask:
+
+Where is GitHubService used?
+
+Find all references to MCPTool.
+
+Search for getRepository across this repository.
+
+The resulting flow would be:
+
+AI Agent
+   ↓
+github_search_code
+   ↓
+GitHub API
+   ↓
+matching files/lines
+   ↓
+Agent reasoning
+
+That starts making your GitHub MCP server genuinely useful for AI-powered repository exploration and code understanding.
+
