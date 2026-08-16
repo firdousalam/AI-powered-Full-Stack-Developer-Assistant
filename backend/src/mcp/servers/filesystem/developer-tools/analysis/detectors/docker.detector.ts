@@ -1,74 +1,173 @@
-import { DetectorBase } from "./base/detector.base";
-import { DetectorResult } from "../models";
-import { workspaceReader } from "../readers";
+import {
+    DetectorBase
+} from "./base/detector.base";
+
+import {
+    DetectorResult
+} from "../models";
+
+import {
+    workspaceReader
+} from "../readers";
+
 
 export interface DockerInfo {
 
-    supported: boolean;
+    detected: boolean;
 
-    dockerfile: boolean;
+    dockerfile?: string;
 
-    dockerCompose: boolean;
+    composeFile?: string;
 
-    composeFiles: string[];
+    dockerignore: boolean;
 
 }
+
 
 export class DockerDetector
     extends DetectorBase<DockerInfo> {
 
     readonly name = "DockerDetector";
 
+
     async detect(
         workspacePath: string
     ): Promise<DetectorResult<DockerInfo>> {
 
-        const dockerfile =
-            await workspaceReader.exists(
-                workspacePath,
-                "Dockerfile"
-            );
+        /*
+         * ============================================================
+         * Dockerfile
+         * ============================================================
+         */
 
-        const composeFiles: string[] = [];
+        const dockerfiles = [
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "docker-compose.yml"
-            )
-        ) {
+            "Dockerfile",
 
-            composeFiles.push(
-                "docker-compose.yml"
-            );
+            "Dockerfile.dev",
+
+            "Dockerfile.development",
+
+            "Dockerfile.prod",
+
+            "Dockerfile.production",
+
+            "Dockerfile.test"
+
+        ];
+
+
+        let dockerfile: string | undefined;
+
+
+        for (const file of dockerfiles) {
+
+            if (
+                await workspaceReader.exists(
+                    workspacePath,
+                    file
+                )
+            ) {
+
+                dockerfile = file;
+
+                break;
+
+            }
 
         }
 
-        if (
-            await workspaceReader.exists(
-                workspacePath,
-                "docker-compose.yaml"
-            )
-        ) {
 
-            composeFiles.push(
-                "docker-compose.yaml"
-            );
+        /*
+         * ============================================================
+         * Docker Compose
+         * ============================================================
+         */
+
+        const composeFiles = [
+
+            "docker-compose.yml",
+
+            "docker-compose.yaml",
+
+            "compose.yml",
+
+            "compose.yaml"
+
+        ];
+
+
+        let composeFile: string | undefined;
+
+
+        for (const file of composeFiles) {
+
+            if (
+                await workspaceReader.exists(
+                    workspacePath,
+                    file
+                )
+            ) {
+
+                composeFile = file;
+
+                break;
+
+            }
 
         }
+
+
+        /*
+         * ============================================================
+         * .dockerignore
+         * ============================================================
+         */
+
+        const dockerignore =
+            await workspaceReader.exists(
+                workspacePath,
+                ".dockerignore"
+            );
+
+
+        /*
+         * ============================================================
+         * Docker directory
+         * ============================================================
+         */
+
+        const dockerDirectory =
+            await workspaceReader.exists(
+                workspacePath,
+                "docker"
+            );
+
+
+        /*
+         * ============================================================
+         * Detection result
+         * ============================================================
+         */
+
+        const detected =
+            Boolean(
+                dockerfile ||
+                composeFile ||
+                dockerignore ||
+                dockerDirectory
+            );
+
 
         return this.success({
 
-            supported:
-                dockerfile ||
-                composeFiles.length > 0,
+            detected,
 
             dockerfile,
 
-            dockerCompose:
-                composeFiles.length > 0,
+            composeFile,
 
-            composeFiles
+            dockerignore
 
         });
 

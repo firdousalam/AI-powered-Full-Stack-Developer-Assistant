@@ -169,42 +169,171 @@ export class ollamaProvider implements AIProvider {
      * Native Ollama Tool Calling
      * ==========================================
      */
+    /**
+ * ==========================================
+ * Native Ollama Tool Calling
+ * ==========================================
+ */
+    /**
+ * ==========================================
+ * Native Ollama Tool Calling
+ * ==========================================
+ */
     async chatWithTools(
         messages: AIMessage[],
         model: string,
         tools: LLMToolDefinition[]
     ): Promise<AIResponse> {
 
-        const response = await fetch(
-            "http://localhost:11434/api/chat",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    model,
-                    stream: false,
-                    messages,
-                    tools
-                })
-            }
+        console.log(
+            "========== OLLAMA TOOL REQUEST =========="
         );
 
-        if (!response.ok) {
-            throw new Error(
-                `Ollama tool request failed: ${response.status}`
+
+        console.log(
+            "Model:",
+            model
+        );
+
+
+        console.log(
+            "Messages:",
+            JSON.stringify(
+                messages,
+                null,
+                2
+            )
+        );
+
+
+        console.log(
+            "Tools:",
+            JSON.stringify(
+                tools,
+                null,
+                2
+            )
+        );
+
+
+        const response =
+            await fetch(
+                "http://localhost:11434/api/chat",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        model,
+
+                        stream: false,
+
+                        messages,
+
+                        tools
+
+                    })
+
+                }
             );
+
+
+        /**
+         * ==========================================
+         * OLLAMA ERROR
+         * ==========================================
+         */
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+
+            console.error(
+                "========== OLLAMA ERROR =========="
+            );
+
+
+            console.error(
+                "Status:",
+                response.status
+            );
+
+
+            console.error(
+                "Response:",
+                errorText
+            );
+
+
+            throw new Error(
+                `Ollama tool request failed: ${response.status} ${errorText}`
+            );
+
         }
 
-        const data = await response.json();
+
+        /**
+         * ==========================================
+         * PARSE RESPONSE
+         * ==========================================
+         */
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "========== OLLAMA RESPONSE =========="
+        );
+
+
+        console.log(
+            JSON.stringify(
+                data,
+                null,
+                2
+            )
+        );
+
+
+        /**
+         * ==========================================
+         * EXTRACT MESSAGE
+         * ==========================================
+         */
+
+        const message =
+            data.message;
+
+
+        const toolCalls =
+            Array.isArray(
+                message?.tool_calls
+            )
+                ? message.tool_calls
+                : [];
+
+
+        /**
+         * ==========================================
+         * NORMALIZED RESPONSE
+         * ==========================================
+         */
 
         return {
-            content: data.message?.content ?? "",
-            toolCalls: data.message?.tool_calls ?? []
-        };
-    }
 
+            content:
+                message?.content ?? "",
+
+            toolCalls
+
+        };
+
+    }
 }

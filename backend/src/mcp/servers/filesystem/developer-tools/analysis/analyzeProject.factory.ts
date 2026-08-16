@@ -6,6 +6,8 @@ import {
     ProjectAnalyzerService
 } from "./services";
 
+import { FilesystemService } from "../../filesystem.service";
+
 import {
     MetadataDetector,
     LanguageDetector,
@@ -36,9 +38,12 @@ export function createAnalyzeProjectTool():
     const projectAnalyzerService =
         new ProjectAnalyzerService(
 
-            new MetadataDetector(),
-
-            new LanguageDetector(),
+            new MetadataDetector(
+                new FilesystemService()
+            ),
+            new LanguageDetector(
+                new FilesystemService()
+            ),
 
             new FrameworkDetector(),
 

@@ -1,3 +1,4 @@
+import { FilesystemService } from "../../../filesystem.service";
 import {
     BuildToolDetector,
     CiDetector,
@@ -17,9 +18,13 @@ import { ProjectAnalyzerService } from "./projectAnalyzer.service";
 export const projectAnalyzerService =
     new ProjectAnalyzerService(
 
-        new MetadataDetector(),
+        new MetadataDetector(
+            new FilesystemService()
+        ),
 
-        new LanguageDetector(),
+        new LanguageDetector(
+            new FilesystemService()
+        ),
 
         new FrameworkDetector(),
 

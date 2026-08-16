@@ -1,8 +1,11 @@
 import path from "node:path";
 
-import { filesystemService } from "../../../../services";
+import {
+    filesystemService
+} from "../../../../services";
 
 import {
+    PackageManagerType,
     DependencyDetector,
     DependencyDetectorResult
 } from "../models";
@@ -16,6 +19,7 @@ import {
  * - Parse JSON safely
  * - Provide a standard DetectorResult
  * - Handle common errors
+ * - Detect package manager from known project files
  */
 export abstract class DependencyDetectorBase<TResult>
     implements DependencyDetector<TResult> {
@@ -24,7 +28,6 @@ export abstract class DependencyDetectorBase<TResult>
      * Detector name.
      */
     abstract readonly name: string;
-
 
 
     /**
@@ -36,72 +39,183 @@ export abstract class DependencyDetectorBase<TResult>
         workspacePath: string
     ): Promise<TResult>;
 
+
     /**
      * Empty/default result returned when
      * package.json is missing or detection fails.
      */
     protected abstract emptyResult(): TResult;
 
+
+    /**
+     * Detect package manager from known
+     * package manager configuration/lock files.
+     *
+     * This method is intentionally implemented
+     * in the base class because the detection logic
+     * is shared by dependency detectors.
+     */
     protected async findLockFile(
         workspacePath: string
     ): Promise<{
-
-        packageManager:
-        | "npm"
-        | "yarn"
-        | "pnpm"
-        | "bun"
-        | "unknown";
-
+        packageManager: PackageManagerType;
         lockFile: string;
-
     }> {
 
-        const lockFiles = [
+        const lockFiles: Array<{
+            packageManager: PackageManagerType;
+            file: string;
+        }> = [
 
-            {
+                /*
+                 * Node.js
+                 */
+                {
+                    packageManager: "bun",
+                    file: "bun.lock"
+                },
 
-                packageManager: "bun" as const,
+                {
+                    packageManager: "bun",
+                    file: "bun.lockb"
+                },
 
-                file: "bun.lockb"
+                {
+                    packageManager: "pnpm",
+                    file: "pnpm-lock.yaml"
+                },
 
-            },
+                {
+                    packageManager: "yarn",
+                    file: "yarn.lock"
+                },
 
-            {
+                {
+                    packageManager: "npm",
+                    file: "package-lock.json"
+                },
 
-                packageManager: "pnpm" as const,
+                {
+                    packageManager: "npm",
+                    file: "npm-shrinkwrap.json"
+                },
 
-                file: "pnpm-lock.yaml"
+                /*
+                 * Python
+                 */
+                {
+                    packageManager: "uv",
+                    file: "uv.lock"
+                },
 
-            },
+                {
+                    packageManager: "poetry",
+                    file: "poetry.lock"
+                },
 
-            {
+                {
+                    packageManager: "pipenv",
+                    file: "Pipfile.lock"
+                },
 
-                packageManager: "yarn" as const,
+                {
+                    packageManager: "pip",
+                    file: "requirements.txt"
+                },
 
-                file: "yarn.lock"
+                /*
+                 * Java / JVM
+                 */
+                {
+                    packageManager: "maven",
+                    file: "pom.xml"
+                },
 
-            },
+                {
+                    packageManager: "gradle",
+                    file: "gradle.lockfile"
+                },
 
-            {
+                {
+                    packageManager: "gradle",
+                    file: "build.gradle"
+                },
 
-                packageManager: "npm" as const,
+                {
+                    packageManager: "gradle",
+                    file: "build.gradle.kts"
+                },
 
-                file: "package-lock.json"
+                /*
+                 * Rust
+                 */
+                {
+                    packageManager: "cargo",
+                    file: "Cargo.toml"
+                },
 
-            }
+                /*
+                 * Go
+                 */
+                {
+                    packageManager: "go",
+                    file: "go.sum"
+                },
 
-        ];
+                {
+                    packageManager: "go",
+                    file: "go.mod"
+                },
+
+                /*
+                 * Ruby
+                 */
+                {
+                    packageManager: "bundler",
+                    file: "Gemfile.lock"
+                },
+
+                {
+                    packageManager: "bundler",
+                    file: "Gemfile"
+                },
+
+                /*
+                 * PHP
+                 */
+                {
+                    packageManager: "composer",
+                    file: "composer.lock"
+                },
+
+                {
+                    packageManager: "composer",
+                    file: "composer.json"
+                },
+
+                /*
+                 * Dart / Flutter
+                 */
+                {
+                    packageManager: "pub",
+                    file: "pubspec.lock"
+                },
+
+                {
+                    packageManager: "pub",
+                    file: "pubspec.yaml"
+                }
+
+            ];
+
 
         for (const lockFile of lockFiles) {
 
-            const filePath = path.join(
-
-                workspacePath,
-
-                lockFile.file
-
-            );
+            const filePath =
+                path.join(
+                    workspacePath,
+                    lockFile.file
+                );
 
             const exists =
                 await filesystemService.exists(
@@ -124,6 +238,7 @@ export abstract class DependencyDetectorBase<TResult>
 
         }
 
+
         return {
 
             packageManager: "unknown",
@@ -134,6 +249,7 @@ export abstract class DependencyDetectorBase<TResult>
 
     }
 
+
     /**
      * Standard detection pipeline.
      */
@@ -141,10 +257,12 @@ export abstract class DependencyDetectorBase<TResult>
         workspacePath: string
     ): Promise<DependencyDetectorResult<TResult>> {
 
-        const packageJsonPath = path.join(
-            workspacePath,
-            "package.json"
-        );
+        const packageJsonPath =
+            path.join(
+                workspacePath,
+                "package.json"
+            );
+
 
         try {
 
@@ -152,6 +270,7 @@ export abstract class DependencyDetectorBase<TResult>
                 await filesystemService.exists(
                     packageJsonPath
                 );
+
 
             if (!exists) {
 
@@ -171,19 +290,23 @@ export abstract class DependencyDetectorBase<TResult>
 
             }
 
+
             const content =
                 await filesystemService.readFile(
                     packageJsonPath
                 );
 
+
             const packageJson =
                 JSON.parse(content);
+
 
             const result =
                 await this.detectInternal(
                     packageJson,
                     workspacePath
                 );
+
 
             return {
 

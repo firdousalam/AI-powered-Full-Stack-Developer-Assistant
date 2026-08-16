@@ -1,60 +1,110 @@
-import { DetectorBase } from "./base/detector.base";
-import { DetectorResult } from "../models";
-import { workspaceReader } from "../readers";
+import { execFile } from "child_process";
+import { promisify } from "util";
+
+const execFileAsync = promisify(execFile);
 
 export interface GitInfo {
-
-    supported: boolean;
-
-    gitDirectory: boolean;
-
-    gitIgnore: boolean;
-
-    github: boolean;
-
+    isGitRepository: boolean;
+    branch?: string;
+    remote?: string;
+    isDirty?: boolean;
 }
 
-export class GitDetector
-    extends DetectorBase<GitInfo> {
+export class GitDetector {
+    async detect(workspacePath: string): Promise<GitInfo> {
+        const isGitRepository = await this.isGitRepository(workspacePath);
 
-    readonly name = "GitDetector";
+        if (!isGitRepository) {
+            return {
+                isGitRepository: false,
+            };
+        }
 
-    async detect(
-        workspacePath: string
-    ): Promise<DetectorResult<GitInfo>> {
+        const branch = await this.getCurrentBranch(workspacePath);
+        const remote = await this.getRemote(workspacePath);
+        const isDirty = await this.isWorkingTreeDirty(workspacePath);
 
-        const gitDirectory =
-            await workspaceReader.exists(
-                workspacePath,
-                ".git"
-            );
-
-        const gitIgnore =
-            await workspaceReader.exists(
-                workspacePath,
-                ".gitignore"
-            );
-
-        const github =
-            await workspaceReader.exists(
-                workspacePath,
-                ".github"
-            );
-
-        return this.success({
-
-            supported:
-                gitDirectory ||
-                gitIgnore,
-
-            gitDirectory,
-
-            gitIgnore,
-
-            github
-
-        });
-
+        return {
+            isGitRepository: true,
+            branch,
+            remote,
+            isDirty,
+        };
     }
 
+    private async isGitRepository(
+        workspacePath: string,
+    ): Promise<boolean> {
+        try {
+            await execFileAsync(
+                "git",
+                ["rev-parse", "--is-inside-work-tree"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    private async getCurrentBranch(
+        workspacePath: string,
+    ): Promise<string | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["branch", "--show-current"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+            const branch = stdout.trim();
+
+            return branch || undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    private async getRemote(
+        workspacePath: string,
+    ): Promise<string | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["config", "--get", "remote.origin.url"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+            const remote = stdout.trim();
+
+            return remote || undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    private async isWorkingTreeDirty(
+        workspacePath: string,
+    ): Promise<boolean | undefined> {
+        try {
+            const { stdout } = await execFileAsync(
+                "git",
+                ["status", "--porcelain"],
+                {
+                    cwd: workspacePath,
+                },
+            );
+
+            return stdout.trim().length > 0;
+        } catch {
+            return undefined;
+        }
+    }
 }

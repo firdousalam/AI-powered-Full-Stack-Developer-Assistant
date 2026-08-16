@@ -1,6 +1,6 @@
 export * from "./base/detector.base";
 
-export * from "../dependency/detectors/metadata.detector";
+export * from "./metadata.detector";
 export * from "./language.detector";
 export * from "./packageManager.detector";
 export * from "./framework.detector";
