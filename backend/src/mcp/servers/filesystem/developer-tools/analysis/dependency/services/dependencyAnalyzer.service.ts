@@ -58,97 +58,152 @@ export class DependencyAnalyzerService {
         workspacePath: string
     ): Promise<DependencyAnalysisResult> {
 
+        const runDetector = async <T>(
+            name: string,
+            detector: {
+                detect(
+                    workspacePath: string
+                ): Promise<{
+                    success: boolean;
+                    data: T;
+                    error?: string;
+                }>;
+            }
+        ): Promise<T> => {
+
+            const start = Date.now();
+
+            try {
+
+                const result =
+                    await detector.detect(
+                        workspacePath
+                    );
+
+                const duration =
+                    Date.now() - start;
+
+                console.log(
+                    `[DependencyAnalyzer] ${name}: ${duration}ms`
+                );
+
+                if (!result.success) {
+
+                    console.warn(
+                        `[DependencyAnalyzer] ${name} failed:`,
+                        result.error
+                    );
+
+                    return [] as T;
+                }
+
+                return result.data;
+
+            } catch (error) {
+
+                const duration =
+                    Date.now() - start;
+
+                console.error(
+                    `[DependencyAnalyzer] ${name} failed after ${duration}ms`,
+                    error
+                );
+
+                return [] as T;
+            }
+        };
+
+
         const [
-
             metadata,
-
             dependencies,
-
             devDependencies,
-
             packageManager,
-
             lockFile,
-
             peerDependencies,
-
             optionalDependencies,
-
             duplicates,
-
             missing
-
         ] = await Promise.all([
 
-            this.metadataDetector.detect(
-                workspacePath
+            runDetector(
+                "MetadataDetector",
+                this.metadataDetector
             ),
 
-            this.dependencyDetector.detect(
-                workspacePath
+            runDetector(
+                "DependencyDetector",
+                this.dependencyDetector
             ),
 
-            this.devDependencyDetector.detect(
-                workspacePath
+            runDetector(
+                "DevDependencyDetector",
+                this.devDependencyDetector
             ),
 
-            this.packageManagerDetector.detect(
-                workspacePath
+            runDetector(
+                "PackageManagerDetector",
+                this.packageManagerDetector
             ),
 
-            this.lockFileDetector.detect(
-                workspacePath
+            runDetector(
+                "LockFileDetector",
+                this.lockFileDetector
             ),
 
-            this.peerDependencyDetector.detect(
-                workspacePath
+            runDetector(
+                "PeerDependencyDetector",
+                this.peerDependencyDetector
             ),
 
-            this.optionalDependencyDetector.detect(
-                workspacePath
+            runDetector(
+                "OptionalDependencyDetector",
+                this.optionalDependencyDetector
             ),
 
-            this.duplicateDependencyDetector.detect(
-                workspacePath
+            runDetector(
+                "DuplicateDependencyDetector",
+                this.duplicateDependencyDetector
             ),
 
-            this.missingDependencyDetector.detect(
-                workspacePath
+            runDetector(
+                "MissingDependencyDetector",
+                this.missingDependencyDetector
             )
 
         ]);
 
+
         return {
 
             metadata:
-                metadata.data,
+                metadata as DependencyAnalysisResult["metadata"],
 
             dependencies:
-                dependencies.data,
+                dependencies as DependencyAnalysisResult["dependencies"],
 
             devDependencies:
-                devDependencies.data,
+                devDependencies as DependencyAnalysisResult["devDependencies"],
 
             packageManager:
-                packageManager.data,
+                packageManager as DependencyAnalysisResult["packageManager"],
 
             lockFile:
-                lockFile.data,
+                lockFile as DependencyAnalysisResult["lockFile"],
 
             peerDependencies:
-                peerDependencies.data,
+                peerDependencies as DependencyAnalysisResult["peerDependencies"],
 
             optionalDependencies:
-                optionalDependencies.data,
+                optionalDependencies as DependencyAnalysisResult["optionalDependencies"],
 
             duplicates:
-                duplicates.data,
+                duplicates as DependencyAnalysisResult["duplicates"],
 
             missing:
-                missing.data
+                missing as DependencyAnalysisResult["missing"]
 
         };
-
     }
 
 }

@@ -37,6 +37,7 @@ import {
 import {
     ToolTimeoutError,
 } from "../services/tool-timeout.error";
+
 export class McpOrchestratorService {
 
     private readonly contextEnricher =
@@ -48,12 +49,21 @@ export class McpOrchestratorService {
     private readonly errorService =
         new ToolExecutionErrorService();
 
+    /**
+     * Workspace used by developer tools.
+     *
+     * The backend controls this value.
+     * The LLM must not be trusted to provide it.
+     */
+    private readonly workspacePath =
+        process.env.WORKSPACE_PATH ||
+        process.cwd();
+
     public getTools(): LLMToolDefinition[] {
 
         return toolCatalogService.getTools();
 
     }
-
 
     public async executeTool(
         toolName: string,
@@ -70,18 +80,39 @@ export class McpOrchestratorService {
         );
 
         console.log(
-            "Arguments:",
+            "Original Arguments:",
             toolArguments
         );
-
 
         const serverId =
             "filesystem-server";
 
-
         const timeoutMs =
             30_000;
 
+        /**
+         * Inject the trusted workspace path for
+         * project-level developer tools.
+         */
+        const normalizedArguments = {
+            ...toolArguments,
+        };
+
+        if (
+            toolName === "analyzeProject" ||
+            toolName === "analyzeDependencies" ||
+            toolName === "analyzeCodeStructure"
+        ) {
+
+            normalizedArguments.workspacePath =
+                this.workspacePath;
+
+        }
+
+        console.log(
+            "Resolved Arguments:",
+            normalizedArguments
+        );
 
         try {
 
@@ -91,13 +122,12 @@ export class McpOrchestratorService {
                     mcpToolExecutorService.execute(
                         serverId,
                         toolName,
-                        toolArguments,
+                        normalizedArguments,
                     ),
 
                     timeoutMs,
 
                 );
-
 
             console.log(
                 "========== MCP TOOL RESULT =========="
@@ -106,7 +136,6 @@ export class McpOrchestratorService {
             console.log(
                 result
             );
-
 
             return result;
 
@@ -122,7 +151,6 @@ export class McpOrchestratorService {
                     error.message
                 );
 
-
                 return {
 
                     success: false,
@@ -135,12 +163,10 @@ export class McpOrchestratorService {
 
             }
 
-
             const errorMessage =
                 this.errorService.getMessage(
                     error,
                 );
-
 
             console.error(
                 "========== MCP TOOL ERROR =========="
@@ -149,7 +175,6 @@ export class McpOrchestratorService {
             console.error(
                 errorMessage
             );
-
 
             return {
 
@@ -165,7 +190,6 @@ export class McpOrchestratorService {
 
     }
 
-
     public enrichContext(
         request: OrchestrationRequest,
         toolResults: ToolExecutionResult[],
@@ -179,9 +203,6 @@ export class McpOrchestratorService {
     }
 
 }
-
-
-
 
 /**
  * Singleton

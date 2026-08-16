@@ -8,10 +8,13 @@ import {
     DependencyDetectorBase
 } from "../base/dependencyDetector.base";
 
+
 export class MissingDependencyDetector
     extends DependencyDetectorBase<string[]> {
 
-    readonly name = "MissingDependencyDetector";
+    readonly name =
+        "MissingDependencyDetector";
+
 
     protected emptyResult(): string[] {
 
@@ -19,30 +22,56 @@ export class MissingDependencyDetector
 
     }
 
+
     protected async detectInternal(
         packageJson: Record<string, any>,
         workspacePath: string
     ): Promise<string[]> {
 
-        const nodeModulesPath = path.join(
-            workspacePath,
-            "node_modules"
-        );
+        const dependencies = {
 
-        const exists =
-            await filesystemService.exists(
-                nodeModulesPath
-            );
+            ...(packageJson.dependencies ?? {}),
 
-        if (exists) {
+            ...(packageJson.devDependencies ?? {}),
 
-            return [];
+            ...(packageJson.peerDependencies ?? {}),
+
+            ...(packageJson.optionalDependencies ?? {})
+
+        };
+
+
+        const missing: string[] = [];
+
+
+        for (const dependencyName of Object.keys(dependencies)) {
+
+            const dependencyPath =
+                path.join(
+                    workspacePath,
+                    "node_modules",
+                    dependencyName
+                );
+
+
+            const exists =
+                await filesystemService.exists(
+                    dependencyPath
+                );
+
+
+            if (!exists) {
+
+                missing.push(
+                    dependencyName
+                );
+
+            }
 
         }
 
-        return Object.keys(
-            packageJson.dependencies ?? {}
-        );
+
+        return missing;
 
     }
 
