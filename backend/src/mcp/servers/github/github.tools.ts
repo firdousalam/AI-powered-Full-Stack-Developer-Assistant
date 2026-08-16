@@ -89,6 +89,14 @@ export interface GitHubSearchRepositoriesArgs {
     page?: number;
     perPage?: number;
 }
+
+export interface GitHubGetUserArgs {
+    username: string;
+}
+
+export interface GitHubGetOrganizationArgs {
+    organization: string;
+}
 import {
     GitHubService,
     GitHubRepository,
@@ -102,7 +110,9 @@ import {
     GitHubTreeResponse,
     GitHubRelease,
     GitHubTag,
-    GitHubRepositorySearchResponse
+    GitHubRepositorySearchResponse,
+    GitHubUser,
+    GitHubOrganization
 } from "./github.service";
 
 /**
@@ -137,7 +147,9 @@ export class GitHubTools {
             this.getTreeTool(),
             this.listReleasesTool(),
             this.listTagsTool(),
-            this.searchRepositoriesTool()
+            this.searchRepositoriesTool(),
+            this.getUserTool(),
+            this.getOrganizationTool()
         ];
     }
 
@@ -1621,6 +1633,177 @@ export class GitHubTools {
         }
 
         return result;
+    }
+    public async getUser(
+        args: GitHubGetUserArgs
+    ): Promise<GitHubUser> {
+
+        if (
+            !args.username ||
+            !args.username.trim()
+        ) {
+            throw new Error(
+                "GitHub username is required."
+            );
+        }
+
+        return this.githubService.getUser(
+            args.username.trim()
+        );
+    }
+    public async getOrganization(
+        args: GitHubGetOrganizationArgs
+    ): Promise<GitHubOrganization> {
+
+        if (
+            !args.organization ||
+            !args.organization.trim()
+        ) {
+            throw new Error(
+                "GitHub organization name is required."
+            );
+        }
+
+        return this.githubService.getOrganization(
+            args.organization.trim()
+        );
+    }
+    private getUserTool(): MCPTool {
+
+        return {
+            name: "github_get_user",
+
+            description:
+                "Get public profile and repository statistics for a GitHub user.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    username: {
+                        type: "string",
+                        description:
+                            "GitHub username."
+                    }
+                },
+
+                required: [
+                    "username"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateGetUserArguments(
+                        args
+                    );
+
+                return this.getUser(
+                    validatedArgs
+                );
+            }
+        };
+    } private validateGetUserArguments(
+        args: unknown
+    ): GitHubGetUserArgs {
+
+        if (
+            !args ||
+            typeof args !== "object"
+        ) {
+            throw new Error(
+                "GitHub user arguments are required."
+            );
+        }
+
+        const value =
+            args as Record<string, unknown>;
+
+        if (
+            typeof value.username !== "string" ||
+            !value.username.trim()
+        ) {
+            throw new Error(
+                "GitHub username is required."
+            );
+        }
+
+        return {
+            username:
+                value.username.trim()
+        };
+    }
+    private getOrganizationTool(): MCPTool {
+
+        return {
+            name: "github_get_organization",
+
+            description:
+                "Get public profile and repository statistics for a GitHub organization.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    organization: {
+                        type: "string",
+                        description:
+                            "GitHub organization name."
+                    }
+                },
+
+                required: [
+                    "organization"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateGetOrganizationArguments(
+                        args
+                    );
+
+                return this.getOrganization(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private validateGetOrganizationArguments(
+        args: unknown
+    ): GitHubGetOrganizationArgs {
+
+        if (
+            !args ||
+            typeof args !== "object"
+        ) {
+            throw new Error(
+                "GitHub organization arguments are required."
+            );
+        }
+
+        const value =
+            args as Record<string, unknown>;
+
+        if (
+            typeof value.organization !== "string" ||
+            !value.organization.trim()
+        ) {
+            throw new Error(
+                "GitHub organization name is required."
+            );
+        }
+
+        return {
+            organization:
+                value.organization.trim()
+        };
     }
 
 }

@@ -823,4 +823,40 @@ export class GitHubService {
         );
     }
 
+    /**
+ * Get a GitHub user's public profile.
+ */
+    public async getUser(
+        username: string
+    ): Promise<GitHubUser> {
+
+        if (!username?.trim()) {
+            throw new Error(
+                "GitHub username is required."
+            );
+        }
+
+        return this.request<GitHubUser>(
+            `/users/${encodeURIComponent(username.trim())}`
+        );
+    }
+
+    /**
+ * Get a GitHub organization's public profile.
+ */
+    public async getOrganization(
+        organization: string
+    ): Promise<GitHubOrganization> {
+
+        if (!organization?.trim()) {
+            throw new Error(
+                "GitHub organization name is required."
+            );
+        }
+
+        return this.request<GitHubOrganization>(
+            `/orgs/${encodeURIComponent(organization.trim())}`
+        );
+    }
+
 }
