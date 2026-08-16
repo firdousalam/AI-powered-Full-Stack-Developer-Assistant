@@ -1,7 +1,6 @@
 import type {
     BrowserContext
 } from "../types/browserContext.types";
-import promptService from "./prompt.service";
 import aiRouter from "./ai-router.service";
 import { AI_CONFIG } from "../config/ai.config";
 import { ProviderFactory } from "../providers/provider.factory";
@@ -16,10 +15,10 @@ import {
 import type {
     ToolExecutionResult,
 } from "../mcp/orchestration/interfaces/orchestration-result.interface";
-
-import type {
-    OrchestrationRequest,
-} from "../mcp/orchestration/interfaces/orchestration-request.interface";
+import {
+    toolSelectorService
+} from "../mcp/orchestration/services/tool-selector.service";
+import { AIMessage } from "../providers/ai-provider";
 
 const promptBuilder =
     new ToolAwarePromptBuilderService();
@@ -386,6 +385,478 @@ export async function inspectMCPTools() {
 //     );
 // }
 
+// export async function chatWithMCPTools(
+
+//     prompt: string,
+
+//     model: string,
+
+//     browserContext: BrowserContext
+
+// ) {
+
+//     /**
+//      * ==========================================
+//      * Build Initial Prompt
+//      * ==========================================
+//      */
+
+//     const finalPrompt =
+//         promptService.buildPrompt(
+//             prompt,
+//             browserContext
+//         );
+
+
+//     /**
+//      * ==========================================
+//      * Get MCP Tools
+//      * ==========================================
+//      */
+
+//     const tools =
+//         mcpOrchestratorService.getTools();
+
+
+//     console.log(
+//         "========== OLLAMA TOOL TEST =========="
+//     );
+
+//     console.log(
+//         "Prompt:",
+//         finalPrompt
+//     );
+
+//     console.log(
+//         "Tools:",
+//         tools.map(
+//             tool =>
+//                 tool.function.name
+//         )
+//     );
+
+
+//     /**
+//      * ==========================================
+//      * Select Model
+//      * ==========================================
+//      */
+
+//     const route =
+//         aiRouter.selectModel(
+//             model ?? prompt
+//         );
+
+
+//     console.log(
+//         "Model:",
+//         route.model
+//     );
+
+
+//     /**
+//      * ==========================================
+//      * Provider
+//      * ==========================================
+//      */
+
+//     const provider =
+//         ProviderFactory.create(
+//             AI_CONFIG.provider
+//         );
+
+
+//     /**
+//      * ==========================================
+//      * Conversation Messages
+//      * ==========================================
+//      *
+//      * Important:
+//      *
+//      * We explicitly tell the model that MCP tools
+//      * must be invoked through native tool calls.
+//      *
+//      * The model should NOT write fake JSON such as:
+//      *
+//      * {
+//      *   "name": "fileExists",
+//      *   "arguments": {}
+//      * }
+//      *
+//      * as normal text.
+//      */
+
+//     const messages = [
+
+//         {
+//             role: "system" as const,
+
+//             content:
+//                 [
+//                     "You are an AI software engineering assistant.",
+//                     "",
+//                     "You have access to MCP developer tools.",
+//                     "",
+//                     "IMPORTANT TOOL RULES:",
+//                     "1. Use the available tools whenever the user's question requires information from the project.",
+//                     "2. Do not describe a tool call as plain text.",
+//                     "3. Do not write JSON representing a tool call in your answer.",
+//                     "4. Invoke tools using the native tool calling mechanism.",
+//                     "5. Wait for the tool results before answering the user.",
+//                     "6. Use the actual tool results to produce the final answer.",
+//                     "7. If multiple tools are required, call the appropriate tools.",
+//                     "8. Do not invent project information.",
+//                     "",
+//                     "After receiving tool results, provide a concise Markdown answer."
+//                 ].join("\n")
+//         },
+
+//         {
+//             role: "user" as const,
+
+//             content: finalPrompt
+//         }
+
+//     ];
+
+
+//     /**
+//      * ==========================================
+//      * MCP Execution Results
+//      * ==========================================
+//      */
+
+//     const toolResults:
+//         ToolExecutionResult[] = [];
+
+
+//     /**
+//      * ==========================================
+//      * Orchestration Request
+//      * ==========================================
+//      */
+
+//     const orchestrationRequest:
+//         OrchestrationRequest = {
+
+//         userMessage:
+//             prompt
+
+//     };
+
+
+//     /**
+//      * ==========================================
+//      * MCP / LLM Tool Loop
+//      * ==========================================
+//      */
+
+//     const MAX_TOOL_ITERATIONS = 5;
+
+
+//     for (
+//         let iteration = 0;
+//         iteration < MAX_TOOL_ITERATIONS;
+//         iteration++
+//     ) {
+
+//         console.log(
+//             `========== TOOL LOOP ${iteration + 1} ==========`
+//         );
+
+
+//         /**
+//          * ======================================
+//          * Ask LLM
+//          * ======================================
+//          */
+
+//         const response =
+//             await provider.chatWithTools(
+//                 messages,
+//                 route.model,
+//                 tools
+//             );
+
+
+//         console.log(
+//             "========== LLM RESPONSE =========="
+//         );
+
+//         console.dir(
+//             response,
+//             {
+//                 depth: 20
+//             }
+//         );
+
+
+//         /**
+//          * ======================================
+//          * No Tool Calls
+//          * ======================================
+//          *
+//          * This means the model has produced
+//          * its final answer.
+//          */
+
+//         if (
+//             !response.toolCalls ||
+//             response.toolCalls.length === 0
+//         ) {
+
+//             console.log(
+//                 "========== FINAL AI RESPONSE =========="
+//             );
+
+//             console.log(
+//                 response.content
+//             );
+
+//             return {
+
+//                 ...response,
+
+//                 toolCalls: []
+
+//             };
+
+//         }
+
+
+//         /**
+//          * ======================================
+//          * Add Assistant Tool Call Message
+//          * ======================================
+//          *
+//          * IMPORTANT:
+//          *
+//          * Add this ONCE for the complete LLM
+//          * response.
+//          *
+//          * Do NOT add it inside the tool loop.
+//          */
+
+//         messages.push({
+
+//             role:
+//                 "assistant",
+
+//             content:
+//                 response.content ?? "",
+
+//             tool_calls:
+//                 response.toolCalls
+
+//         } as any);
+
+
+//         /**
+//          * ======================================
+//          * Execute Every Tool Call
+//          * ======================================
+//          */
+
+//         for (
+//             const toolCall
+//             of response.toolCalls
+//         ) {
+
+//             const toolName =
+//                 toolCall.function.name;
+
+
+//             const toolArguments =
+//                 toolCall.function.arguments;
+
+
+//             console.log(
+//                 "========== MCP TOOL CALL =========="
+//             );
+
+//             console.log(
+//                 "Tool:",
+//                 toolName
+//             );
+
+//             console.log(
+//                 "Arguments:"
+//             );
+
+//             console.dir(
+//                 toolArguments,
+//                 {
+//                     depth: 20
+//                 }
+//             );
+
+
+//             /**
+//              * ==================================
+//              * Execute MCP Tool
+//              * ==================================
+//              */
+
+//             let toolResult;
+
+//             try {
+
+//                 toolResult =
+//                     await mcpOrchestratorService.executeTool(
+//                         toolName,
+//                         toolArguments
+//                     );
+
+//             }
+
+//             catch (error) {
+
+//                 console.error(
+//                     "MCP TOOL EXECUTION ERROR:",
+//                     error
+//                 );
+
+//                 toolResult = {
+
+//                     success:
+//                         false,
+
+//                     timeout:
+//                         false,
+
+//                     error:
+//                         error instanceof Error
+//                             ? error.message
+//                             : String(error)
+
+//                 };
+
+//             }
+
+
+//             console.log(
+//                 "========== MCP TOOL RESULT =========="
+//             );
+
+//             console.dir(
+//                 toolResult,
+//                 {
+//                     depth: 20
+//                 }
+//             );
+
+
+//             /**
+//              * ==================================
+//              * Store Execution Result
+//              * ==================================
+//              */
+
+//             const isToolFailure =
+//                 typeof toolResult === "object" &&
+//                 toolResult !== null &&
+//                 "success" in toolResult &&
+//                 (
+//                     toolResult as {
+//                         success?: unknown
+//                     }
+//                 ).success === false;
+
+
+//             const executionResult:
+//                 ToolExecutionResult = {
+
+//                 toolName,
+
+//                 serverName:
+//                     "filesystem",
+
+//                 status:
+//                     isToolFailure
+//                         ? "failed"
+//                         : "success",
+
+//                 data:
+//                     toolResult
+
+//             };
+
+
+//             toolResults.push(
+//                 executionResult
+//             );
+
+
+//             /**
+//              * ==================================
+//              * Send Tool Result Back To Ollama
+//              * ==================================
+//              */
+
+//             messages.push({
+
+//                 role:
+//                     "tool",
+
+//                 tool_call_id:
+//                     toolCall.id,
+
+//                 content:
+//                     JSON.stringify(
+//                         toolResult
+//                     )
+
+//             } as any);
+
+//         }
+
+
+//         /**
+//          * ==========================================
+//          * IMPORTANT
+//          * ==========================================
+//          *
+//          * Do NOT add a new system prompt here.
+//          *
+//          * The native Ollama tool conversation should
+//          * remain:
+//          *
+//          * user
+//          * assistant + tool_calls
+//          * tool
+//          * assistant
+//          *
+//          * Adding a system message after the tool
+//          * result can confuse local models.
+//          */
+
+
+//         console.log(
+//             "========== TOOL RESULTS ADDED TO CONVERSATION =========="
+//         );
+
+//         console.dir(
+//             toolResults,
+//             {
+//                 depth: 20
+//             }
+//         );
+
+//     }
+
+
+//     /**
+//      * ==========================================
+//      * Safety Limit
+//      * ==========================================
+//      */
+
+//     throw new Error(
+//         "Maximum MCP tool execution iterations reached."
+//     );
+
+// }
+
 export async function chatWithMCPTools(
 
     prompt: string,
@@ -398,20 +869,7 @@ export async function chatWithMCPTools(
 
     /**
      * ==========================================
-     * Build Initial Prompt
-     * ==========================================
-     */
-
-    const finalPrompt =
-        promptService.buildPrompt(
-            prompt,
-            browserContext
-        );
-
-
-    /**
-     * ==========================================
-     * Get MCP Tools
+     * 1. Get MCP Tools
      * ==========================================
      */
 
@@ -425,7 +883,7 @@ export async function chatWithMCPTools(
 
     console.log(
         "Prompt:",
-        finalPrompt
+        prompt
     );
 
     console.log(
@@ -439,7 +897,7 @@ export async function chatWithMCPTools(
 
     /**
      * ==========================================
-     * Select Model
+     * 2. Select Model
      * ==========================================
      */
 
@@ -457,7 +915,7 @@ export async function chatWithMCPTools(
 
     /**
      * ==========================================
-     * Provider
+     * 3. Provider
      * ==========================================
      */
 
@@ -469,15 +927,63 @@ export async function chatWithMCPTools(
 
     /**
      * ==========================================
-     * Conversation Messages
+     * 4. Build Conversation
      * ==========================================
+     *
+     * IMPORTANT:
+     *
+     * Keep the native tool conversation clean:
+     *
+     * system
+     * user
+     * assistant + tool_calls
+     * tool
+     * assistant
+     *
+     * Do NOT inject MCP context as a new system
+     * message between tool calls.
      */
 
     const messages = [
 
         {
+            role: "system" as const,
+
+            content: [
+                "You are Zeba AI, a senior software engineering assistant.",
+
+                "",
+
+                "You have access to MCP developer tools.",
+
+                "",
+
+                "IMPORTANT TOOL RULES:",
+
+                "1. Use MCP tools whenever the user's question requires information from the actual project.",
+
+                "2. Do not describe tool calls as plain text.",
+
+                "3. Do not write JSON representing a tool call in your answer.",
+
+                "4. Invoke tools using the native tool calling mechanism.",
+
+                "5. Wait for the tool result before answering the user.",
+
+                "6. Use the actual tool result to answer the user.",
+
+                "7. Do not invent project information.",
+
+                "8. If a tool can answer the question, use the tool.",
+
+                "9. After receiving the tool result, provide a concise Markdown answer."
+            ].join("\n")
+        },
+
+        {
             role: "user" as const,
-            content: finalPrompt
+
+            content: prompt
         }
 
     ];
@@ -485,36 +991,16 @@ export async function chatWithMCPTools(
 
     /**
      * ==========================================
-     * MCP Execution Results
+     * 5. Tool Execution Loop
      * ==========================================
      */
 
-    const toolResults: ToolExecutionResult[] = [];
+    const MAX_TOOL_ITERATIONS = 5;
 
-
-    /**
-     * ==========================================
-     * Orchestration Request
-     * ==========================================
-     */
-
-    const orchestrationRequest:
-        OrchestrationRequest = {
-
-        userMessage: prompt
-
-    };
-
-
-    /**
-     * ==========================================
-     * MCP / LLM Tool Loop
-     * ==========================================
-     */
 
     for (
         let iteration = 0;
-        iteration < 5;
+        iteration < MAX_TOOL_ITERATIONS;
         iteration++
     ) {
 
@@ -525,7 +1011,7 @@ export async function chatWithMCPTools(
 
         /**
          * ======================================
-         * Ask LLM
+         * Ask Ollama
          * ======================================
          */
 
@@ -541,8 +1027,11 @@ export async function chatWithMCPTools(
             "========== LLM RESPONSE =========="
         );
 
-        console.log(
-            response
+        console.dir(
+            response,
+            {
+                depth: 20
+            }
         );
 
 
@@ -558,17 +1047,50 @@ export async function chatWithMCPTools(
         ) {
 
             console.log(
-                "No tool calls."
+                "========== FINAL AI RESPONSE =========="
             );
 
-            return response;
+            console.log(
+                response.content
+            );
+
+            return {
+
+                ...response,
+
+                toolCalls: []
+
+            };
 
         }
 
 
         /**
          * ======================================
-         * Process Tool Calls
+         * Add Assistant Tool Call Message
+         * ======================================
+         *
+         * IMPORTANT:
+         *
+         * Add this ONCE for the complete response.
+         */
+
+        messages.push({
+
+            role: "assistant",
+
+            content:
+                response.content ?? "",
+
+            tool_calls:
+                response.toolCalls
+
+        } as any);
+
+
+        /**
+         * ======================================
+         * Execute Tool Calls
          * ======================================
          */
 
@@ -594,9 +1116,11 @@ export async function chatWithMCPTools(
                 toolName
             );
 
-            console.log(
-                "Arguments:",
-                toolArguments
+            console.dir(
+                toolArguments,
+                {
+                    depth: 20
+                }
             );
 
 
@@ -606,91 +1130,61 @@ export async function chatWithMCPTools(
              * ==================================
              */
 
-            const toolResult =
-                await mcpOrchestratorService.executeTool(
-                    toolName,
-                    toolArguments,
+            let toolResult: unknown;
+
+
+            try {
+
+                toolResult =
+                    await mcpOrchestratorService.executeTool(
+                        toolName,
+                        toolArguments
+                    );
+
+            }
+            catch (error) {
+
+                console.error(
+                    "MCP TOOL EXECUTION ERROR:",
+                    error
                 );
+
+
+                toolResult = {
+
+                    success: false,
+
+                    error:
+                        error instanceof Error
+                            ? error.message
+                            : String(error)
+
+                };
+
+            }
 
 
             console.log(
                 "========== MCP TOOL RESULT =========="
             );
 
-            console.log(
-                toolResult
+            console.dir(
+                toolResult,
+                {
+                    depth: 20
+                }
             );
 
 
             /**
              * ==================================
-             * Store Execution Result
-             * ==================================
-             */
-
-            const isToolFailure =
-                typeof toolResult === "object" &&
-                toolResult !== null &&
-                "success" in toolResult &&
-                (toolResult as {
-                    success?: unknown
-                }).success === false;
-
-
-            const executionResult:
-                ToolExecutionResult = {
-
-                toolName,
-
-                serverName:
-                    "filesystem",
-
-                status:
-                    isToolFailure
-                        ? "failed"
-                        : "success",
-
-                data:
-                    toolResult,
-
-            };
-
-
-            toolResults.push(
-                executionResult
-            );
-
-
-            /**
-             * ==================================
-             * Add Assistant Tool Call
+             * Send Tool Result Back To Ollama
              * ==================================
              */
 
             messages.push({
 
-                role:
-                    "assistant",
-
-                content:
-                    response.content ?? "",
-
-                tool_calls:
-                    response.toolCalls
-
-            } as any);
-
-
-            /**
-             * ==================================
-             * Add Tool Result
-             * ==================================
-             */
-
-            messages.push({
-
-                role:
-                    "tool",
+                role: "tool",
 
                 tool_call_id:
                     toolCall.id,
@@ -704,71 +1198,25 @@ export async function chatWithMCPTools(
 
         }
 
-
         /**
-         * ==========================================
-         * AI Context Enrichment
-         * ==========================================
+         * IMPORTANT:
+         *
+         * Do NOT add:
+         *
+         * - AI context
+         * - another system message
+         * - tool-aware prompt
+         *
+         * here.
+         *
+         * The next Ollama request must see:
+         *
+         * user
+         * assistant + tool_calls
+         * tool
+         *
+         * Then Ollama generates the final answer.
          */
-
-        const aiContext =
-            mcpOrchestratorService.enrichContext(
-                orchestrationRequest,
-                toolResults,
-            );
-
-
-        console.log(
-            "========== AI CONTEXT =========="
-        );
-
-        console.log(
-            aiContext
-        );
-
-
-        /**
-         * ==========================================
-         * Build Tool-aware Prompt
-         * ==========================================
-         */
-
-        const aiPrompt =
-            promptBuilder.build(
-                aiContext
-            );
-
-
-        console.log(
-            "========== AI PROMPT =========="
-        );
-
-        console.log(
-            aiPrompt
-        );
-
-
-        /**
-         * ==========================================
-         * Add Enriched Context
-         * ==========================================
-         */
-
-        if (
-            aiPrompt.contextPrompt
-        ) {
-
-            messages.push({
-
-                role:
-                    "system",
-
-                content:
-                    `=== MCP PROJECT CONTEXT ===\n${aiPrompt.contextPrompt}`
-
-            } as any);
-
-        }
 
     }
 

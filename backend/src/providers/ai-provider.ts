@@ -1,27 +1,35 @@
-import {
-    LLMToolDefinition
-} from "../mcp/orchestration/tool-schema";
+import { LLMToolDefinition } from "../mcp/orchestration/tool-schema/llmTool.types";
 
-export interface AIResponse {
-    content?: string;
-    toolCalls?: AIToolCall[];
-}
 export interface AIMessage {
-    role: "system" | "user" | "assistant" | "tool";
+    role:
+    | "system"
+    | "user"
+    | "assistant"
+    | "tool";
+
     content?: string;
 
-    tool_calls?: any[];
+    tool_calls?: AIToolCall[];
 
     tool_call_id?: string;
 }
 
 export interface AIToolCall {
-    id?: string;
+    id: string;
 
     function: {
         name: string;
-        arguments: Record<string, unknown>;
+
+        arguments:
+        Record<string, unknown>;
     };
+}
+
+export interface AIResponse {
+
+    content: string;
+
+    toolCalls: AIToolCall[];
 }
 
 export interface AIProvider {
