@@ -76,7 +76,7 @@ export class McpOrchestratorService {
 
 
         const serverId =
-            "filesystem";
+            "filesystem-server";
 
 
         const timeoutMs =

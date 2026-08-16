@@ -208,7 +208,7 @@ describe(
                         .execute
                 ).toHaveBeenCalledWith(
 
-                    "filesystem",
+                    "filesystem-server",
 
                     "analyzeProject",
 
@@ -232,7 +232,7 @@ describe(
          */
 
         it(
-            "should route developer tools to the filesystem MCP server",
+            "should route developer tools to the filesystem-server MCP server",
             async () => {
 
                 const toolResult = {
@@ -273,7 +273,7 @@ describe(
                         .execute
                 ).toHaveBeenCalledWith(
 
-                    "filesystem",
+                    "filesystem-server",
 
                     "analyzeProject",
 
@@ -405,7 +405,7 @@ describe(
                         .execute
                 ).toHaveBeenCalledWith(
 
-                    "filesystem",
+                    "filesystem-server",
 
                     "analyzeProject",
 

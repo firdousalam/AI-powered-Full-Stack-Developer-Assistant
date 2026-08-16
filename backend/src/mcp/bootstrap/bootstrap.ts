@@ -48,13 +48,30 @@ class MCPBootstrap {
 
         gateway.registerServer(this.filesystemServer);
 
-        /**
-         * ------------------------------------
-         * Connect Server
-         * ------------------------------------
-         */
+        // /**
+        //  * ------------------------------------
+        //  * Connect Server
+        //  * ------------------------------------
+        //  */
 
-        await this.filesystemServer.connect();
+
+
+        await gateway.connect(
+            this.filesystemServer.id
+        );
+
+        if (
+            !gateway.hasServer(
+                this.filesystemServer.id
+            )
+        ) {
+
+            throw new Error(
+                `Filesystem MCP Server '${this.filesystemServer.id}' is not registered.`
+            );
+
+        }
+
 
         logger.info(
             `Registered Servers: ${registry.getAll().length}`
