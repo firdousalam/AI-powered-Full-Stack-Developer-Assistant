@@ -750,6 +750,344 @@ export interface GitHubSecretScanningAlertsResponse {
 }
 
 
+/**
+ * ============================================================
+ * GitHub Unified Security Intelligence
+ * ============================================================
+ *
+ * Normalized security finding shared by:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ *
+ * This allows the AI layer to work with one consistent model
+ * instead of understanding three different GitHub API models.
+ * ============================================================
+ */
+
+export type GitHubSecurityFindingSource =
+    | "dependabot"
+    | "code_scanning"
+    | "secret_scanning";
+
+export type GitHubSecuritySeverity =
+    | "critical"
+    | "high"
+    | "medium"
+    | "moderate"
+    | "low"
+    | "unknown";
+
+export interface GitHubSecurityFinding {
+
+    /**
+     * Origin of the security finding.
+     */
+    source:
+    GitHubSecurityFindingSource;
+
+    /**
+     * GitHub alert number.
+     */
+    number: number;
+
+    /**
+     * Normalized severity.
+     */
+    severity:
+    GitHubSecuritySeverity;
+
+    /**
+     * Current GitHub alert state.
+     *
+     * Examples:
+     * open
+     * dismissed
+     * fixed
+     * resolved
+     */
+    state: string;
+
+    /**
+     * Human-readable title.
+     */
+    title: string;
+
+    /**
+     * Detailed description.
+     */
+    description?: string;
+
+    /**
+     * Vulnerable dependency/package.
+     */
+    package?: string;
+
+    /**
+     * Package ecosystem.
+     *
+     * Examples:
+     * npm
+     * pip
+     * maven
+     */
+    ecosystem?: string;
+
+    /**
+     * Vulnerable source file.
+     */
+    file?: string;
+
+    /**
+     * Source-code line.
+     */
+    line?: number;
+
+    /**
+     * CodeQL/security rule identifier.
+     */
+    rule?: string;
+
+    /**
+     * CVE identifier where available.
+     */
+    cve?: string;
+
+    /**
+     * GHSA identifier where available.
+     */
+    ghsa?: string;
+
+    /**
+     * GitHub alert URL.
+     */
+    url?: string;
+
+    /**
+     * Alert creation timestamp.
+     */
+    created_at?: string;
+
+    /**
+     * Alert update timestamp.
+     */
+    updated_at?: string;
+}
+
+/**
+ * Unified collection of GitHub security findings.
+ */
+export interface GitHubSecurityFindingsResponse {
+
+    total_count: number;
+
+    findings: GitHubSecurityFinding[];
+}
+
+/**
+ * High-level repository security overview.
+ */
+export interface GitHubSecurityOverview {
+
+    repository: string;
+
+    securityStatus:
+    | "secure"
+    | "warning"
+    | "critical"
+    | "unknown";
+
+    totalFindings: number;
+
+    openFindings: number;
+
+    criticalFindings: number;
+
+    highFindings: number;
+
+    mediumFindings: number;
+
+    lowFindings: number;
+
+    dependabotFindings: number;
+
+    codeScanningFindings: number;
+
+    secretScanningFindings: number;
+}
+/**
+ * Compact security summary intended for
+ * AI/LLM consumption.
+ */
+export interface GitHubSecuritySummary {
+
+    total: number;
+
+    open: number;
+
+    critical: number;
+
+    high: number;
+
+    medium: number;
+
+    low: number;
+
+    bySource: {
+        dependabot: number;
+        codeScanning: number;
+        secretScanning: number;
+    };
+
+    bySeverity: Record<
+        GitHubSecuritySeverity,
+        number
+    >;
+}
+/**
+ * ============================================================
+ * GitHub Security Configuration
+ * ============================================================
+ *
+ * Represents repository-level security configuration exposed
+ * to the AI developer assistant.
+ */
+
+/**
+ * Repository security policy information.
+ *
+ * SECURITY.md is represented separately from the security
+ * feature configuration because it is a repository document.
+ */
+export interface GitHubSecurityPolicy {
+
+    /**
+     * Whether a SECURITY.md file exists.
+     */
+    exists: boolean;
+
+    /**
+     * Repository URL of the security policy.
+     */
+    url?: string;
+
+    /**
+     * Path of the security policy file.
+     */
+    path?: string;
+
+    /**
+     * Default branch containing the policy.
+     */
+    branch?: string;
+}
+
+/**
+ * Repository security feature availability.
+ *
+ * These fields describe whether GitHub reports the corresponding
+ * security capability as enabled/available for the repository.
+ */
+export interface GitHubSecurityFeatures {
+
+    /**
+     * Dependabot alerts.
+     */
+    dependabotAlerts: boolean;
+
+    /**
+     * Dependabot security updates.
+     */
+    dependabotSecurityUpdates: boolean;
+
+    /**
+     * Dependabot version updates.
+     */
+    dependabotVersionUpdates: boolean;
+
+    /**
+     * Code scanning / CodeQL.
+     */
+    codeScanning: boolean;
+
+    /**
+     * Secret scanning.
+     */
+    secretScanning: boolean;
+
+    /**
+     * Secret scanning push protection.
+     */
+    secretScanningPushProtection: boolean;
+}
+
+/**
+ * Complete repository security configuration.
+ */
+export interface GitHubSecurityConfiguration {
+
+    /**
+     * Repository owner.
+     */
+    owner: string;
+
+    /**
+     * Repository name.
+     */
+    repository: string;
+
+    /**
+     * Security policy information.
+     */
+    policy: GitHubSecurityPolicy;
+
+    /**
+     * Available security features.
+     */
+    features: GitHubSecurityFeatures;
+}
+
+/**
+ * AI-friendly security configuration summary.
+ */
+export interface GitHubSecurityConfigurationSummary {
+
+    /**
+     * Whether the repository has a SECURITY.md policy.
+     */
+    hasSecurityPolicy: boolean;
+
+    /**
+     * Number of enabled security features.
+     */
+    enabledFeatures: number;
+
+    /**
+     * Number of security features available to inspect.
+     */
+    totalFeatures: number;
+
+    /**
+     * Whether all supported security features are enabled.
+     */
+    fullyConfigured: boolean;
+
+    /**
+     * Human-readable configuration status.
+     */
+    status:
+    | "fully_configured"
+    | "partially_configured"
+    | "not_configured";
+
+    /**
+     * Individual feature configuration.
+     */
+    features: GitHubSecurityFeatures;
+}
+
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -3358,5 +3696,1396 @@ export class GitHubService {
             byResolution
         };
     }
+
+    /**
+ * ============================================================
+ * Get Unified Repository Security Overview
+ * ============================================================
+ *
+ * Aggregates:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ *
+ * into a single AI-friendly security overview.
+ * ============================================================
+ */
+    /**
+ * ============================================================
+ * Get Unified Repository Security Overview
+ * ============================================================
+ *
+ * Aggregates:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ *
+ * into a single AI-friendly security overview.
+ * ============================================================
+ */
+    /**
+ * ============================================================
+ * Get Unified Repository Security Overview
+ * ============================================================
+ *
+ * Aggregates:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ *
+ * into a single AI-friendly security overview.
+ * ============================================================
+ */
+    public async getSecurityOverview(
+        owner: string,
+        repository: string
+    ): Promise<GitHubSecurityOverview> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Dependabot
+         * --------------------------------------------------------
+         */
+
+        const dependabotEndpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/dependabot/alerts?per_page=100`;
+
+        const dependabotAlerts =
+            await this.request<
+                Array<{
+                    number: number;
+                    state: string;
+                    security_advisory?: {
+                        severity?: string | null;
+                    } | null;
+                }>
+            >(
+                dependabotEndpoint
+            );
+
+        /**
+         * --------------------------------------------------------
+         * Code Scanning
+         * --------------------------------------------------------
+         */
+
+        const codeScanning =
+            await this.getCodeScanningSummary(
+                owner,
+                repository
+            );
+
+        /**
+         * --------------------------------------------------------
+         * Secret Scanning
+         * --------------------------------------------------------
+         */
+
+        const secretScanning =
+            await this.getSecretScanningSummary(
+                owner,
+                repository
+            );
+
+        /**
+         * --------------------------------------------------------
+         * Dependabot statistics
+         * --------------------------------------------------------
+         */
+
+        let dependabotCritical = 0;
+
+        let dependabotHigh = 0;
+
+        let dependabotMedium = 0;
+
+        let dependabotLow = 0;
+
+        let dependabotOpen = 0;
+
+        for (
+            const alert of dependabotAlerts
+        ) {
+
+            if (
+                alert.state === "open"
+            ) {
+                dependabotOpen++;
+            }
+
+            const severity =
+                alert.security_advisory
+                    ?.severity
+                    ?.toLowerCase();
+
+            switch (severity) {
+
+                case "critical":
+                    dependabotCritical++;
+                    break;
+
+                case "high":
+                    dependabotHigh++;
+                    break;
+
+                case "moderate":
+                case "medium":
+                    dependabotMedium++;
+                    break;
+
+                case "low":
+                    dependabotLow++;
+                    break;
+            }
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Code Scanning statistics
+         * --------------------------------------------------------
+         */
+
+        const codeScanningTotal =
+            codeScanning.total ?? 0;
+
+        const codeScanningOpen =
+            codeScanning.open ?? 0;
+
+        const codeScanningCritical =
+            codeScanning.bySeverity?.critical ?? 0;
+
+        const codeScanningHigh =
+            codeScanning.bySeverity?.high ?? 0;
+
+        const codeScanningMedium =
+            (codeScanning.bySeverity?.medium ?? 0) +
+            (codeScanning.bySeverity?.moderate ?? 0);
+
+        const codeScanningLow =
+            codeScanning.bySeverity?.low ?? 0;
+
+        /**
+         * --------------------------------------------------------
+         * Secret Scanning statistics
+         * --------------------------------------------------------
+         */
+
+        const secretScanningTotal =
+            secretScanning.total ?? 0;
+
+        const secretScanningOpen =
+            secretScanning.open ?? 0;
+
+        /**
+         * --------------------------------------------------------
+         * Unified counts
+         * --------------------------------------------------------
+         */
+
+        const totalFindings =
+            dependabotAlerts.length +
+            codeScanningTotal +
+            secretScanningTotal;
+
+        const openFindings =
+            dependabotOpen +
+            codeScanningOpen +
+            secretScanningOpen;
+
+        const criticalFindings =
+            dependabotCritical +
+            codeScanningCritical;
+
+        const highFindings =
+            dependabotHigh +
+            codeScanningHigh;
+
+        const mediumFindings =
+            dependabotMedium +
+            codeScanningMedium;
+
+        const lowFindings =
+            dependabotLow +
+            codeScanningLow;
+
+        /**
+         * --------------------------------------------------------
+         * Security status
+         * --------------------------------------------------------
+         */
+
+        let securityStatus:
+            GitHubSecurityOverview["securityStatus"];
+
+        if (
+            criticalFindings > 0
+        ) {
+
+            securityStatus =
+                "critical";
+
+        } else if (
+            highFindings > 0
+        ) {
+
+            securityStatus =
+                "warning";
+
+        } else if (
+            openFindings > 0
+        ) {
+
+            securityStatus =
+                "warning";
+
+        } else if (
+            totalFindings === 0
+        ) {
+
+            securityStatus =
+                "secure";
+
+        } else {
+
+            securityStatus =
+                "warning";
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Return normalized overview
+         * --------------------------------------------------------
+         */
+
+        return {
+
+            repository:
+                `${owner}/${repository}`,
+
+            securityStatus,
+
+            totalFindings,
+
+            openFindings,
+
+            criticalFindings,
+
+            highFindings,
+
+            mediumFindings,
+
+            lowFindings,
+
+            dependabotFindings:
+                dependabotAlerts.length,
+
+            codeScanningFindings:
+                codeScanningTotal,
+
+            secretScanningFindings:
+                secretScanningTotal
+        };
+    }
+
+    /**
+ * ============================================================
+ * Get Unified Repository Security Findings
+ * ============================================================
+ *
+ * Returns normalized security findings from:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ *
+ * The result uses the shared GitHubSecurityFinding model
+ * so the AI layer does not need to understand the individual
+ * GitHub security API response formats.
+ * ============================================================
+ */
+    /**
+ * ============================================================
+ * Get Unified Repository Security Findings
+ * ============================================================
+ *
+ * Normalizes:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ *
+ * into GitHubSecurityFinding[].
+ * ============================================================
+ */
+    public async getSecurityFindings(
+        owner: string,
+        repository: string
+    ): Promise<GitHubSecurityFinding[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const encodedOwner =
+            encodeURIComponent(owner.trim());
+
+        const encodedRepository =
+            encodeURIComponent(repository.trim());
+
+        /**
+         * --------------------------------------------------------
+         * Dependabot
+         * --------------------------------------------------------
+         */
+
+        const dependabotEndpoint =
+            `/repos/${encodedOwner}` +
+            `/${encodedRepository}` +
+            `/dependabot/alerts?per_page=100`;
+
+        const dependabotAlerts =
+            await this.request<
+                Array<{
+                    number: number;
+                    state: string;
+                    html_url?: string;
+
+                    dependency?: {
+                        package?: {
+                            ecosystem?: string;
+                            name?: string;
+                        };
+                        manifest_path?: string;
+                        scope?: string;
+                    };
+
+                    security_advisory?: {
+                        ghsa_id?: string;
+                        cve_id?: string | null;
+                        summary?: string;
+                        description?: string;
+                        severity?: string | null;
+                        published_at?: string | null;
+                        updated_at?: string | null;
+                    };
+
+                    security_vulnerability?: {
+                        vulnerable_version_range?: string;
+                        first_patched_version?: {
+                            identifier?: string;
+                        } | null;
+                    };
+                }>
+            >(dependabotEndpoint);
+
+        /**
+         * --------------------------------------------------------
+         * Code Scanning
+         * --------------------------------------------------------
+         */
+
+        const codeScanningEndpoint =
+            `/repos/${encodedOwner}` +
+            `/${encodedRepository}` +
+            `/code-scanning/alerts?per_page=100`;
+
+        const codeScanningAlerts =
+            await this.request<
+                Array<{
+                    number: number;
+                    created_at?: string;
+                    updated_at?: string;
+                    html_url?: string;
+                    state?: string;
+
+                    rule?: {
+                        id?: string;
+                        severity?: string;
+                        description?: string;
+                        name?: string;
+                        security_severity_level?: string | null;
+                    };
+
+                    tool?: {
+                        name?: string;
+                        version?: string;
+                    };
+
+                    most_recent_instance?: {
+                        ref?: string;
+                        commit_sha?: string;
+
+                        location?: {
+                            path?: string;
+                            start_line?: number;
+                            end_line?: number;
+                            start_column?: number;
+                            end_column?: number;
+                        };
+                    };
+                }>
+            >(codeScanningEndpoint);
+
+        /**
+         * --------------------------------------------------------
+         * Secret Scanning
+         * --------------------------------------------------------
+         */
+
+        const secretScanningEndpoint =
+            `/repos/${encodedOwner}` +
+            `/${encodedRepository}` +
+            `/secret-scanning/alerts?per_page=100`;
+
+        const secretScanningAlerts =
+            await this.request<
+                Array<{
+                    number: number;
+                    created_at?: string;
+                    updated_at?: string;
+                    html_url?: string;
+                    state?: string;
+
+                    secret_type?: string;
+                    secret_type_display_name?: string;
+
+                    resolution?: string | null;
+
+                    resolved_by?: {
+                        login?: string;
+                    } | null;
+
+                    resolved_at?: string | null;
+                }>
+            >(secretScanningEndpoint);
+
+        /**
+         * --------------------------------------------------------
+         * Unified findings
+         * --------------------------------------------------------
+         */
+
+        const findings:
+            GitHubSecurityFinding[] = [];
+
+        /**
+         * --------------------------------------------------------
+         * Dependabot findings
+         * --------------------------------------------------------
+         */
+
+        for (
+            const alert of dependabotAlerts
+        ) {
+
+            const severity =
+                this.normalizeSecuritySeverity(
+                    alert.security_advisory?.severity
+                );
+
+            findings.push({
+                source: "dependabot",
+
+                severity,
+
+                state: alert.state,
+
+                title: alert.security_advisory?.summary ??
+                    `Dependabot alert #${alert.number}`,
+
+                description: alert.security_advisory?.description ??
+                    undefined,
+
+                url: alert.html_url ??
+                    undefined,
+
+                rule: alert.security_advisory?.ghsa_id ??
+                    undefined,
+
+                cve: alert.security_advisory?.cve_id ??
+                    undefined,
+
+                package: alert.dependency?.package?.name ??
+                    undefined,
+
+                ecosystem: alert.dependency?.package?.ecosystem ??
+                    undefined,
+
+                file: alert.dependency?.manifest_path ??
+                    undefined,
+
+                line: undefined,
+
+                created_at: alert.security_advisory?.published_at ??
+                    undefined,
+
+                updated_at: alert.security_advisory?.updated_at ??
+                    undefined,
+                number: 0
+            });
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Code Scanning findings
+         * --------------------------------------------------------
+         */
+
+        for (
+            const alert of codeScanningAlerts
+        ) {
+
+            const location =
+                alert.most_recent_instance?.location;
+
+            const severity =
+                this.normalizeSecuritySeverity(
+                    alert.rule?.security_severity_level ??
+                    alert.rule?.severity
+                );
+
+            findings.push({
+                source: "code_scanning",
+
+                severity,
+
+                state: alert.state ??
+                    "open",
+
+                title: alert.rule?.description ??
+                    alert.rule?.name ??
+                    `Code scanning alert #${alert.number}`,
+
+                description: alert.rule?.description ??
+                    undefined,
+
+                url: alert.html_url ??
+                    undefined,
+
+                rule: alert.rule?.id ??
+                    undefined,
+
+                cve: undefined,
+
+                package: undefined,
+
+                ecosystem: undefined,
+
+                file: location?.path ??
+                    undefined,
+
+                line: location?.start_line ??
+                    undefined,
+
+                created_at: alert.created_at ??
+                    undefined,
+
+                updated_at: alert.updated_at ??
+                    undefined,
+                number: 0
+            });
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Secret Scanning findings
+         * --------------------------------------------------------
+         *
+         * Secret exposure is treated as critical for the
+         * unified AI security model.
+         */
+        for (
+            const alert of secretScanningAlerts
+        ) {
+
+            findings.push({
+                source: "secret_scanning",
+
+                severity: "critical",
+
+                state: alert.state ??
+                    "open",
+
+                title: alert.secret_type_display_name ??
+                    alert.secret_type ??
+                    `Secret scanning alert #${alert.number}`,
+
+                description: "GitHub secret scanning detected a potentially exposed secret.",
+
+                url: alert.html_url ??
+                    undefined,
+
+                rule: alert.secret_type ??
+                    undefined,
+
+                cve: undefined,
+
+                package: undefined,
+
+                ecosystem: undefined,
+
+                file: undefined,
+
+                line: undefined,
+
+                created_at: alert.created_at ??
+                    undefined,
+
+                updated_at: alert.updated_at ??
+                    undefined,
+                number: 0
+            });
+        }
+
+        /**
+         * --------------------------------------------------------
+         * Stable severity ordering
+         * --------------------------------------------------------
+         */
+
+        const severityRank:
+            Record<GitHubSecuritySeverity, number> = {
+
+            critical: 5,
+
+            high: 4,
+
+            moderate: 3,
+
+            medium: 3,
+
+            low: 2,
+
+            unknown: 1
+        };
+
+        findings.sort(
+            (a, b) =>
+                severityRank[b.severity] -
+                severityRank[a.severity]
+        );
+
+        return findings;
+    }
+    /**
+     * Normalize GitHub security severity values.
+     */
+    private normalizeSecuritySeverity(
+        severity?: string | null
+    ): GitHubSecuritySeverity {
+
+        switch (
+        severity?.toLowerCase()
+        ) {
+
+            case "critical":
+                return "critical";
+
+            case "high":
+                return "high";
+
+            case "medium":
+            case "moderate":
+                return "medium";
+
+            case "low":
+                return "low";
+
+            default:
+                return "unknown";
+        }
+    }
+
+    /**
+ * ============================================================
+ * Get Repository Security Summary
+ * ============================================================
+ *
+ * Builds an AI-friendly security summary from the normalized
+ * security findings returned by getSecurityFindings().
+ *
+ * Sources:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ * ============================================================
+ */
+    /**
+ * ============================================================
+ * Get Repository Security Summary
+ * ============================================================
+ *
+ * Builds an AI-friendly security summary from the normalized
+ * security findings returned by getSecurityFindings().
+ *
+ * Sources:
+ *
+ * - Dependabot
+ * - Code Scanning / CodeQL
+ * - Secret Scanning
+ * ============================================================
+ */
+    public async getSecuritySummary(
+        owner: string,
+        repository: string
+    ): Promise<GitHubSecuritySummary> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const findings =
+            await this.getSecurityFindings(
+                owner,
+                repository
+            );
+
+        /*
+         * --------------------------------------------------------
+         * Severity counters
+         * --------------------------------------------------------
+         */
+
+        let critical = 0;
+        let high = 0;
+        let medium = 0;
+        let low = 0;
+        let moderate = 0;
+        let unknown = 0;
+
+        /*
+         * --------------------------------------------------------
+         * Source counters
+         * --------------------------------------------------------
+         */
+
+        let dependabot = 0;
+        let codeScanning = 0;
+        let secretScanning = 0;
+
+        /*
+         * --------------------------------------------------------
+         * Analyze findings
+         * --------------------------------------------------------
+         */
+
+        for (
+            const finding of findings
+        ) {
+
+            /*
+             * Count by source.
+             */
+            switch (
+            finding.source
+            ) {
+
+                case "dependabot":
+                    dependabot++;
+                    break;
+
+                case "code_scanning":
+                    codeScanning++;
+                    break;
+
+                case "secret_scanning":
+                    secretScanning++;
+                    break;
+            }
+
+            /*
+             * Count by severity.
+             */
+            switch (
+            finding.severity
+            ) {
+
+                case "critical":
+                    critical++;
+                    break;
+
+                case "high":
+                    high++;
+                    break;
+
+                case "moderate":
+                    moderate++;
+                    break;
+
+                case "medium":
+                    medium++;
+                    break;
+
+                case "low":
+                    low++;
+                    break;
+
+                case "unknown":
+                    unknown++;
+                    break;
+            }
+        }
+
+        /*
+         * --------------------------------------------------------
+         * Open findings
+         * --------------------------------------------------------
+         */
+
+        const open =
+            findings.filter(
+                finding =>
+                    finding.state === "open"
+            ).length;
+
+        /*
+         * --------------------------------------------------------
+         * Build severity map.
+         * --------------------------------------------------------
+         */
+
+        const bySeverity:
+            Record<
+                GitHubSecuritySeverity,
+                number
+            > = {
+
+            critical,
+
+            high,
+
+            moderate,
+
+            medium,
+
+            low,
+
+            unknown
+        };
+
+        /*
+         * --------------------------------------------------------
+         * Return security summary.
+         * --------------------------------------------------------
+         */
+
+        return {
+
+            total:
+                findings.length,
+
+            open,
+
+            critical,
+
+            high,
+
+            medium,
+
+            low,
+
+            bySource: {
+
+                dependabot,
+
+                codeScanning,
+
+                secretScanning
+            },
+
+            bySeverity
+        };
+    }
+
+    /**
+ * ============================================================
+ * Get Repository Security Policy
+ * ============================================================
+ *
+ * Looks for SECURITY.md in the repository.
+ *
+ * Common locations checked:
+ *
+ * - SECURITY.md
+ * - .github/SECURITY.md
+ * - docs/SECURITY.md
+ *
+ * A missing SECURITY.md is treated as a valid result:
+ *
+ * {
+ *     exists: false
+ * }
+ */
+    public async getSecurityPolicy(
+        owner: string,
+        repository: string
+    ): Promise<GitHubSecurityPolicy> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        /*
+         * --------------------------------------------------------
+         * Get repository information first.
+         *
+         * This allows us to determine the default branch.
+         * --------------------------------------------------------
+         */
+
+        const repositoryResult =
+            await this.getRepository(
+                owner,
+                repository
+            );
+
+        const defaultBranch =
+            repositoryResult.default_branch;
+
+        /*
+         * --------------------------------------------------------
+         * SECURITY.md locations.
+         *
+         * GitHub commonly recognizes SECURITY.md from the root
+         * and .github directory.
+         *
+         * docs/SECURITY.md is also checked as a useful fallback
+         * for repositories that organize documentation there.
+         * --------------------------------------------------------
+         */
+
+        const policyPaths = [
+            "SECURITY.md",
+            ".github/SECURITY.md",
+            "docs/SECURITY.md"
+        ];
+
+        /*
+         * --------------------------------------------------------
+         * Check each possible location.
+         * --------------------------------------------------------
+         */
+
+        for (
+            const path of policyPaths
+        ) {
+
+            try {
+
+                const content =
+                    await this.getContents(
+                        owner,
+                        repository,
+                        path,
+                        defaultBranch
+                    );
+
+                /*
+                 * A file response should contain a path and html_url.
+                 *
+                 * We intentionally do not return the contents of
+                 * SECURITY.md here. This method is about configuration
+                 * discovery rather than file reading.
+                 */
+
+                if (
+                    content &&
+                    !Array.isArray(content)
+                ) {
+
+                    return {
+
+                        exists: true,
+
+                        url:
+                            content.html_url,
+
+                        path:
+                            content.path ?? path,
+
+                        branch:
+                            defaultBranch
+                    };
+                }
+
+            } catch (error) {
+
+                /*
+                 * A missing policy file is expected.
+                 *
+                 * Continue checking the remaining locations.
+                 *
+                 * Other errors should also not prevent checking
+                 * alternative policy locations because GitHub APIs
+                 * can return different errors for unavailable paths.
+                 */
+                continue;
+            }
+        }
+
+        /*
+         * --------------------------------------------------------
+         * No SECURITY.md found.
+         * --------------------------------------------------------
+         */
+
+        return {
+
+            exists: false
+        };
+    }
+
+    /**
+ * ============================================================
+ * Get Repository Security Features
+ * ============================================================
+ *
+ * Retrieves the security-and-analysis configuration for a
+ * GitHub repository and normalizes it into the application's
+ * GitHubSecurityFeatures model.
+ *
+ * Features:
+ *
+ * - Dependabot alerts
+ * - Dependabot security updates
+ * - Dependabot version updates
+ * - Code scanning / CodeQL
+ * - Secret scanning
+ * - Secret scanning push protection
+ */
+    /**
+* ============================================================
+* Get Repository Security Features
+* ============================================================
+*/
+    public async getSecurityFeatures(
+        owner: string,
+        repository: string
+    ): Promise<GitHubSecurityFeatures> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const endpoint =
+            `${this.config.apiUrl}/repos/` +
+            `${encodeURIComponent(owner)}/` +
+            `${encodeURIComponent(repository)}`;
+
+        const response =
+            await fetch(
+                endpoint,
+                {
+                    method: "GET",
+
+                    headers: {
+                        Accept:
+                            "application/vnd.github+json",
+
+                        ...(this.config.token
+                            ? {
+                                Authorization:
+                                    `Bearer ${this.config.token}`
+                            }
+                            : {})
+                    }
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `GitHub repository request failed: ` +
+                `${response.status} ${response.statusText}`
+            );
+        }
+
+        const result =
+            await response.json() as {
+
+                security_and_analysis?: {
+
+                    dependabot_alerts?: {
+                        status?: string;
+                    };
+
+                    dependabot_security_updates?: {
+                        status?: string;
+                    };
+
+                    code_scanning?: {
+                        status?: string;
+                    };
+
+                    secret_scanning?: {
+                        status?: string;
+                    };
+
+                    secret_scanning_push_protection?: {
+                        status?: string;
+                    };
+                };
+            };
+
+        const security =
+            result.security_and_analysis ?? {};
+
+        const isEnabled =
+            (
+                status?: string
+            ): boolean =>
+                status === "enabled";
+
+        return {
+
+            dependabotAlerts:
+                isEnabled(
+                    security
+                        .dependabot_alerts
+                        ?.status
+                ),
+
+            dependabotSecurityUpdates:
+                isEnabled(
+                    security
+                        .dependabot_security_updates
+                        ?.status
+                ),
+
+            /*
+             * Dependabot version updates are configured through
+             * dependabot.yml rather than the repository
+             * security_and_analysis object.
+             *
+             * We leave this false here and will improve this
+             * detection when we build the repository configuration
+             * aggregation.
+             */
+            dependabotVersionUpdates:
+                false,
+
+            codeScanning:
+                isEnabled(
+                    security
+                        .code_scanning
+                        ?.status
+                ),
+
+            secretScanning:
+                isEnabled(
+                    security
+                        .secret_scanning
+                        ?.status
+                ),
+
+            secretScanningPushProtection:
+                isEnabled(
+                    security
+                        .secret_scanning_push_protection
+                        ?.status
+                )
+        };
+    }
+
+    /**
+ * ============================================================
+ * Get Repository Security Configuration Summary
+ * ============================================================
+ *
+ * Produces an AI-friendly summary of the repository's
+ * security configuration.
+ *
+ * Aggregates:
+ *
+ * - SECURITY.md policy
+ * - Dependabot alerts
+ * - Dependabot security updates
+ * - Dependabot version updates
+ * - Code scanning
+ * - Secret scanning
+ * - Secret scanning push protection
+ */
+    public async getSecurityConfigurationSummary(
+        owner: string,
+        repository: string
+    ): Promise<GitHubSecurityConfigurationSummary> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        /*
+         * --------------------------------------------------------
+         * Retrieve policy and security features.
+         *
+         * These operations are independent, so execute them in
+         * parallel.
+         * --------------------------------------------------------
+         */
+
+        const [
+            policy,
+            features
+        ] = await Promise.all([
+
+            this.getSecurityPolicy(
+                owner,
+                repository
+            ),
+
+            this.getSecurityFeatures(
+                owner,
+                repository
+            )
+        ]);
+
+        /*
+         * --------------------------------------------------------
+         * Count enabled security features.
+         * --------------------------------------------------------
+         */
+
+        const featureValues = [
+            features.dependabotAlerts,
+            features.dependabotSecurityUpdates,
+            features.dependabotVersionUpdates,
+            features.codeScanning,
+            features.secretScanning,
+            features.secretScanningPushProtection
+        ];
+
+        const totalFeatures =
+            featureValues.length;
+
+        const enabledFeatures =
+            featureValues.filter(
+                enabled => enabled
+            ).length;
+
+        /*
+         * --------------------------------------------------------
+         * Determine whether the repository is fully configured.
+         *
+         * SECURITY.md is intentionally NOT included in the
+         * feature count because it is a repository policy document,
+         * not a GitHub security-analysis feature.
+         * --------------------------------------------------------
+         */
+
+        const fullyConfigured =
+            enabledFeatures === totalFeatures &&
+            policy.exists;
+
+        /*
+         * --------------------------------------------------------
+         * Determine configuration status.
+         * --------------------------------------------------------
+         */
+
+        let status:
+            | "fully_configured"
+            | "partially_configured"
+            | "not_configured";
+
+        if (fullyConfigured) {
+
+            status =
+                "fully_configured";
+
+        } else if (
+            enabledFeatures > 0 ||
+            policy.exists
+        ) {
+
+            status =
+                "partially_configured";
+
+        } else {
+
+            status =
+                "not_configured";
+        }
+
+        /*
+         * --------------------------------------------------------
+         * Return normalized summary.
+         * --------------------------------------------------------
+         */
+
+        return {
+
+            hasSecurityPolicy:
+                policy.exists,
+
+            enabledFeatures,
+
+            totalFeatures,
+
+            fullyConfigured,
+
+            status,
+
+            features
+        };
+    }
+
 
 }

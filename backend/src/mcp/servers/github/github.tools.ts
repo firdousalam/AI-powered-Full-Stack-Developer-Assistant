@@ -369,7 +369,21 @@ export class GitHubTools {
 
             this.listSecretScanningAlertsTool(),
             this.getSecretScanningAlertTool(),
-            this.getSecretScanningSummaryTool()
+            this.getSecretScanningSummaryTool(),
+
+            /*
+          * Security findings tools
+          */
+            this.getSecurityFindingsTool(),
+            this.getSecuritySummaryTool(),
+
+            /*
+             * Security configuration tools
+             */
+            this.getSecurityPolicyTool(),
+            this.getSecurityFeaturesTool(),
+            this.getSecurityConfigurationSummaryTool()
+
         ];
     }
 
@@ -4023,6 +4037,386 @@ export class GitHubTools {
                     repositoryArgs
                 );
             }
+        };
+    }
+
+    /**
+ * ============================================================
+ * GitHub Security Findings Tool
+ * ============================================================
+ */
+    public getSecurityFindingsTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_security_findings",
+
+            description:
+                "Get normalized security findings for a GitHub repository, including Dependabot, Code Scanning, and Secret Scanning findings.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    if (!owner) {
+                        throw new Error(
+                            "GitHub repository owner is required."
+                        );
+                    }
+
+                    if (!repository) {
+                        throw new Error(
+                            "GitHub repository name is required."
+                        );
+                    }
+
+                    return this.githubService
+                        .getSecurityFindings(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+
+    /**
+ * ============================================================
+ * GitHub Security Summary Tool
+ * ============================================================
+ */
+    public getSecuritySummaryTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_security_summary",
+
+            description:
+                "Get an AI-friendly security summary for a GitHub repository, including total findings, open findings, severity counts, and findings grouped by security source.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    if (!owner) {
+                        throw new Error(
+                            "GitHub repository owner is required."
+                        );
+                    }
+
+                    if (!repository) {
+                        throw new Error(
+                            "GitHub repository name is required."
+                        );
+                    }
+
+                    return this.githubService
+                        .getSecuritySummary(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+
+    /**
+ * ============================================================
+ * GitHub Security Policy Tool
+ * ============================================================
+ */
+    public getSecurityPolicyTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_security_policy",
+
+            description:
+                "Check whether a GitHub repository has a SECURITY.md policy and return its location.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    if (!owner) {
+                        throw new Error(
+                            "GitHub repository owner is required."
+                        );
+                    }
+
+                    if (!repository) {
+                        throw new Error(
+                            "GitHub repository name is required."
+                        );
+                    }
+
+                    return this.githubService
+                        .getSecurityPolicy(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+
+    /**
+ * ============================================================
+ * GitHub Security Features Tool
+ * ============================================================
+ */
+    public getSecurityFeaturesTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_security_features",
+
+            description:
+                "Get the security features enabled for a GitHub repository, including Dependabot, Code Scanning, Secret Scanning, and push protection.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    if (!owner) {
+                        throw new Error(
+                            "GitHub repository owner is required."
+                        );
+                    }
+
+                    if (!repository) {
+                        throw new Error(
+                            "GitHub repository name is required."
+                        );
+                    }
+
+                    return this.githubService
+                        .getSecurityFeatures(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+
+    /**
+ * ============================================================
+ * GitHub Security Configuration Summary Tool
+ * ============================================================
+ */
+    public getSecurityConfigurationSummaryTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_security_configuration_summary",
+
+            description:
+                "Get an AI-friendly summary of a GitHub repository's security configuration and enabled security features.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    if (!owner) {
+                        throw new Error(
+                            "GitHub repository owner is required."
+                        );
+                    }
+
+                    if (!repository) {
+                        throw new Error(
+                            "GitHub repository name is required."
+                        );
+                    }
+
+                    return this.githubService
+                        .getSecurityConfigurationSummary(
+                            owner,
+                            repository
+                        );
+                }
         };
     }
 

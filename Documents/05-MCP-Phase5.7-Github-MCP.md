@@ -2,6 +2,37 @@
 
 And importantly, we should not jump to 5.11 yet.
 
+5.7 GitHub MCP
+│
+├── Repository
+├── Files
+├── Commits / History
+├── Diffs / Changes
+├── Repository Tree
+├── Releases / Tags
+├── Repository Search
+├── Users / Organizations
+├── Contributors / Collaborators
+├── Repository Statistics
+├── Languages / Technology Stack
+├── Actions / Workflows
+├── Jobs / Logs / Artifacts
+├── Discussions / Community
+├── Dependabot
+├── Code Scanning / CodeQL
+├── Secret Scanning
+├── Security Findings
+├── Security Configuration
+│
+├── 5.7.28 Administration          ⏳
+├── 5.7.29 Branch Protection       ⏳
+├── 5.7.30 Environments            ⏳
+├── 5.7.31 Projects                ⏳
+├── 5.7.32 Advanced Issues         ⏳
+├── 5.7.33 Advanced PRs            ⏳
+├── 5.7.34 Webhooks / Events       ⏳
+└── 5.7.35 Final Integration       ⏳
+
 The architecture should grow incrementally:
 
 5.6
