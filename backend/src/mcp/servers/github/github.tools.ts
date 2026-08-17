@@ -204,6 +204,39 @@ export interface GitHubListDiscussionCategoriesArgs {
     repository: string;
 }
 
+export interface GitHubListCodeScanningAlertsArgs {
+
+    owner: string;
+
+    repository: string;
+
+    state?: string;
+
+    ref?: string;
+
+    page?: number;
+
+    perPage?: number;
+}
+
+export interface GitHubGetCodeScanningAlertArgs {
+
+    owner: string;
+
+    repository: string;
+
+    alertNumber: number;
+}
+
+export interface GitHubCodeScanningSummaryArgs {
+
+    owner: string;
+
+    repository: string;
+}
+
+
+
 import {
     GitHubService,
     GitHubRepository,
@@ -234,7 +267,9 @@ import {
     GitHubDiscussionsResponse,
     GitHubDiscussion,
     GitHubDiscussionCommentsResponse,
-    GitHubDiscussionCategoriesResponse
+    GitHubDiscussionCategoriesResponse,
+    GitHubCodeScanningAlertsResponse,
+    GitHubCodeScanningAlert
 } from "./github.service";
 
 /**
@@ -290,7 +325,11 @@ export class GitHubTools {
             this.listDiscussionsTool(),
             this.getDiscussionTool(),
             this.listDiscussionCommentsTool(),
-            this.listDiscussionCategoriesTool()
+            this.listDiscussionCategoriesTool(),
+
+            this.listCodeScanningAlertsTool(),
+            this.getCodeScanningAlertTool(),
+            this.getCodeScanningSummaryTool()
         ];
     }
 
@@ -3404,5 +3443,286 @@ export class GitHubTools {
             }
         };
     }
+
+    public async listCodeScanningAlerts(
+        args: GitHubListCodeScanningAlertsArgs
+    ): Promise<GitHubCodeScanningAlertsResponse> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listCodeScanningAlerts(
+            args.owner,
+            args.repository,
+            args.state,
+            args.ref,
+            args.page,
+            args.perPage
+        );
+    }
+
+    public async getCodeScanningAlert(
+        args: GitHubGetCodeScanningAlertArgs
+    ): Promise<GitHubCodeScanningAlert> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        if (
+            !Number.isInteger(args.alertNumber) ||
+            args.alertNumber <= 0
+        ) {
+            throw new Error(
+                "alertNumber must be a positive integer."
+            );
+        }
+
+        return this.githubService.getCodeScanningAlert(
+            args.owner,
+            args.repository,
+            args.alertNumber
+        );
+    }
+
+    public async getCodeScanningSummary(
+        args: GitHubCodeScanningSummaryArgs
+    ) {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getCodeScanningSummary(
+            args.owner,
+            args.repository
+        );
+    }
+
+    private listCodeScanningAlertsTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_list_code_scanning_alerts",
+
+            description:
+                "List GitHub Code Scanning and CodeQL security alerts for a repository.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    },
+
+                    state: {
+                        type:
+                            "string",
+
+                        description:
+                            "Alert state such as open, dismissed, or fixed."
+                    },
+
+                    ref: {
+                        type:
+                            "string",
+
+                        description:
+                            "Git reference such as a branch or commit."
+                    },
+
+                    page: {
+                        type:
+                            "number"
+                    },
+
+                    perPage: {
+                        type:
+                            "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                const value =
+                    args as Record<string, unknown>;
+
+                return this.listCodeScanningAlerts({
+                    ...repositoryArgs,
+
+                    state:
+                        typeof value.state === "string"
+                            ? value.state
+                            : undefined,
+
+                    ref:
+                        typeof value.ref === "string"
+                            ? value.ref
+                            : undefined,
+
+                    page:
+                        typeof value.page === "number"
+                            ? value.page
+                            : undefined,
+
+                    perPage:
+                        typeof value.perPage === "number"
+                            ? value.perPage
+                            : undefined
+                });
+            }
+        };
+    }
+
+    private getCodeScanningAlertTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_code_scanning_alert",
+
+            description:
+                "Get detailed information about a specific GitHub Code Scanning or CodeQL security alert.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    },
+
+                    alertNumber: {
+                        type:
+                            "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "alertNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                const value =
+                    args as Record<string, unknown>;
+
+                if (
+                    typeof value.alertNumber !== "number" ||
+                    !Number.isInteger(
+                        value.alertNumber
+                    ) ||
+                    value.alertNumber <= 0
+                ) {
+                    throw new Error(
+                        "alertNumber must be a positive integer."
+                    );
+                }
+
+                return this.getCodeScanningAlert({
+                    ...repositoryArgs,
+
+                    alertNumber:
+                        value.alertNumber
+                });
+            }
+        };
+    }
+
+    private getCodeScanningSummaryTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_code_scanning_summary",
+
+            description:
+                "Get a security summary of GitHub Code Scanning and CodeQL alerts grouped by state, severity, tool, and rule.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                return this.getCodeScanningSummary(
+                    repositoryArgs
+                );
+            }
+        };
+    }
+
+
 
 }

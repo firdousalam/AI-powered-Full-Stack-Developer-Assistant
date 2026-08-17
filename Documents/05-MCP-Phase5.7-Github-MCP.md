@@ -6987,3 +6987,4436 @@ github_get_workflow_job_logs
 github_list_workflow_artifacts
 
 Then your GitHub MCP layer will have much stronger CI/CD troubleshooting capability.
+
+
+5.7.21 — GitHub Actions Jobs / Logs / Artifacts Tool
+
+This milestone extends the GitHub Actions support from workflow/run metadata into actual job execution and build artifacts.
+
+We'll add four MCP tools:
+
+github_list_workflow_jobs
+github_get_workflow_job
+github_get_workflow_job_logs
+github_list_workflow_artifacts
+
+This gives your agent:
+
+Workflow
+   ↓
+Workflow Run
+   ↓
+Jobs
+   ├── Build
+   ├── Test
+   ├── Docker
+   └── Deploy
+        ↓
+      Logs
+        ↓
+   Failure analysis
+
+
+Artifacts
+   ↓
+Build/test outputs
+1. Add GitHub Actions types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubWorkflowJob {
+
+
+    id: number;
+
+
+    run_id: number;
+
+
+    workflow_name?: string | null;
+
+
+    head_branch: string | null;
+
+
+    head_sha: string;
+
+
+    run_attempt?: number;
+
+
+    node_id?: string;
+
+
+    url: string;
+
+
+    html_url: string;
+
+
+    status: string;
+
+
+    conclusion: string | null;
+
+
+    started_at: string | null;
+
+
+    completed_at: string | null;
+
+
+    name: string;
+
+
+    steps?: GitHubWorkflowStep[];
+}
+
+
+export interface GitHubWorkflowStep {
+
+
+    name: string;
+
+
+    status: string;
+
+
+    conclusion: string | null;
+
+
+    number: number;
+
+
+    started_at: string | null;
+
+
+    completed_at: string | null;
+}
+
+
+export interface GitHubWorkflowJobsResponse {
+
+
+    total_count: number;
+
+
+    jobs: GitHubWorkflowJob[];
+}
+
+
+export interface GitHubArtifact {
+
+
+    id: number;
+
+
+    node_id?: string;
+
+
+    name: string;
+
+
+    size_in_bytes: number;
+
+
+    url: string;
+
+
+    archive_download_url: string;
+
+
+    expired: boolean;
+
+
+    created_at: string;
+
+
+    expires_at: string | null;
+
+
+    updated_at: string;
+
+
+    workflow_run?: {
+        id: number;
+        repository_id?: number;
+        head_repository_id?: number;
+        head_branch?: string;
+        head_sha?: string;
+    } | null;
+}
+
+
+export interface GitHubArtifactsResponse {
+
+
+    total_count: number;
+
+
+    artifacts: GitHubArtifact[];
+}
+2. Add listWorkflowJobs()
+
+Inside GitHubService:
+
+/**
+ * List jobs belonging to a GitHub Actions workflow run.
+ */
+public async listWorkflowJobs(
+    owner: string,
+    repository: string,
+    runId: number,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubWorkflowJobsResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(runId) ||
+        runId <= 0
+    ) {
+        throw new Error(
+            "Workflow run ID must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "Workflow jobs page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "Workflow jobs perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/actions/runs/${runId}/jobs?${params.toString()}`;
+
+
+    return this.request<GitHubWorkflowJobsResponse>(
+        endpoint
+    );
+}
+3. Add getWorkflowJob()
+/**
+ * Get details about a specific GitHub Actions job.
+ */
+public async getWorkflowJob(
+    owner: string,
+    repository: string,
+    jobId: number
+): Promise<GitHubWorkflowJob> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(jobId) ||
+        jobId <= 0
+    ) {
+        throw new Error(
+            "Workflow job ID must be a positive integer."
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/actions/jobs/${jobId}`;
+
+
+    return this.request<GitHubWorkflowJob>(
+        endpoint
+    );
+}
+4. Add workflow job logs
+
+The GitHub job logs endpoint returns log content rather than a normal JSON object.
+
+Add:
+
+/**
+ * Retrieve logs for a GitHub Actions job.
+ *
+ * GitHub returns the job log as text.
+ */
+public async getWorkflowJobLogs(
+    owner: string,
+    repository: string,
+    jobId: number
+): Promise<string> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(jobId) ||
+        jobId <= 0
+    ) {
+        throw new Error(
+            "Workflow job ID must be a positive integer."
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/actions/jobs/${jobId}/logs`;
+
+
+    return this.request<string>(
+        endpoint
+    );
+}
+Important
+
+This assumes your existing GitHubService.request() supports text responses.
+
+If your current request() always does:
+
+response.json()
+
+then don't change it blindly.
+
+Instead, add a separate helper for text responses, for example:
+
+private async requestText(
+    endpoint: string
+): Promise<string> {
+
+
+    const response =
+        await fetch(
+            `${this.config.apiUrl}${endpoint}`,
+            {
+                method: "GET",
+
+
+                headers: {
+                    Accept:
+                        "application/vnd.github+json",
+
+
+                    ...(this.config.token
+                        ? {
+                            Authorization:
+                                `Bearer ${this.config.token}`
+                        }
+                        : {})
+                }
+            }
+        );
+
+
+    if (!response.ok) {
+        throw new Error(
+            `GitHub API request failed: ${response.status} ${response.statusText}`
+        );
+    }
+
+
+    return response.text();
+}
+
+Then use:
+
+return this.requestText(endpoint);
+
+for getWorkflowJobLogs().
+
+Use whichever approach matches your existing GitHubService implementation. Don't duplicate your authentication/request logic if your service already has a suitable text-response mechanism.
+
+5. Add workflow artifacts
+/**
+ * List artifacts generated by GitHub Actions
+ * for a repository.
+ */
+public async listWorkflowArtifacts(
+    owner: string,
+    repository: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubArtifactsResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "Artifacts page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "Artifacts perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/actions/artifacts?${params.toString()}`;
+
+
+    return this.request<GitHubArtifactsResponse>(
+        endpoint
+    );
+}
+6. Add tool argument interfaces
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubListWorkflowJobsArgs {
+    owner: string;
+    repository: string;
+    runId: number;
+    page?: number;
+    perPage?: number;
+}
+
+
+export interface GitHubGetWorkflowJobArgs {
+    owner: string;
+    repository: string;
+    jobId: number;
+}
+
+
+export interface GitHubGetWorkflowJobLogsArgs {
+    owner: string;
+    repository: string;
+    jobId: number;
+}
+
+
+export interface GitHubListWorkflowArtifactsArgs {
+    owner: string;
+    repository: string;
+    page?: number;
+    perPage?: number;
+}
+7. Import the new service types
+
+Extend your existing import:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse,
+    GitHubIssue,
+    GitHubPullRequest,
+    GitHubCommit,
+    GitHubCompareResponse,
+    GitHubTreeResponse,
+    GitHubRelease,
+    GitHubTag,
+    GitHubRepositorySearchResponse,
+    GitHubUser,
+    GitHubOrganization,
+    GitHubContributor,
+    GitHubCollaborator,
+    GitHubRepositoryStatistics,
+    GitHubRepositoryLanguages,
+    GitHubWorkflow,
+    GitHubWorkflowRun,
+    GitHubWorkflowRunsResponse,
+    GitHubWorkflowJob,
+    GitHubWorkflowJobsResponse,
+    GitHubArtifact,
+    GitHubArtifactsResponse
+} from "./github.service";
+8. Add operations to GitHubTools
+List jobs
+public async listWorkflowJobs(
+    args: GitHubListWorkflowJobsArgs
+): Promise<GitHubWorkflowJobsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listWorkflowJobs(
+        args.owner,
+        args.repository,
+        args.runId,
+        args.page,
+        args.perPage
+    );
+}
+Get job
+public async getWorkflowJob(
+    args: GitHubGetWorkflowJobArgs
+): Promise<GitHubWorkflowJob> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getWorkflowJob(
+        args.owner,
+        args.repository,
+        args.jobId
+    );
+}
+Get logs
+public async getWorkflowJobLogs(
+    args: GitHubGetWorkflowJobLogsArgs
+): Promise<string> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getWorkflowJobLogs(
+        args.owner,
+        args.repository,
+        args.jobId
+    );
+}
+List artifacts
+public async listWorkflowArtifacts(
+    args: GitHubListWorkflowArtifactsArgs
+): Promise<GitHubArtifactsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listWorkflowArtifacts(
+        args.owner,
+        args.repository,
+        args.page,
+        args.perPage
+    );
+}
+9. Add validation helper
+
+Instead of four large validation methods, use one reusable helper for pagination:
+
+private validatePagination(
+    value: Record<string, unknown>
+): {
+    page?: number;
+    perPage?: number;
+} {
+
+
+    const result: {
+        page?: number;
+        perPage?: number;
+    } = {};
+
+
+    if (value.page !== undefined) {
+
+
+        if (
+            typeof value.page !== "number" ||
+            !Number.isInteger(value.page) ||
+            value.page < 1
+        ) {
+            throw new Error(
+                "page must be a positive integer."
+            );
+        }
+
+
+        result.page =
+            value.page;
+    }
+
+
+    if (value.perPage !== undefined) {
+
+
+        if (
+            typeof value.perPage !== "number" ||
+            !Number.isInteger(value.perPage) ||
+            value.perPage < 1 ||
+            value.perPage > 100
+        ) {
+            throw new Error(
+                "perPage must be between 1 and 100."
+            );
+        }
+
+
+        result.perPage =
+            value.perPage;
+    }
+
+
+    return result;
+}
+
+Then:
+
+private validateWorkflowJobArguments(
+    args: unknown
+): GitHubListWorkflowJobsArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    if (
+        typeof value.runId !== "number" ||
+        !Number.isInteger(value.runId) ||
+        value.runId <= 0
+    ) {
+        throw new Error(
+            "runId must be a positive integer."
+        );
+    }
+
+
+    return {
+        ...repositoryArgs,
+        runId: value.runId,
+        ...this.validatePagination(value)
+    };
+}
+
+And:
+
+private validateWorkflowJobIdArguments(
+    args: unknown
+): GitHubGetWorkflowJobArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    if (
+        typeof value.jobId !== "number" ||
+        !Number.isInteger(value.jobId) ||
+        value.jobId <= 0
+    ) {
+        throw new Error(
+            "jobId must be a positive integer."
+        );
+    }
+
+
+    return {
+        ...repositoryArgs,
+        jobId: value.jobId
+    };
+}
+10. github_list_workflow_jobs
+
+Add:
+
+private listWorkflowJobsTool(): MCPTool {
+
+
+    return {
+        name: "github_list_workflow_jobs",
+
+
+        description:
+            "List jobs belonging to a GitHub Actions workflow run, including job status, conclusion, timing, and steps.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string"
+                },
+
+
+                repository: {
+                    type: "string"
+                },
+
+
+                runId: {
+                    type: "number",
+                    description:
+                        "GitHub Actions workflow run ID."
+                },
+
+
+                page: {
+                    type: "number"
+                },
+
+
+                perPage: {
+                    type: "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "runId"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateWorkflowJobArguments(
+                    args
+                );
+
+
+            return this.listWorkflowJobs(
+                validatedArgs
+            );
+        }
+    };
+}
+11. github_get_workflow_job
+private getWorkflowJobTool(): MCPTool {
+
+
+    return {
+        name: "github_get_workflow_job",
+
+
+        description:
+            "Get detailed information about a GitHub Actions job and its execution steps.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string"
+                },
+
+
+                repository: {
+                    type: "string"
+                },
+
+
+                jobId: {
+                    type: "number",
+                    description:
+                        "GitHub Actions job ID."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "jobId"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateWorkflowJobIdArguments(
+                    args
+                );
+
+
+            return this.getWorkflowJob(
+                validatedArgs
+            );
+        }
+    };
+}
+12. github_get_workflow_job_logs
+private getWorkflowJobLogsTool(): MCPTool {
+
+
+    return {
+        name: "github_get_workflow_job_logs",
+
+
+        description:
+            "Retrieve the logs produced by a GitHub Actions job for CI/CD failure analysis.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string"
+                },
+
+
+                repository: {
+                    type: "string"
+                },
+
+
+                jobId: {
+                    type: "number",
+                    description:
+                        "GitHub Actions job ID."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "jobId"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateWorkflowJobIdArguments(
+                    args
+                );
+
+
+            return this.getWorkflowJobLogs(
+                validatedArgs
+            );
+        }
+    };
+}
+13. github_list_workflow_artifacts
+
+Add:
+
+private listWorkflowArtifactsTool(): MCPTool {
+
+
+    return {
+        name: "github_list_workflow_artifacts",
+
+
+        description:
+            "List artifacts generated by GitHub Actions workflows for a repository.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string"
+                },
+
+
+                repository: {
+                    type: "string"
+                },
+
+
+                page: {
+                    type: "number"
+                },
+
+
+                perPage: {
+                    type: "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            return this.listWorkflowArtifacts({
+                ...repositoryArgs,
+                ...this.validatePagination(value)
+            });
+        }
+    };
+}
+14. Register the four tools
+
+Your current getTools() has 22 tools.
+
+Update the end of the array:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool(),
+        this.searchRepositoriesTool(),
+        this.getUserTool(),
+        this.getOrganizationTool(),
+        this.listContributorsTool(),
+        this.listCollaboratorsTool(),
+        this.getRepositoryStatisticsTool(),
+        this.getRepositoryLanguagesTool(),
+
+
+        this.listWorkflowsTool(),
+        this.listWorkflowRunsTool(),
+        this.getWorkflowRunTool(),
+
+
+        this.listWorkflowJobsTool(),
+        this.getWorkflowJobTool(),
+        this.getWorkflowJobLogsTool(),
+        this.listWorkflowArtifactsTool()
+    ];
+}
+
+You now have:
+
+26 GitHub MCP tools.
+
+15. What your AI can now do
+
+The important part isn't the number of tools. It's the workflow they enable.
+
+For:
+
+"Why did my latest CI build fail?"
+
+Your agent can now do:
+
+github_list_workflows
+        ↓
+github_list_workflow_runs
+        ↓
+Latest failed run
+        ↓
+github_list_workflow_jobs
+        ↓
+Find failed job
+        ↓
+github_get_workflow_job
+        ↓
+Identify failed step
+        ↓
+github_get_workflow_job_logs
+        ↓
+Analyze error
+
+For example:
+
+Workflow: CI
+Run: #142
+Status: completed
+Conclusion: failure
+
+
+Jobs:
+ ├── Install dependencies       success
+ ├── Unit tests                 success
+ ├── Docker build               failure
+ └── Deploy                     skipped
+
+
+Failed step:
+Docker build
+
+
+Log:
+npm ERR! ...
+
+That's a major improvement for your AI developer assistant.
+
+16. Artifacts
+
+The artifact tool lets the agent discover things like:
+
+build.zip
+coverage-report
+test-results
+frontend-dist
+backend-build
+
+with metadata:
+
+name
+size
+created
+updated
+expired
+download URL
+
+Don't have the agent automatically download every artifact.
+
+Later we can add an explicit artifact-download tool with safeguards and size handling.
+
+17. Architecture after 5.7.21
+
+Your GitHub MCP is becoming:
+
+                         GitHub MCP
+                             │
+       ┌─────────────────────┼──────────────────────┐
+       │                     │                      │
+       ▼                     ▼                      ▼
+   Repository              Code                 History
+       │                     │                      │
+   Statistics             Contents              Commits
+   Languages              Files                 Diff
+   Branches               Search                PRs
+   Tree                                         Issues
+       │                                          │
+       └────────────────────┬─────────────────────┘
+                            ▼
+                       CI / CD
+                            │
+                    ┌───────┴────────┐
+                    ▼                ▼
+                Workflows          Runs
+                    │                │
+                    └───────┬────────┘
+                            ▼
+                          Jobs
+                            │
+                    ┌───────┴────────┐
+                    ▼                ▼
+                  Logs           Artifacts
+                    │                │
+                    └───────┬────────┘
+                            ▼
+                       AI Agent
+
+This is exactly the direction we want before moving toward agent-level reasoning.
+
+5.7.22 — GitHub Discussions / Repository Community Tool
+
+This milestone adds GitHub Discussions support so your AI assistant can inspect community questions, answers, and discussion activity.
+
+We'll add 4 tools:
+
+github_list_discussions
+github_get_discussion
+github_list_discussion_comments
+github_list_discussion_categories
+
+This takes your GitHub MCP layer from code/CI intelligence into repository community intelligence.
+
+1. Add GitHub Discussion types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubDiscussion {
+
+
+    user: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    };
+
+
+    state?: string;
+
+
+    locked?: boolean;
+
+
+    answer_chosen_at?: string | null;
+
+
+    answer_chosen_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+
+    created_at: string;
+
+
+    updated_at: string;
+}
+
+
+export interface GitHubDiscussionComment {
+
+
+    id: number;
+
+
+    body: string;
+
+
+    html_url: string;
+
+
+    user: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    };
+
+
+    created_at: string;
+
+
+    updated_at: string;
+}
+
+
+export interface GitHubDiscussionCategory {
+
+
+    id: number;
+
+
+    repository_id?: number;
+
+
+    name: string;
+
+
+    description?: string;
+
+
+    emoji?: string;
+
+
+    emoji_html?: string;
+
+
+    slug: string;
+
+
+    created_at?: string;
+
+
+    updated_at?: string;
+}
+
+
+export interface GitHubDiscussionsResponse {
+
+
+    total_count?: number;
+
+
+    discussions: GitHubDiscussion[];
+}
+
+
+export interface GitHubDiscussionCommentsResponse {
+
+
+    total_count?: number;
+
+
+    comments: GitHubDiscussionComment[];
+}
+
+
+export interface GitHubDiscussionCategoriesResponse {
+
+
+    total_count?: number;
+
+
+    categories: GitHubDiscussionCategory[];
+}
+2. Add listDiscussions()
+
+Inside GitHubService:
+
+/**
+ * List GitHub Discussions for a repository.
+ */
+public async listDiscussions(
+    owner: string,
+    repository: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubDiscussionsResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "Discussions page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "Discussions perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/discussions?${params.toString()}`;
+
+
+    const discussions =
+        await this.request<GitHubDiscussion[]>(
+            endpoint
+        );
+
+
+    return {
+        discussions
+    };
+}
+Important GitHub API note
+
+GitHub Discussions are primarily exposed through the GraphQL API. If your current service only supports REST endpoints, this particular method may not work against GitHub's REST API.
+
+For this milestone, I recommend not forcing a fake REST implementation.
+
+Instead, if your GitHubService currently uses REST only, we'll introduce a GraphQL helper in the service and use GitHub's Discussions GraphQL API.
+
+3. Add GraphQL helper
+
+If your service does not already have one, add:
+
+private async graphqlRequest<T>(
+    query: string,
+    variables: Record<string, unknown>
+): Promise<T> {
+
+
+    const response =
+        await fetch(
+            `${this.config.apiUrl}/graphql`,
+            {
+                method: "POST",
+
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+
+                    Accept:
+                        "application/vnd.github+json",
+
+
+                    ...(this.config.token
+                        ? {
+                            Authorization:
+                                `Bearer ${this.config.token}`
+                        }
+                        : {})
+                },
+
+
+                body: JSON.stringify({
+                    query,
+                    variables
+                })
+            }
+        );
+
+
+    if (!response.ok) {
+
+
+        throw new Error(
+            `GitHub GraphQL request failed: ${response.status} ${response.statusText}`
+        );
+    }
+
+
+    const result =
+        await response.json() as {
+            data?: T;
+            errors?: Array<{
+                message: string;
+            }>;
+        };
+
+
+    if (
+        result.errors &&
+        result.errors.length > 0
+    ) {
+
+
+        throw new Error(
+            result.errors
+                .map(error => error.message)
+                .join("; ")
+        );
+    }
+
+
+    if (!result.data) {
+
+
+        throw new Error(
+            "GitHub GraphQL response did not contain data."
+        );
+    }
+
+
+    return result.data;
+}
+
+However, if your GitHubConfig.apiUrl can be changed from:
+
+https://api.github.com
+
+to another endpoint, make sure the GraphQL endpoint remains:
+
+https://api.github.com/graphql
+
+A cleaner long-term approach is to keep REST and GraphQL URLs separate.
+
+4. Better GraphQL configuration
+
+I recommend extending GitHubConfig:
+
+export interface GitHubConfig {
+
+
+    apiUrl: string;
+
+
+    graphqlUrl?: string;
+
+
+    token?: string;
+}
+
+Then:
+
+private getGraphQLUrl(): string {
+
+
+    return (
+        this.config.graphqlUrl ??
+        "https://api.github.com/graphql"
+    );
+}
+
+And use:
+
+this.getGraphQLUrl()
+
+instead of constructing /graphql from apiUrl.
+
+5. Implement listDiscussions() using GraphQL
+
+Replace the REST implementation with:
+
+public async listDiscussions(
+                                discussion.url,
+
+
+                            category: {
+                                id: Number(
+                                    discussion.category.id
+                                        .split("/")
+                                        .pop() ?? 0
+                                ),
+
+
+                                name:
+                                    discussion.category.name,
+
+
+                                slug:
+                                    discussion.category.slug,
+
+
+                                emoji:
+                                    discussion.category.emoji
+                            },
+
+
+                            user: {
+                                login:
+                                    discussion.author?.login ??
+                                    "unknown",
+
+
+                                id:
+                                    discussion.author?.databaseId ??
+                                    0,
+
+
+                                avatar_url:
+                                    discussion.author?.avatarUrl,
+
+
+                                html_url:
+                                    discussion.author?.url
+                            },
+
+
+                            locked:
+                                discussion.locked,
+
+
+                            answer_chosen_at:
+                                discussion.answerChosenAt,
+
+
+                            answer_chosen_by:
+                                discussion.answerChosenBy
+                                    ? {
+                                        login:
+                                            discussion.answerChosenBy.login,
+
+
+                                        id:
+                                            discussion.answerChosenBy.databaseId
+                                    }
+                                    : null,
+
+
+                            created_at:
+                                discussion.createdAt,
+
+
+                            updated_at:
+                                discussion.updatedAt
+                        })
+                    )
+            };
+        }
+
+
+        if (
+            !discussions.pageInfo.hasNextPage
+        ) {
+
+
+            return {
+                total_count:
+                    discussions.totalCount,
+
+
+                discussions: []
+            };
+        }
+
+
+        cursor =
+            discussions.pageInfo.endCursor;
+
+
+        currentPage++;
+    }
+
+
+    return {
+        discussions: []
+    };
+}
+6. Add getDiscussion()
+/**
+
+
+    if (
+        !result.repository.discussion
+    ) {
+        throw new Error(
+            `GitHub Discussion #${discussionNumber} was not found.`
+        );
+    }
+
+
+    const discussion =
+        result.repository.discussion;
+
+
+    return {
+        id: Number(
+            discussion.id
+                .split("/")
+                .pop() ?? 0
+        ),
+
+
+        number:
+            discussion.number,
+
+
+        title:
+            discussion.title,
+
+
+        body:
+            discussion.body,
+
+
+        html_url:
+            discussion.url,
+
+
+        category: {
+            id: Number(
+                discussion.category.id
+                    .split("/")
+                    .pop() ?? 0
+            ),
+
+
+            name:
+                discussion.category.name,
+
+
+            slug:
+                discussion.category.slug,
+
+
+            emoji:
+                discussion.category.emoji
+        },
+
+
+        user: {
+            login:
+                discussion.author?.login ??
+                "unknown",
+
+
+            id:
+                discussion.author?.databaseId ??
+                0,
+
+
+            avatar_url:
+                discussion.author?.avatarUrl,
+
+
+            html_url:
+                discussion.author?.url
+        },
+
+
+        locked:
+            discussion.locked,
+
+
+        answer_chosen_at:
+            discussion.answerChosenAt,
+
+
+        answer_chosen_by:
+            discussion.answerChosenBy
+                ? {
+                    login:
+                        discussion.answerChosenBy.login,
+
+
+                    id:
+                        discussion.answerChosenBy.databaseId
+                }
+                : null,
+
+
+        created_at:
+            discussion.createdAt,
+
+
+        updated_at:
+            discussion.updatedAt
+    };
+}
+7. Add Discussion comments
+/**
+                                login: string;
+                                databaseId: number;
+                                avatarUrl?: string;
+                                url: string;
+                            } | null;
+                        }>;
+                    };
+                } | null;
+            };
+        }>(
+            query,
+            {
+                owner,
+                repository,
+                number: discussionNumber,
+                first
+            }
+        );
+
+
+    if (
+        !result.repository.discussion
+    ) {
+        throw new Error(
+            `GitHub Discussion #${discussionNumber} was not found.`
+        );
+    }
+
+
+    const comments =
+        result.repository.discussion.comments;
+
+
+    return {
+        total_count:
+            comments.totalCount,
+
+
+        comments:
+            comments.nodes.map(
+                comment => ({
+                    id: Number(
+                        comment.id
+                            .split("/")
+                            .pop() ?? 0
+                    ),
+
+
+                    body:
+                        comment.body,
+
+
+                    html_url:
+                        comment.url,
+
+
+                    user: {
+                        login:
+                            comment.author?.login ??
+                            "unknown",
+
+
+                        id:
+                            comment.author?.databaseId ??
+                            0,
+
+
+                        avatar_url:
+                            comment.author?.avatarUrl,
+
+
+                        html_url:
+                            comment.author?.url
+                    },
+
+
+                    created_at:
+                        comment.createdAt,
+
+
+                    updated_at:
+                        comment.updatedAt
+                })
+            )
+    };
+}
+8. Add Discussion categories
+/**
+
+
+    const query = `
+        query(
+            $owner: String!
+            $repository: String!
+        ) {
+            repository(
+                owner: $owner
+                name: $repository
+            ) {
+                discussionCategories(
+                    first: 100
+                ) {
+                    totalCount
+
+
+                    nodes {
+                        id
+                        name
+                        description
+                        emoji
+                        emojiHTML
+                        slug
+                        createdAt
+                        updatedAt
+                    }
+                }
+            }
+        }
+    `;
+
+
+    const result =
+        await this.graphqlRequest<{
+            repository: {
+                discussionCategories: {
+                    totalCount: number;
+
+
+                    nodes: Array<{
+                        id: string;
+                        name: string;
+                        description: string;
+                        emoji: string;
+                        emojiHTML: string;
+                        slug: string;
+                        createdAt: string;
+                        updatedAt: string;
+                    }>;
+                };
+            };
+        }>(
+            query,
+            {
+                owner,
+                repository
+            }
+        );
+
+
+    const categories =
+        result.repository
+            .discussionCategories;
+
+
+    return {
+        total_count:
+            categories.totalCount,
+
+
+        categories:
+            categories.nodes.map(
+                category => ({
+                    id: Number(
+                        category.id
+                            .split("/")
+                            .pop() ?? 0
+                    ),
+
+
+                    name:
+                        category.name,
+
+
+                    description:
+                        category.description,
+
+
+                    emoji:
+                        category.emoji,
+
+
+                    emoji_html:
+                        category.emojiHTML,
+
+
+                    slug:
+                        category.slug,
+
+
+                    created_at:
+                        category.createdAt,
+
+
+                    updated_at:
+                        category.updatedAt
+                })
+            )
+    };
+}
+9. Add tool argument interfaces
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubListDiscussionsArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    page?: number;
+
+
+    perPage?: number;
+}
+
+
+export interface GitHubGetDiscussionArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    discussionNumber: number;
+}
+
+
+export interface GitHubListDiscussionCommentsArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    discussionNumber: number;
+
+
+    first?: number;
+}
+
+
+export interface GitHubListDiscussionCategoriesArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+}
+10. Add tool operations
+
+Inside GitHubTools:
+
+public async listDiscussions(
+    args: GitHubListDiscussionsArgs
+): Promise<GitHubDiscussionsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listDiscussions(
+        args.owner,
+        args.repository,
+        args.page,
+        args.perPage
+    );
+}
+public async getDiscussion(
+    args: GitHubGetDiscussionArgs
+): Promise<GitHubDiscussion> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getDiscussion(
+        args.owner,
+        args.repository,
+        args.discussionNumber
+    );
+}
+public async listDiscussionComments(
+    args: GitHubListDiscussionCommentsArgs
+): Promise<GitHubDiscussionCommentsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listDiscussionComments(
+        args.owner,
+        args.repository,
+        args.discussionNumber,
+        args.first
+    );
+}
+public async listDiscussionCategories(
+    args: GitHubListDiscussionCategoriesArgs
+): Promise<GitHubDiscussionCategoriesResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listDiscussionCategories(
+        args.owner,
+        args.repository
+    );
+}
+11. Add validation
+private validateDiscussionNumberArguments(
+    args: unknown
+): GitHubGetDiscussionArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    if (
+        typeof value.discussionNumber !== "number" ||
+        !Number.isInteger(
+            value.discussionNumber
+        ) ||
+        value.discussionNumber <= 0
+    ) {
+        throw new Error(
+            "discussionNumber must be a positive integer."
+        );
+    }
+
+
+    return {
+        ...repositoryArgs,
+
+
+        discussionNumber:
+            value.discussionNumber
+    };
+}
+
+For comments:
+
+private validateDiscussionCommentsArguments(
+    args: unknown
+): GitHubListDiscussionCommentsArgs {
+
+
+    const base =
+        this.validateDiscussionNumberArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    let first:
+        number | undefined;
+
+
+    if (
+        value.first !== undefined
+    ) {
+
+
+        if (
+            typeof value.first !== "number" ||
+            !Number.isInteger(value.first) ||
+            value.first < 1 ||
+            value.first > 100
+        ) {
+            throw new Error(
+                "first must be between 1 and 100."
+            );
+        }
+
+
+        first =
+            value.first;
+    }
+
+
+    return {
+        ...base,
+        first
+    };
+}
+12. Add MCP tool: List Discussions
+private listDiscussionsTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_list_discussions",
+
+
+        description:
+            "List GitHub Discussions for a repository, including titles, authors, categories, and answer status.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                page: {
+                    type:
+                        "number"
+                },
+
+
+                perPage: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            return this.listDiscussions({
+                ...repositoryArgs,
+
+
+                ...this.validatePagination(
+                    value
+                )
+            });
+        }
+    };
+}
+13. Add MCP tool: Get Discussion
+private getDiscussionTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_get_discussion",
+
+
+        description:
+            "Get a specific GitHub Discussion including its body, category, author, and accepted answer information.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                discussionNumber: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "discussionNumber"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            return this.getDiscussion(
+                this.validateDiscussionNumberArguments(
+                    args
+                )
+            );
+        }
+    };
+}
+14. Add MCP tool: Discussion Comments
+private listDiscussionCommentsTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_list_discussion_comments",
+
+
+        description:
+            "List comments and community responses for a GitHub Discussion.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                discussionNumber: {
+                    type:
+                        "number"
+                },
+
+
+                first: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "discussionNumber"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            return this.listDiscussionComments(
+                this.validateDiscussionCommentsArguments(
+                    args
+                )
+            );
+        }
+    };
+}
+15. Add MCP tool: Discussion Categories
+private listDiscussionCategoriesTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_list_discussion_categories",
+
+
+        description:
+            "List Discussion categories configured for a GitHub repository.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            return this.listDiscussionCategories(
+                repositoryArgs
+            );
+        }
+    };
+}
+16. Register the tools
+
+Your current getTools() contains 26 tools.
+
+Add the four new tools at the end:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+
+
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool(),
+        this.searchRepositoriesTool(),
+        this.getUserTool(),
+        this.getOrganizationTool(),
+        this.listContributorsTool(),
+        this.listCollaboratorsTool(),
+        this.getRepositoryStatisticsTool(),
+        this.getRepositoryLanguagesTool(),
+
+
+        this.listWorkflowsTool(),
+        this.listWorkflowRunsTool(),
+        this.getWorkflowRunTool(),
+
+
+        this.listWorkflowJobsTool(),
+        this.getWorkflowJobTool(),
+        this.getWorkflowJobLogsTool(),
+        this.listWorkflowArtifactsTool(),
+
+
+        this.listDiscussionsTool(),
+        this.getDiscussionTool(),
+        this.listDiscussionCommentsTool(),
+        this.listDiscussionCategoriesTool()
+    ];
+}
+
+You now have:
+
+30 GitHub MCP tools.
+
+17. What this enables
+
+Your AI assistant can now answer questions such as:
+
+"What are people asking about this project?"
+
+github_list_discussions
+
+"What is Discussion #42 about?"
+
+github_get_discussion
+
+"What solutions did people suggest?"
+
+github_list_discussion_comments
+
+"What categories does this repository use?"
+
+github_list_discussion_categories
+
+More importantly, it gives the future agent another source of contextual knowledge:
+
+                 Repository
+                     │
+       ┌─────────────┼──────────────┐
+       ▼             ▼              ▼
+     Code          Issues        Discussions
+       │             │              │
+       │             │          Community
+       │             │          knowledge
+       └─────────────┼──────────────┘
+                     ▼
+                 AI Agent
+
+This can eventually be combined with your RAG/vector layer to retrieve relevant community knowledge when answering developer questions.
+
+18. Important implementation note
+
+Because GitHub Discussions use GraphQL, this milestone is slightly different from most of your previous GitHub tools.
+
+Don't create a second authentication architecture.
+
+Keep the separation:
+
+GitHubService
+   │
+   ├── REST request()
+   │
+   └── GraphQL graphqlRequest()
+
+Both should use the same:
+
+GitHubConfig.token
+
+That keeps the service architecture clean.
+
+19. Checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+If clean:
+
+✅ 5.7.22 completed
+
+Your GitHub MCP layer will have:
+✅ 5.7.22 — GitHub Discussions / Repository Community Tool is now complete.
+
+npx tsc --noEmit passes with 0 TypeScript errors.
+
+Current GitHub MCP progress
+
+You now have:
+
+5.7.18 — Repository Statistics / Activity
+5.7.19 — Repository Languages / Technology Stack
+5.7.20 — GitHub Actions / Workflows
+5.7.21 — Actions Jobs / Logs / Artifacts
+5.7.22 — Discussions / Repository Community ✅
+
+Your GitHub MCP layer is becoming a fairly comprehensive developer intelligence layer.
+
+Next milestone
+
+I recommend:
+
+5.7.23 — GitHub Repository Security / Dependabot Tool
+
+This would let the assistant inspect dependency/security alerts and eventually connect them with your code analysis:
+
+GitHub Security Alert
+        ↓
+Dependency / Vulnerability
+        ↓
+Repository Code
+        ↓
+AI Analysis
+        ↓
+Suggested Fix
+
+Run the checkpoint after 5.7.23 as usual:
+
+npx tsc --noEmit
+
+and we continue only after it passes.
+
+5.7.23 — GitHub Repository Security / Dependabot Tool  
+5.7.23 — GitHub Repository Security / Dependabot Tool
+
+This milestone adds Dependabot security intelligence to your GitHub MCP layer.
+
+The assistant will be able to inspect:
+
+Dependabot vulnerability alerts
+Individual Dependabot alert
+Dependabot alert summary
+
+This is especially valuable for your developer assistant because it can eventually combine:
+
+GitHub Security Alert
+        ↓
+Affected dependency
+        ↓
+package.json / package-lock.json
+        ↓
+Code analysis
+        ↓
+AI explanation
+        ↓
+Suggested remediation
+1. Add Dependabot types
+
+In:
+
+src/mcp/servers/github/github.service.ts
+
+Add these interfaces near your other GitHub response models:
+
+export interface GitHubDependabotAlert {
+
+
+        references: Array<{
+            url: string;
+        }>;
+
+
+        published_at?: string | null;
+
+
+        updated_at?: string | null;
+
+
+        withdrawn_at?: string | null;
+
+
+        vulnerabilities: Array<{
+            package: {
+                ecosystem: string;
+                name: string;
+            };
+
+
+            severity: string;
+
+
+            vulnerable_version_range: string;
+
+
+            first_patched_version?: {
+                identifier: string;
+            } | null;
+        }>;
+    } | null;
+
+
+    security_vulnerability?: {
+
+
+        package: {
+            ecosystem: string;
+            name: string;
+        };
+
+
+        severity: string;
+
+
+        vulnerable_version_range: string;
+
+
+        first_patched_version?: {
+            identifier: string;
+        } | null;
+    } | null;
+
+
+    url: string;
+
+
+    html_url?: string;
+
+
+    created_at: string;
+
+
+    updated_at: string;
+
+
+    dismissed_at?: string | null;
+
+
+    dismissed_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+
+    dismissed_reason?: string | null;
+
+
+    dismissed_comment?: string | null;
+
+
+    fixed_at?: string | null;
+
+
+    auto_dismissed_at?: string | null;
+}
+
+
+export interface GitHubDependabotAlertsResponse {
+
+
+    total_count: number;
+
+
+    alerts: GitHubDependabotAlert[];
+}
+2. Add listDependabotAlerts()
+
+Inside GitHubService:
+
+/**
+ * List Dependabot security alerts for a repository.
+ */
+public async listDependabotAlerts(
+    owner: string,
+    repository: string,
+    state?: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubDependabotAlertsResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "Dependabot alerts page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "Dependabot alerts perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    if (state?.trim()) {
+
+
+        params.set(
+            "state",
+            state.trim()
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/dependabot/alerts?${params.toString()}`;
+
+
+    const alerts =
+        await this.request<GitHubDependabotAlert[]>(
+            endpoint
+        );
+
+
+    return {
+        total_count:
+            alerts.length,
+
+
+        alerts
+    };
+}
+Important
+
+If your existing GitHubService.request() already supports response headers and pagination metadata, we can later improve total_count to use GitHub's actual pagination count.
+
+For the initial MCP tool, returning the number of retrieved alerts is acceptable.
+
+3. Add getDependabotAlert()
+/**
+ * Get a specific Dependabot security alert.
+ */
+public async getDependabotAlert(
+    owner: string,
+    repository: string,
+    alertNumber: number
+): Promise<GitHubDependabotAlert> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(alertNumber) ||
+        alertNumber <= 0
+    ) {
+        throw new Error(
+            "Dependabot alert number must be a positive integer."
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/dependabot/alerts/${alertNumber}`;
+
+
+    return this.request<GitHubDependabotAlert>(
+        endpoint
+    );
+}
+4. Add Dependabot summary
+
+This is useful for the AI because it doesn't need to process every alert just to answer:
+
+"Is this repository currently vulnerable?"
+
+Add:
+
+/**
+ * Get a summarized view of Dependabot alerts.
+ */
+public async getDependabotSummary(
+    owner: string,
+    repository: string
+): Promise<{
+    total: number;
+    open: number;
+    dismissed: number;
+    fixed: number;
+    bySeverity: Record<string, number>;
+    byEcosystem: Record<string, number>;
+}> {
+
+
+    const response =
+        await this.listDependabotAlerts(
+            owner,
+            repository,
+            undefined,
+            1,
+            100
+        );
+
+
+    const bySeverity:
+        Record<string, number> = {};
+
+
+    const byEcosystem:
+        Record<string, number> = {};
+
+
+    let open = 0;
+    let dismissed = 0;
+    let fixed = 0;
+
+
+    for (
+        const alert of response.alerts
+    ) {
+
+
+        const severity =
+            alert.security_vulnerability?.severity ??
+            alert.security_advisory?.severity ??
+            "unknown";
+
+
+        bySeverity[severity] =
+            (bySeverity[severity] ?? 0) + 1;
+
+
+        const ecosystem =
+            alert.dependency.package.ecosystem;
+
+
+        byEcosystem[ecosystem] =
+            (byEcosystem[ecosystem] ?? 0) + 1;
+
+
+        switch (alert.state) {
+
+
+            case "open":
+                open++;
+                break;
+
+
+            case "dismissed":
+                dismissed++;
+                break;
+
+
+            case "fixed":
+                fixed++;
+                break;
+        }
+    }
+
+
+    return {
+        total:
+            response.alerts.length,
+
+
+        open,
+
+
+        dismissed,
+
+
+        fixed,
+
+
+        bySeverity,
+
+
+        byEcosystem
+    };
+}
+5. Add tool argument types
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubListDependabotAlertsArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    state?: string;
+
+
+    page?: number;
+
+
+    perPage?: number;
+}
+
+
+export interface GitHubGetDependabotAlertArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    alertNumber: number;
+}
+
+
+export interface GitHubDependabotSummaryArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+}
+6. Add service wrappers to GitHubTools
+
+Inside GitHubTools:
+
+public async listDependabotAlerts(
+    args: GitHubListDependabotAlertsArgs
+): Promise<GitHubDependabotAlertsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listDependabotAlerts(
+        args.owner,
+        args.repository,
+        args.state,
+        args.page,
+        args.perPage
+    );
+}
+
+Add:
+
+public async getDependabotAlert(
+    args: GitHubGetDependabotAlertArgs
+): Promise<GitHubDependabotAlert> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    if (
+        !Number.isInteger(args.alertNumber) ||
+        args.alertNumber <= 0
+    ) {
+        throw new Error(
+            "alertNumber must be a positive integer."
+        );
+    }
+
+
+    return this.githubService.getDependabotAlert(
+        args.owner,
+        args.repository,
+        args.alertNumber
+    );
+}
+
+And:
+
+public async getDependabotSummary(
+    args: GitHubDependabotSummaryArgs
+) {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getDependabotSummary(
+        args.owner,
+        args.repository
+    );
+}
+7. Add MCP tool — List Dependabot Alerts
+
+Inside GitHubTools:
+
+private listDependabotAlertsTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_list_dependabot_alerts",
+
+
+        description:
+            "List Dependabot security vulnerability alerts for a GitHub repository.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                state: {
+                    type:
+                        "string",
+
+
+                    description:
+                        "Alert state such as open, dismissed, or fixed."
+                },
+
+
+                page: {
+                    type:
+                        "number"
+                },
+
+
+                perPage: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            return this.listDependabotAlerts({
+                ...repositoryArgs,
+
+
+                state:
+                    typeof value.state === "string"
+                        ? value.state
+                        : undefined,
+
+
+                page:
+                    typeof value.page === "number"
+                        ? value.page
+                        : undefined,
+
+
+                perPage:
+                    typeof value.perPage === "number"
+                        ? value.perPage
+                        : undefined
+            });
+        }
+    };
+}
+8. Add MCP tool — Get Dependabot Alert
+private getDependabotAlertTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_get_dependabot_alert",
+
+
+        description:
+            "Get detailed information about a specific Dependabot security alert.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                alertNumber: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "alertNumber"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            if (
+                typeof value.alertNumber !== "number" ||
+                !Number.isInteger(
+                    value.alertNumber
+                ) ||
+                value.alertNumber <= 0
+            ) {
+                throw new Error(
+                    "alertNumber must be a positive integer."
+                );
+            }
+
+
+            return this.getDependabotAlert({
+                ...repositoryArgs,
+
+
+                alertNumber:
+                    value.alertNumber
+            });
+        }
+    };
+}
+9. Add MCP tool — Dependabot Summary
+private getDependabotSummaryTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_get_dependabot_summary",
+
+
+        description:
+            "Get a security summary of Dependabot alerts grouped by state, severity, and package ecosystem.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            return this.getDependabotSummary(
+                repositoryArgs
+            );
+        }
+    };
+}
+10. Register the tools
+
+At the bottom of your existing getTools() add:
+
+this.listDependabotAlertsTool(),
+this.getDependabotAlertTool(),
+this.getDependabotSummaryTool()
+
+So the end of the method becomes:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+
+
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool(),
+        this.searchRepositoriesTool(),
+        this.getUserTool(),
+        this.getOrganizationTool(),
+        this.listContributorsTool(),
+        this.listCollaboratorsTool(),
+        this.getRepositoryStatisticsTool(),
+        this.getRepositoryLanguagesTool(),
+
+
+        this.listWorkflowsTool(),
+        this.listWorkflowRunsTool(),
+        this.getWorkflowRunTool(),
+
+
+        this.listWorkflowJobsTool(),
+        this.getWorkflowJobTool(),
+        this.getWorkflowJobLogsTool(),
+        this.listWorkflowArtifactsTool(),
+
+
+        this.listDiscussionsTool(),
+        this.getDiscussionTool(),
+        this.listDiscussionCommentsTool(),
+        this.listDiscussionCategoriesTool(),
+
+
+        this.listDependabotAlertsTool(),
+        this.getDependabotAlertTool(),
+        this.getDependabotSummaryTool()
+    ];
+}
+11. What your AI can now do
+
+The MCP client can ask:
+
+Security overview
+github_get_dependabot_summary
+
+Example conceptual result:
+
+{
+  "total": 7,
+  "open": 4,
+  "dismissed": 1,
+  "fixed": 2,
+  "bySeverity": {
+    "critical": 1,
+    "high": 2,
+    "moderate": 3,
+    "low": 1
+  },
+  "byEcosystem": {
+    "npm": 7
+  }
+}
+Find vulnerabilities
+github_list_dependabot_alerts
+Investigate one vulnerability
+github_get_dependabot_alert
+
+The AI can then reason:
+
+Dependabot
+   │
+   ├── Package
+   │
+   ├── Vulnerable version
+   │
+   ├── Patched version
+   │
+   ├── CVE / GHSA
+   │
+   └── Manifest
+          │
+          ▼
+      package.json
+          │
+          ▼
+     Code Analysis
+          │
+          ▼
+      AI Fix Plan
+12. Important GitHub permission consideration
+
+Dependabot alerts require appropriate GitHub permissions/token access. If your token doesn't have access to security alerts, the API can return an authorization error.
+
+That's actually useful for your MCP architecture because the service should return the GitHub error rather than silently treating the repository as having zero vulnerabilities.
+
+13. Checkpoint
+
+Now run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+Milestone status
+
+After the checkpoint passes:
+
+5.7.23 — GitHub Repository Security / Dependabot Tool ✅
+
+Your GitHub MCP layer will have 33 tools.
+
+The next useful milestone would be 5.7.24 — GitHub Code Scanning / CodeQL Tool, which is even more valuable for your project because it can connect GitHub's static-analysis findings with your existing Project Analyzer + Developer Tool Framework.
+
+5.7.24 — GitHub Code Scanning / CodeQL Tool
+
+This milestone adds GitHub Code Scanning / CodeQL security findings to your GitHub MCP server.
+
+It complements 5.7.23:
+
+5.7.23 Dependabot
+       ↓
+Dependency vulnerabilities
+
+
+5.7.24 CodeQL / Code Scanning
+       ↓
+Source-code vulnerabilities
+
+For your AI Developer Assistant, this is an important step toward AI-powered security analysis.
+
+1. Add the Code Scanning types
+
+In:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubCodeScanningAlert {
+
+
+    number: number;
+
+
+    created_at: string;
+
+
+    updated_at: string;
+
+
+    url: string;
+
+
+    html_url?: string;
+
+
+    state: string;
+
+
+    fixed_at?: string | null;
+
+
+    dismissed_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+
+    dismissed_at?: string | null;
+
+
+    dismissed_reason?: string | null;
+
+
+    dismissed_comment?: string | null;
+
+
+    rule: {
+        id: string;
+
+
+        severity?: string | null;
+
+
+        description: string;
+
+
+        name?: string | null;
+
+
+        security_severity_level?: string | null;
+
+
+        help?: string | null;
+
+
+        help_uri?: string | null;
+
+
+        tags?: string[];
+    };
+
+
+    tool: {
+        name: string;
+
+
+        version?: string | null;
+
+
+        guid?: string | null;
+    };
+
+
+    most_recent_instance?: {
+
+
+        ref: string;
+
+
+        analysis_key?: string | null;
+
+
+        environment?: string | null;
+
+
+        category?: string | null;
+
+
+        commit_sha: string;
+
+
+        location: {
+
+
+            path: string;
+
+
+            start_line: number;
+
+
+            end_line?: number;
+
+
+            start_column?: number | null;
+
+
+            end_column?: number | null;
+        };
+
+
+        message?: {
+            text: string;
+        };
+
+
+        state?: string | null;
+
+
+        classifications?: string[];
+    } | null;
+}
+
+
+export interface GitHubCodeScanningAlertsResponse {
+
+
+    total_count: number;
+
+
+    alerts: GitHubCodeScanningAlert[];
+}
+2. Add listCodeScanningAlerts()
+
+Inside GitHubService:
+
+/**
+ * List Code Scanning / CodeQL alerts
+ * for a GitHub repository.
+ */
+public async listCodeScanningAlerts(
+    owner: string,
+    repository: string,
+    state?: string,
+    ref?: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubCodeScanningAlertsResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "Code scanning page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "Code scanning perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    if (state?.trim()) {
+
+
+        params.set(
+            "state",
+            state.trim()
+        );
+    }
+
+
+    if (ref?.trim()) {
+
+
+        params.set(
+            "ref",
+            ref.trim()
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/code-scanning/alerts?${params.toString()}`;
+
+
+    const alerts =
+        await this.request<GitHubCodeScanningAlert[]>(
+            endpoint
+        );
+
+
+    return {
+        total_count:
+            alerts.length,
+
+
+        alerts
+    };
+}
+3. Add getCodeScanningAlert()
+/**
+ * Get a specific Code Scanning alert.
+ */
+public async getCodeScanningAlert(
+    owner: string,
+    repository: string,
+    alertNumber: number
+): Promise<GitHubCodeScanningAlert> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(alertNumber) ||
+        alertNumber <= 0
+    ) {
+        throw new Error(
+            "Code scanning alert number must be a positive integer."
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/code-scanning/alerts/${alertNumber}`;
+
+
+    return this.request<GitHubCodeScanningAlert>(
+        endpoint
+    );
+}
+4. Add CodeQL/security summary
+
+This gives your AI a compact security overview without requiring it to consume every alert.
+
+/**
+ * Get a summarized view of Code Scanning alerts.
+ */
+public async getCodeScanningSummary(
+    owner: string,
+    repository: string
+): Promise<{
+    total: number;
+    open: number;
+    dismissed: number;
+    fixed: number;
+    bySeverity: Record<string, number>;
+    byTool: Record<string, number>;
+    byRule: Record<string, number>;
+}> {
+
+
+    const response =
+        await this.listCodeScanningAlerts(
+            owner,
+            repository,
+            undefined,
+            undefined,
+            1,
+            100
+        );
+
+
+    const bySeverity:
+        Record<string, number> = {};
+
+
+    const byTool:
+        Record<string, number> = {};
+
+
+    const byRule:
+        Record<string, number> = {};
+
+
+    let open = 0;
+    let dismissed = 0;
+    let fixed = 0;
+
+
+    for (
+        const alert of response.alerts
+    ) {
+
+
+        const severity =
+            alert.rule.security_severity_level ??
+            alert.rule.severity ??
+            "unknown";
+
+
+        bySeverity[severity] =
+            (bySeverity[severity] ?? 0) + 1;
+
+
+        const tool =
+            alert.tool.name;
+
+
+        byTool[tool] =
+            (byTool[tool] ?? 0) + 1;
+
+
+        const rule =
+            alert.rule.id;
+
+
+        byRule[rule] =
+            (byRule[rule] ?? 0) + 1;
+
+
+        switch (alert.state) {
+
+
+            case "open":
+                open++;
+                break;
+
+
+            case "dismissed":
+                dismissed++;
+                break;
+
+
+            case "fixed":
+                fixed++;
+                break;
+        }
+    }
+
+
+    return {
+        total:
+            response.alerts.length,
+
+
+        open,
+
+
+        dismissed,
+
+
+        fixed,
+
+
+        bySeverity,
+
+
+        byTool,
+
+
+        byRule
+    };
+}
+5. Add argument types to github.tools.ts
+export interface GitHubListCodeScanningAlertsArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    state?: string;
+
+
+    ref?: string;
+
+
+    page?: number;
+
+
+    perPage?: number;
+}
+
+
+export interface GitHubGetCodeScanningAlertArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    alertNumber: number;
+}
+
+
+export interface GitHubCodeScanningSummaryArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+}
+6. Add service wrappers to GitHubTools
+public async listCodeScanningAlerts(
+    args: GitHubListCodeScanningAlertsArgs
+): Promise<GitHubCodeScanningAlertsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listCodeScanningAlerts(
+        args.owner,
+        args.repository,
+        args.state,
+        args.ref,
+        args.page,
+        args.perPage
+    );
+}
+public async getCodeScanningAlert(
+    args: GitHubGetCodeScanningAlertArgs
+): Promise<GitHubCodeScanningAlert> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    if (
+        !Number.isInteger(args.alertNumber) ||
+        args.alertNumber <= 0
+    ) {
+        throw new Error(
+            "alertNumber must be a positive integer."
+        );
+    }
+
+
+    return this.githubService.getCodeScanningAlert(
+        args.owner,
+        args.repository,
+        args.alertNumber
+    );
+}
+public async getCodeScanningSummary(
+    args: GitHubCodeScanningSummaryArgs
+) {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getCodeScanningSummary(
+        args.owner,
+        args.repository
+    );
+}
+7. Add the MCP list-alerts tool
+
+Inside GitHubTools:
+
+private listCodeScanningAlertsTool(): MCPTool {
+            "github_list_code_scanning_alerts",
+
+
+        description:
+            "List GitHub Code Scanning and CodeQL security alerts for a repository.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                state: {
+                    type:
+                        "string",
+
+
+                    description:
+                        "Alert state such as open, dismissed, or fixed."
+                },
+
+
+                ref: {
+                    type:
+                        "string",
+
+
+                    description:
+                        "Git reference such as a branch or commit."
+                },
+
+
+                page: {
+                    type:
+                        "number"
+                },
+
+
+                perPage: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            return this.listCodeScanningAlerts({
+                ...repositoryArgs,
+
+
+                state:
+                    typeof value.state === "string"
+                        ? value.state
+                        : undefined,
+
+
+                ref:
+                    typeof value.ref === "string"
+                        ? value.ref
+                        : undefined,
+
+
+                page:
+                    typeof value.page === "number"
+                        ? value.page
+                        : undefined,
+
+
+                perPage:
+                    typeof value.perPage === "number"
+                        ? value.perPage
+                        : undefined
+            });
+        }
+    };
+}
+8. Add the individual alert tool
+private getCodeScanningAlertTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_get_code_scanning_alert",
+
+
+        description:
+            "Get detailed information about a specific GitHub Code Scanning or CodeQL security alert.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                alertNumber: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "alertNumber"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            if (
+                typeof value.alertNumber !== "number" ||
+                !Number.isInteger(
+                    value.alertNumber
+                ) ||
+                value.alertNumber <= 0
+            ) {
+                throw new Error(
+                    "alertNumber must be a positive integer."
+                );
+            }
+
+
+            return this.getCodeScanningAlert({
+                ...repositoryArgs,
+
+
+                alertNumber:
+                    value.alertNumber
+            });
+        }
+    };
+}
+9. Add the summary tool
+private getCodeScanningSummaryTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_get_code_scanning_summary",
+
+
+        description:
+            "Get a security summary of GitHub Code Scanning and CodeQL alerts grouped by state, severity, tool, and rule.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            return this.getCodeScanningSummary(
+                repositoryArgs
+            );
+        }
+    };
+}
+10. Register the tools
+
+Add these to getTools():
+
+this.listCodeScanningAlertsTool(),
+this.getCodeScanningAlertTool(),
+this.getCodeScanningSummaryTool()
+
+For example, after the Dependabot tools:
+
+this.listDependabotAlertsTool(),
+this.getDependabotAlertTool(),
+this.getDependabotSummaryTool(),
+
+
+this.listCodeScanningAlertsTool(),
+this.getCodeScanningAlertTool(),
+this.getCodeScanningSummaryTool()
+What 5.7.24 gives your AI
+
+Your assistant can now ask GitHub:
+
+github_get_code_scanning_summary
+
+and get something conceptually like:
+
+{
+  "total": 12,
+  "open": 7,
+  "dismissed": 2,
+  "fixed": 3,
+  "bySeverity": {
+    "critical": 1,
+    "high": 4,
+    "medium": 5,
+    "low": 2
+  },
+  "byTool": {
+    "CodeQL": 12
+  }
+}
+
+Then it can investigate a specific finding:
+
+github_get_code_scanning_alert
+
+which gives it the important information:
+
+Rule
+Severity
+Description
+File
+Line
+Column
+Commit
+Tool
+Security classification
+
+That is much more useful to your project than simply returning a raw GitHub alert.
+
+One architectural benefit
+
+You are now approaching a useful security-analysis pipeline:
+
+             GitHub MCP
+                 │
+       ┌─────────┴─────────┐
+       │                   │
+   Dependabot            CodeQL
+       │                   │
+Dependency bugs       Code bugs
+       │                   │
+       └─────────┬─────────┘
+                 ↓
+        Developer Tool Layer
+                 ↓
+          Project Analyzer
+                 ↓
+             AI Agent
+                 ↓
+        Explain / Prioritize
+                 ↓
+          Suggest Fix
+Checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+If it passes with no output, 5.7.24 is complete. If TypeScript reports errors, send the exact output and we'll fix those before moving to 5.7.25.
+

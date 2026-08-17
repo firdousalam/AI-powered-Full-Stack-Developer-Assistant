@@ -604,6 +604,102 @@ export interface GitHubDiscussionCategoriesResponse {
     categories: GitHubDiscussionCategory[];
 }
 
+export interface GitHubCodeScanningAlert {
+
+    number: number;
+
+    created_at: string;
+
+    updated_at: string;
+
+    url: string;
+
+    html_url?: string;
+
+    state: string;
+
+    fixed_at?: string | null;
+
+    dismissed_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+    dismissed_at?: string | null;
+
+    dismissed_reason?: string | null;
+
+    dismissed_comment?: string | null;
+
+    rule: {
+        id: string;
+
+        severity?: string | null;
+
+        description: string;
+
+        name?: string | null;
+
+        security_severity_level?: string | null;
+
+        help?: string | null;
+
+        help_uri?: string | null;
+
+        tags?: string[];
+    };
+
+    tool: {
+        name: string;
+
+        version?: string | null;
+
+        guid?: string | null;
+    };
+
+    most_recent_instance?: {
+
+        ref: string;
+
+        analysis_key?: string | null;
+
+        environment?: string | null;
+
+        category?: string | null;
+
+        commit_sha: string;
+
+        location: {
+
+            path: string;
+
+            start_line: number;
+
+            end_line?: number;
+
+            start_column?: number | null;
+
+            end_column?: number | null;
+        };
+
+        message?: {
+            text: string;
+        };
+
+        state?: string | null;
+
+        classifications?: string[];
+    } | null;
+}
+
+export interface GitHubCodeScanningAlertsResponse {
+
+    total_count: number;
+
+    alerts: GitHubCodeScanningAlert[];
+}
+
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -2755,5 +2851,235 @@ export class GitHubService {
                 )
         };
     }
+
+    /**
+ * List Code Scanning / CodeQL alerts
+ * for a GitHub repository.
+ */
+    public async listCodeScanningAlerts(
+        owner: string,
+        repository: string,
+        state?: string,
+        ref?: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubCodeScanningAlertsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Code scanning page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Code scanning perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        if (state?.trim()) {
+
+            params.set(
+                "state",
+                state.trim()
+            );
+        }
+
+        if (ref?.trim()) {
+
+            params.set(
+                "ref",
+                ref.trim()
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/code-scanning/alerts?${params.toString()}`;
+
+        const alerts =
+            await this.request<GitHubCodeScanningAlert[]>(
+                endpoint
+            );
+
+        return {
+            total_count:
+                alerts.length,
+
+            alerts
+        };
+    }
+
+    /**
+ * Get a specific Code Scanning alert.
+ */
+    public async getCodeScanningAlert(
+        owner: string,
+        repository: string,
+        alertNumber: number
+    ): Promise<GitHubCodeScanningAlert> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(alertNumber) ||
+            alertNumber <= 0
+        ) {
+            throw new Error(
+                "Code scanning alert number must be a positive integer."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/code-scanning/alerts/${alertNumber}`;
+
+        return this.request<GitHubCodeScanningAlert>(
+            endpoint
+        );
+    }
+
+    /**
+ * Get a summarized view of Code Scanning alerts.
+ */
+    public async getCodeScanningSummary(
+        owner: string,
+        repository: string
+    ): Promise<{
+        total: number;
+        open: number;
+        dismissed: number;
+        fixed: number;
+        bySeverity: Record<string, number>;
+        byTool: Record<string, number>;
+        byRule: Record<string, number>;
+    }> {
+
+        const response =
+            await this.listCodeScanningAlerts(
+                owner,
+                repository,
+                undefined,
+                undefined,
+                1,
+                100
+            );
+
+        const bySeverity:
+            Record<string, number> = {};
+
+        const byTool:
+            Record<string, number> = {};
+
+        const byRule:
+            Record<string, number> = {};
+
+        let open = 0;
+        let dismissed = 0;
+        let fixed = 0;
+
+        for (
+            const alert of response.alerts
+        ) {
+
+            const severity =
+                alert.rule.security_severity_level ??
+                alert.rule.severity ??
+                "unknown";
+
+            bySeverity[severity] =
+                (bySeverity[severity] ?? 0) + 1;
+
+            const tool =
+                alert.tool.name;
+
+            byTool[tool] =
+                (byTool[tool] ?? 0) + 1;
+
+            const rule =
+                alert.rule.id;
+
+            byRule[rule] =
+                (byRule[rule] ?? 0) + 1;
+
+            switch (alert.state) {
+
+                case "open":
+                    open++;
+                    break;
+
+                case "dismissed":
+                    dismissed++;
+                    break;
+
+                case "fixed":
+                    fixed++;
+                    break;
+            }
+        }
+
+        return {
+            total:
+                response.alerts.length,
+
+            open,
+
+            dismissed,
+
+            fixed,
+
+            bySeverity,
+
+            byTool,
+
+            byRule
+        };
+    }
+
+
 
 }
