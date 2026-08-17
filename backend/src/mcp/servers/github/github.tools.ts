@@ -382,7 +382,27 @@ export class GitHubTools {
              */
             this.getSecurityPolicyTool(),
             this.getSecurityFeaturesTool(),
-            this.getSecurityConfigurationSummaryTool()
+            this.getSecurityConfigurationSummaryTool(),
+
+            /*
+        * Repository Administration
+        */
+            this.getRepositoryAdministrationTool(),
+
+            this.getRepositorySettingsTool(),
+
+            this.getRepositoryFeaturesTool(),
+
+            this.getRepositoryMergeConfigurationTool(),
+
+            /*
+            * Branch Protection
+            */
+            this.getListBranchProtectionTool(),
+
+            this.getBranchProtectionTool(),
+
+            this.getBranchRulesTool(),
 
         ];
     }
@@ -4419,6 +4439,453 @@ export class GitHubTools {
                 }
         };
     }
+    /**
+     * Get complete repository administration information.
+     */
+    public getRepositoryAdministrationTool(): MCPTool {
 
+        return {
+
+            name:
+                "github_get_repository_administration",
+
+            description:
+                "Get normalized GitHub repository administration information including repository settings, features, merge configuration, and security-analysis configuration.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    if (!owner) {
+                        throw new Error(
+                            "GitHub repository owner is required."
+                        );
+                    }
+
+                    if (!repository) {
+                        throw new Error(
+                            "GitHub repository name is required."
+                        );
+                    }
+
+                    return this.githubService
+                        .getRepositoryAdministration(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+    /**
+ * Get repository settings.
+ */
+    public getRepositorySettingsTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_repository_settings",
+
+            description:
+                "Get GitHub repository settings including visibility, default branch, archive status, fork status, and template status.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    return this.githubService
+                        .getRepositorySettings(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+    /**
+ * Get repository feature configuration.
+ */
+    public getRepositoryFeaturesTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_repository_features",
+
+            description:
+                "Get GitHub repository feature configuration including Issues, Projects, Wiki, Discussions, and Pages.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    return this.githubService
+                        .getRepositoryFeatures(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+    /**
+ * Get repository merge configuration.
+ */
+    public getRepositoryMergeConfigurationTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_repository_merge_configuration",
+
+            description:
+                "Get GitHub repository merge configuration including merge commits, squash merging, rebase merging, auto merge, branch deletion, and update branch settings.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    return this.githubService
+                        .getRepositoryMergeConfiguration(
+                            owner,
+                            repository
+                        );
+                }
+        };
+    }
+
+    /**
+ * List repository branches and protection status.
+ */
+    public getListBranchProtectionTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_list_branch_protection",
+
+            description:
+                "List repository branches and indicate which branches are protected.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    page: {
+                        type: "number"
+                    },
+
+                    perPage: {
+                        type: "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    return this.githubService
+                        .listBranchProtection(
+                            owner,
+                            repository,
+                            Number(args?.page ?? 1),
+                            Number(args?.perPage ?? 30)
+                        );
+                }
+        };
+    }
+    /**
+ * Get complete branch protection configuration.
+ */
+    public getBranchProtectionTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_branch_protection",
+
+            description:
+                "Get detailed branch protection configuration for a GitHub repository branch.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    branch: {
+                        type: "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "branch"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    const branch =
+                        String(
+                            args?.branch ?? ""
+                        ).trim();
+
+                    return this.githubService
+                        .getBranchProtection(
+                            owner,
+                            repository,
+                            branch
+                        );
+                }
+        };
+    }
+    /**
+ * Get simplified branch protection rules.
+ */
+    public getBranchRulesTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_branch_rules",
+
+            description:
+                "Get a simplified, AI-friendly summary of branch protection rules.",
+
+            inputSchema: {
+
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    branch: {
+                        type: "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "branch"
+                ]
+            },
+
+            execute:
+                async (
+                    args?: Record<string, unknown>
+                ): Promise<unknown> => {
+
+                    const owner =
+                        String(
+                            args?.owner ?? ""
+                        ).trim();
+
+                    const repository =
+                        String(
+                            args?.repository ?? ""
+                        ).trim();
+
+                    const branch =
+                        String(
+                            args?.branch ?? ""
+                        ).trim();
+
+                    return this.githubService
+                        .getBranchRules(
+                            owner,
+                            repository,
+                            branch
+                        );
+                }
+        };
+    }
 
 }

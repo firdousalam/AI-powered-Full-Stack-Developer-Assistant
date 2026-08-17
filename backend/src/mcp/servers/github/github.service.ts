@@ -1087,6 +1087,147 @@ export interface GitHubSecurityConfigurationSummary {
     features: GitHubSecurityFeatures;
 }
 
+/**
+ * GitHub repository feature configuration.
+ */
+export interface GitHubRepositoryFeatures {
+
+    issues: boolean;
+
+    projects: boolean;
+
+    wiki: boolean;
+
+    discussions: boolean;
+
+    pages: boolean;
+}
+
+
+/**
+ * GitHub repository merge configuration.
+ */
+export interface GitHubRepositoryMergeConfiguration {
+
+    allowMergeCommit: boolean;
+
+    allowSquashMerge: boolean;
+
+    allowRebaseMerge: boolean;
+
+    allowAutoMerge: boolean;
+
+    deleteBranchOnMerge: boolean;
+
+    allowUpdateBranch: boolean;
+}
+
+
+/**
+ * Normalized GitHub repository administration information.
+ *
+ * This model is intentionally smaller than the raw GitHub
+ * repository response so that it can be safely consumed
+ * by the AI layer.
+ */
+export interface GitHubRepositoryAdministration {
+
+    owner: string;
+
+    repository: string;
+
+    fullName: string;
+
+    visibility:
+    | "public"
+    | "private"
+    | "internal"
+    | string;
+
+    defaultBranch: string;
+
+    archived: boolean;
+
+    disabled: boolean;
+
+    fork: boolean;
+
+    isTemplate: boolean;
+
+    features: GitHubRepositoryFeatures;
+
+    merge: GitHubRepositoryMergeConfiguration;
+
+    securityAndAnalysis: {
+
+        dependabotAlerts: boolean;
+
+        dependabotSecurityUpdates: boolean;
+
+        secretScanning: boolean;
+
+        secretScanningPushProtection: boolean;
+
+        codeScanning: boolean;
+    };
+}
+/**
+ * Normalized required status check.
+ */
+export interface GitHubRequiredStatusCheck {
+
+    context: string;
+
+    appId?: number | null;
+}
+
+
+/**
+ * Normalized branch protection information.
+ */
+export interface GitHubBranchProtection {
+
+    branch: string;
+
+    protected: boolean;
+
+    requiredPullRequestReviews: {
+
+        requiredApprovingReviewCount: number;
+
+        dismissStaleReviews: boolean;
+
+        requireCodeOwnerReviews: boolean;
+
+        requireLastPushApproval: boolean;
+    };
+
+    requiredStatusChecks: {
+
+        strict: boolean;
+
+        contexts: GitHubRequiredStatusCheck[];
+    };
+
+    restrictions: {
+
+        users: string[];
+
+        teams: string[];
+
+        apps: string[];
+    };
+
+    enforceAdmins: boolean;
+
+    requiredSignedCommits: boolean;
+
+    requiredLinearHistory: boolean;
+
+    allowForcePushes: boolean;
+
+    allowDeletions: boolean;
+}
 
 export class GitHubService {
     private readonly config: GitHubConfig;
@@ -5086,6 +5227,656 @@ export class GitHubService {
             features
         };
     }
+    /**
+     * Get normalized repository administration information.
+     *
+     * Aggregates repository settings, enabled features,
+     * merge configuration and security-analysis configuration.
+     */
+    /**
+ * Get normalized repository administration information.
+ *
+ * Aggregates repository settings, enabled features,
+ * merge configuration and security-analysis configuration.
+ */
+    public async getRepositoryAdministration(
+        owner: string,
+        repository: string
+    ): Promise<GitHubRepositoryAdministration> {
 
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        /**
+         * The repository model used elsewhere in the GitHub service
+         * intentionally contains only a subset of the GitHub REST
+         * repository response.
+         *
+         * Administration requires additional repository settings,
+         * therefore use a dedicated response model here instead of
+         * changing the shared GitHubRepository interface.
+         */
+        interface GitHubRepositoryAdministrationResponse {
+
+            full_name: string;
+
+            visibility?: string | null;
+
+            default_branch: string;
+
+            archived: boolean;
+
+            disabled: boolean;
+
+            fork?: boolean;
+
+            is_template?: boolean;
+
+            has_issues?: boolean;
+
+            has_projects?: boolean;
+
+            has_wiki?: boolean;
+
+            has_discussions?: boolean;
+
+            has_pages?: boolean;
+
+            allow_merge_commit?: boolean;
+
+            allow_squash_merge?: boolean;
+
+            allow_rebase_merge?: boolean;
+
+            allow_auto_merge?: boolean;
+
+            delete_branch_on_merge?: boolean;
+
+            allow_update_branch?: boolean;
+
+            security_and_analysis?: {
+
+                advanced_security?: {
+                    status?: string;
+                };
+
+                dependabot?: {
+                    status?: string;
+                };
+
+                dependabot_security_updates?: {
+                    status?: string;
+                };
+
+                secret_scanning?: {
+                    status?: string;
+                };
+
+                secret_scanning_push_protection?: {
+                    status?: string;
+                };
+            };
+        }
+
+        const result =
+            await this.request<GitHubRepositoryAdministrationResponse>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}`
+            );
+
+        return {
+
+            owner,
+
+            repository,
+
+            fullName:
+                result.full_name,
+
+            visibility:
+                result.visibility ?? "unknown",
+
+            defaultBranch:
+                result.default_branch,
+
+            archived:
+                result.archived,
+
+            disabled:
+                result.disabled,
+
+            fork:
+                result.fork ?? false,
+
+            isTemplate:
+                result.is_template ?? false,
+
+            features: {
+
+                issues:
+                    result.has_issues ?? false,
+
+                projects:
+                    result.has_projects ?? false,
+
+                wiki:
+                    result.has_wiki ?? false,
+
+                discussions:
+                    result.has_discussions ?? false,
+
+                pages:
+                    result.has_pages ?? false
+            },
+
+            merge: {
+
+                allowMergeCommit:
+                    result.allow_merge_commit ?? false,
+
+                allowSquashMerge:
+                    result.allow_squash_merge ?? false,
+
+                allowRebaseMerge:
+                    result.allow_rebase_merge ?? false,
+
+                allowAutoMerge:
+                    result.allow_auto_merge ?? false,
+
+                deleteBranchOnMerge:
+                    result.delete_branch_on_merge ?? false,
+
+                allowUpdateBranch:
+                    result.allow_update_branch ?? false
+            },
+
+            securityAndAnalysis: {
+
+                dependabotAlerts:
+                    result.security_and_analysis
+                        ?.dependabot
+                        ?.status === "enabled",
+
+                dependabotSecurityUpdates:
+                    result.security_and_analysis
+                        ?.dependabot_security_updates
+                        ?.status === "enabled",
+
+                secretScanning:
+                    result.security_and_analysis
+                        ?.secret_scanning
+                        ?.status === "enabled",
+
+                secretScanningPushProtection:
+                    result.security_and_analysis
+                        ?.secret_scanning_push_protection
+                        ?.status === "enabled",
+
+                codeScanning:
+                    result.security_and_analysis
+                        ?.advanced_security
+                        ?.status === "enabled"
+            }
+        };
+    }
+    /**
+ * Get repository-level administration settings.
+ */
+    public async getRepositorySettings(
+        owner: string,
+        repository: string
+    ): Promise<{
+        visibility: string;
+        defaultBranch: string;
+        archived: boolean;
+        disabled: boolean;
+        fork: boolean;
+        isTemplate: boolean;
+    }> {
+
+        const administration =
+            await this.getRepositoryAdministration(
+                owner,
+                repository
+            );
+
+        return {
+            visibility:
+                administration.visibility,
+
+            defaultBranch:
+                administration.defaultBranch,
+
+            archived:
+                administration.archived,
+
+            disabled:
+                administration.disabled,
+
+            fork:
+                administration.fork,
+
+            isTemplate:
+                administration.isTemplate
+        };
+    }
+    /**
+ * Get repository feature configuration.
+ */
+    public async getRepositoryFeatures(
+        owner: string,
+        repository: string
+    ): Promise<GitHubRepositoryFeatures> {
+
+        const administration =
+            await this.getRepositoryAdministration(
+                owner,
+                repository
+            );
+
+        return administration.features;
+    }
+    /**
+ * Get repository merge configuration.
+ */
+    public async getRepositoryMergeConfiguration(
+        owner: string,
+        repository: string
+    ): Promise<GitHubRepositoryMergeConfiguration> {
+
+        const administration =
+            await this.getRepositoryAdministration(
+                owner,
+                repository
+            );
+
+        return administration.merge;
+    }
+
+    /**
+ * Get normalized branch protection information.
+ *
+ * Returns the protection configuration for a specific branch.
+ */
+    public async getBranchProtection(
+        owner: string,
+        repository: string,
+        branch: string
+    ): Promise<GitHubBranchProtection> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (!branch?.trim()) {
+            throw new Error(
+                "GitHub branch name is required."
+            );
+        }
+
+        interface BranchProtectionResponse {
+
+            required_pull_request_reviews?: {
+
+                required_approving_review_count?: number;
+
+                dismiss_stale_reviews?: boolean;
+
+                require_code_owner_reviews?: boolean;
+
+                require_last_push_approval?: boolean;
+            } | null;
+
+            required_status_checks?: {
+
+                strict?: boolean;
+
+                contexts?: string[];
+
+                checks?: Array<{
+                    context: string;
+                    app_id?: number | null;
+                }>;
+            } | null;
+
+            restrictions?: {
+
+                users?: Array<{
+                    login: string;
+                }>;
+
+                teams?: Array<{
+                    slug: string;
+                }>;
+
+                apps?: Array<{
+                    slug: string;
+                }>;
+            } | null;
+
+            enforce_admins?: {
+                enabled?: boolean;
+            } | null;
+
+            required_signatures?: {
+                enabled?: boolean;
+            } | null;
+
+            required_linear_history?: {
+                enabled?: boolean;
+            } | null;
+
+            allow_force_pushes?: {
+                enabled?: boolean;
+            } | null;
+
+            allow_deletions?: {
+                enabled?: boolean;
+            } | null;
+        }
+
+        const result =
+            await this.request<BranchProtectionResponse>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/branches/${encodeURIComponent(branch)}/protection`
+            );
+
+        const statusChecks =
+            result.required_status_checks;
+
+        const requiredChecks:
+            GitHubRequiredStatusCheck[] =
+            statusChecks?.checks?.map(
+                check => ({
+                    context:
+                        check.context,
+
+                    appId:
+                        check.app_id ?? null
+                })
+            ) ??
+            statusChecks?.contexts?.map(
+                context => ({
+                    context
+                })
+            ) ??
+            [];
+
+        return {
+
+            branch,
+
+            protected: true,
+
+            requiredPullRequestReviews: {
+
+                requiredApprovingReviewCount:
+                    result.required_pull_request_reviews
+                        ?.required_approving_review_count ??
+                    0,
+
+                dismissStaleReviews:
+                    result.required_pull_request_reviews
+                        ?.dismiss_stale_reviews ??
+                    false,
+
+                requireCodeOwnerReviews:
+                    result.required_pull_request_reviews
+                        ?.require_code_owner_reviews ??
+                    false,
+
+                requireLastPushApproval:
+                    result.required_pull_request_reviews
+                        ?.require_last_push_approval ??
+                    false
+            },
+
+            requiredStatusChecks: {
+
+                strict:
+                    statusChecks?.strict ??
+                    false,
+
+                contexts:
+                    requiredChecks
+            },
+
+            restrictions: {
+
+                users:
+                    result.restrictions?.users
+                        ?.map(user => user.login) ??
+                    [],
+
+                teams:
+                    result.restrictions?.teams
+                        ?.map(team => team.slug) ??
+                    [],
+
+                apps:
+                    result.restrictions?.apps
+                        ?.map(app => app.slug) ??
+                    []
+            },
+
+            enforceAdmins:
+                result.enforce_admins?.enabled ??
+                false,
+
+            requiredSignedCommits:
+                result.required_signatures?.enabled ??
+                false,
+
+            requiredLinearHistory:
+                result.required_linear_history?.enabled ??
+                false,
+
+            allowForcePushes:
+                result.allow_force_pushes?.enabled ??
+                false,
+
+            allowDeletions:
+                result.allow_deletions?.enabled ??
+                false
+        };
+    }
+    /**
+ * List repository branches and their protection status.
+ */
+    public async listBranchProtection(
+        owner: string,
+        repository: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<Array<{
+        name: string;
+        protected: boolean;
+    }>> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Branch page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Branch perPage must be between 1 and 100."
+            );
+        }
+
+        interface BranchResponse {
+
+            name: string;
+
+            protected: boolean;
+        }
+
+        const result =
+            await this.request<BranchResponse[]>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/branches?per_page=${perPage}&page=${page}`
+            );
+
+        return result.map(
+            branch => ({
+                name:
+                    branch.name,
+
+                protected:
+                    branch.protected
+            })
+        );
+    }
+    /**
+ * Get simplified branch protection rules.
+ */
+    public async getBranchRules(
+        owner: string,
+        repository: string,
+        branch: string
+    ): Promise<{
+        branch: string;
+        protected: boolean;
+        rules: string[];
+    }> {
+
+        const protection =
+            await this.getBranchProtection(
+                owner,
+                repository,
+                branch
+            );
+
+        const rules: string[] = [];
+
+        if (
+            protection.requiredPullRequestReviews
+                .requiredApprovingReviewCount > 0
+        ) {
+            rules.push(
+                `Requires ${protection.requiredPullRequestReviews.requiredApprovingReviewCount} approving review(s).`
+            );
+        }
+
+        if (
+            protection.requiredPullRequestReviews
+                .dismissStaleReviews
+        ) {
+            rules.push(
+                "Dismisses stale pull request reviews."
+            );
+        }
+
+        if (
+            protection.requiredPullRequestReviews
+                .requireCodeOwnerReviews
+        ) {
+            rules.push(
+                "Requires code owner review."
+            );
+        }
+
+        if (
+            protection.requiredPullRequestReviews
+                .requireLastPushApproval
+        ) {
+            rules.push(
+                "Requires approval of the most recent push."
+            );
+        }
+
+        if (
+            protection.requiredStatusChecks
+                .contexts.length > 0
+        ) {
+            rules.push(
+                "Requires status checks."
+            );
+        }
+
+        if (
+            protection.enforceAdmins
+        ) {
+            rules.push(
+                "Branch protection is enforced for administrators."
+            );
+        }
+
+        if (
+            protection.requiredSignedCommits
+        ) {
+            rules.push(
+                "Requires signed commits."
+            );
+        }
+
+        if (
+            protection.requiredLinearHistory
+        ) {
+            rules.push(
+                "Requires linear history."
+            );
+        }
+
+        if (
+            !protection.allowForcePushes
+        ) {
+            rules.push(
+                "Force pushes are blocked."
+            );
+        }
+
+        if (
+            !protection.allowDeletions
+        ) {
+            rules.push(
+                "Branch deletion is blocked."
+            );
+        }
+
+        return {
+
+            branch,
+
+            protected:
+                protection.protected,
+
+            rules
+        };
+    }
 
 }
