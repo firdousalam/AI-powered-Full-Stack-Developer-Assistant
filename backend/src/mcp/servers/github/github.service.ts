@@ -500,6 +500,110 @@ export interface GitHubArtifactsResponse {
     artifacts: GitHubArtifact[];
 }
 
+export interface GitHubDiscussion {
+
+    id: number;
+
+    number: number;
+
+    title: string;
+
+    body: string;
+
+    html_url: string;
+
+    category: {
+        id: number;
+        name: string;
+        slug?: string;
+        emoji?: string;
+    };
+
+    user: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    };
+
+    state?: string;
+
+    locked?: boolean;
+
+    answer_chosen_at?: string | null;
+
+    answer_chosen_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+    created_at: string;
+
+    updated_at: string;
+}
+
+export interface GitHubDiscussionComment {
+
+    id: number;
+
+    body: string;
+
+    html_url: string;
+
+    user: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    };
+
+    created_at: string;
+
+    updated_at: string;
+}
+
+export interface GitHubDiscussionCategory {
+
+    id: number;
+
+    repository_id?: number;
+
+    name: string;
+
+    description?: string;
+
+    emoji?: string;
+
+    emoji_html?: string;
+
+    slug: string;
+
+    created_at?: string;
+
+    updated_at?: string;
+}
+
+export interface GitHubDiscussionsResponse {
+
+    total_count?: number;
+
+    discussions: GitHubDiscussion[];
+}
+
+export interface GitHubDiscussionCommentsResponse {
+
+    total_count?: number;
+
+    comments: GitHubDiscussionComment[];
+}
+
+export interface GitHubDiscussionCategoriesResponse {
+
+    total_count?: number;
+
+    categories: GitHubDiscussionCategory[];
+}
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -1772,6 +1876,884 @@ export class GitHubService {
         return this.request<GitHubArtifactsResponse>(
             endpoint
         );
+    }
+
+    /**
+ * List GitHub Discussions for a repository.
+ */
+    public async listDiscussions(
+        owner: string,
+        repository: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubDiscussionsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Discussions page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Discussions perPage must be between 1 and 100."
+            );
+        }
+
+        /**
+         * GitHub GraphQL uses cursor-based pagination.
+         *
+         * We expose page/perPage to the MCP layer and internally
+         * advance through GraphQL cursors until the requested page
+         * is reached.
+         */
+        let cursor: string | null = null;
+
+        let currentPage = 1;
+
+        /**
+         * Explicit GraphQL response type.
+         *
+         * Keeping this type named prevents TypeScript from getting
+         * into circular inference when the response is used later
+         * in the function.
+         */
+        type DiscussionsQueryResult = {
+            repository: {
+                discussions: {
+                    totalCount: number;
+
+                    nodes: Array<{
+                        id: string;
+                        number: number;
+                        title: string;
+                        body: string;
+                        url: string;
+                        createdAt: string;
+                        updatedAt: string;
+                        locked: boolean;
+
+                        category: {
+                            id: string;
+                            name: string;
+                            slug: string;
+                            emoji?: string;
+                        };
+
+                        author: {
+                            login: string;
+                            databaseId: number;
+                            avatarUrl?: string;
+                            url: string;
+                        } | null;
+
+                        answerChosenAt: string | null;
+
+                        answerChosenBy: {
+                            login: string;
+                            databaseId: number;
+                        } | null;
+                    }>;
+
+                    pageInfo: {
+                        hasNextPage: boolean;
+                        endCursor: string | null;
+                    };
+                };
+            };
+        };
+
+        const query = `
+        query(
+            $owner: String!
+            $repository: String!
+            $first: Int!
+            $after: String
+        ) {
+            repository(
+                owner: $owner
+                name: $repository
+            ) {
+                discussions(
+                    first: $first
+                    after: $after
+                    orderBy: {
+                        field: UPDATED_AT
+                        direction: DESC
+                    }
+                ) {
+                    totalCount
+
+                    nodes {
+                        id
+                        number
+                        title
+                        body
+                        url
+                        createdAt
+                        updatedAt
+                        locked
+
+                        category {
+                            id
+                            name
+                            slug
+                            emoji
+                        }
+
+                        author {
+                            login
+                            databaseId
+                            avatarUrl
+                            url
+                        }
+
+                        answerChosenAt
+
+                        answerChosenBy {
+                            login
+                            databaseId
+                        }
+                    }
+
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                }
+            }
+        }
+    `;
+
+        while (currentPage <= page) {
+
+            const result: DiscussionsQueryResult =
+                await this.graphqlRequest<DiscussionsQueryResult>(
+                    query,
+                    {
+                        owner,
+                        repository,
+                        first: perPage,
+                        after: cursor
+                    }
+                );
+
+            const discussions:
+                DiscussionsQueryResult["repository"]["discussions"] =
+                result.repository.discussions;
+
+            /**
+             * Requested page reached.
+             */
+            if (
+                currentPage === page
+            ) {
+
+                return {
+                    total_count:
+                        discussions.totalCount,
+
+                    discussions:
+                        discussions.nodes.map(
+                            (
+                                discussion:
+                                    DiscussionsQueryResult[
+                                    "repository"
+                                    ]["discussions"]["nodes"][number]
+                            ) => ({
+                                id: Number(
+                                    discussion.id
+                                        .split("/")
+                                        .pop() ?? 0
+                                ),
+
+                                number:
+                                    discussion.number,
+
+                                title:
+                                    discussion.title,
+
+                                body:
+                                    discussion.body,
+
+                                html_url:
+                                    discussion.url,
+
+                                category: {
+                                    id: Number(
+                                        discussion.category.id
+                                            .split("/")
+                                            .pop() ?? 0
+                                    ),
+
+                                    name:
+                                        discussion.category.name,
+
+                                    slug:
+                                        discussion.category.slug,
+
+                                    emoji:
+                                        discussion.category.emoji
+                                },
+
+                                user: {
+                                    login:
+                                        discussion.author?.login ??
+                                        "unknown",
+
+                                    id:
+                                        discussion.author?.databaseId ??
+                                        0,
+
+                                    avatar_url:
+                                        discussion.author?.avatarUrl,
+
+                                    html_url:
+                                        discussion.author?.url
+                                },
+
+                                locked:
+                                    discussion.locked,
+
+                                answer_chosen_at:
+                                    discussion.answerChosenAt,
+
+                                answer_chosen_by:
+                                    discussion.answerChosenBy
+                                        ? {
+                                            login:
+                                                discussion
+                                                    .answerChosenBy
+                                                    .login,
+
+                                            id:
+                                                discussion
+                                                    .answerChosenBy
+                                                    .databaseId
+                                        }
+                                        : null,
+
+                                created_at:
+                                    discussion.createdAt,
+
+                                updated_at:
+                                    discussion.updatedAt
+                            })
+                        )
+                };
+            }
+
+            /**
+             * There are no more pages available.
+             */
+            if (
+                !discussions.pageInfo.hasNextPage
+            ) {
+
+                return {
+                    total_count:
+                        discussions.totalCount,
+
+                    discussions: []
+                };
+            }
+
+            /**
+             * Move to the next GraphQL page.
+             */
+            cursor =
+                discussions.pageInfo.endCursor;
+
+            currentPage++;
+        }
+
+        return {
+            discussions: []
+        };
+    }
+
+    private async graphqlRequest<T>(
+        query: string,
+        variables: Record<string, unknown>
+    ): Promise<T> {
+
+        const response =
+            await fetch(
+                `${this.config.apiUrl}/graphql`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        Accept:
+                            "application/vnd.github+json",
+
+                        ...(this.config.token
+                            ? {
+                                Authorization:
+                                    `Bearer ${this.config.token}`
+                            }
+                            : {})
+                    },
+
+                    body: JSON.stringify({
+                        query,
+                        variables
+                    })
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `GitHub GraphQL request failed: ${response.status} ${response.statusText}`
+            );
+        }
+
+        const result =
+            await response.json() as {
+                data?: T;
+                errors?: Array<{
+                    message: string;
+                }>;
+            };
+
+        if (
+            result.errors &&
+            result.errors.length > 0
+        ) {
+
+            throw new Error(
+                result.errors
+                    .map(error => error.message)
+                    .join("; ")
+            );
+        }
+
+        if (!result.data) {
+
+            throw new Error(
+                "GitHub GraphQL response did not contain data."
+            );
+        }
+
+        return result.data;
+    }
+    /**
+     * Get a specific GitHub Discussion.
+     */
+    public async getDiscussion(
+        owner: string,
+        repository: string,
+        discussionNumber: number
+    ): Promise<GitHubDiscussion> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(discussionNumber) ||
+            discussionNumber <= 0
+        ) {
+            throw new Error(
+                "Discussion number must be a positive integer."
+            );
+        }
+
+        const query = `
+        query(
+            $owner: String!
+            $repository: String!
+            $number: Int!
+        ) {
+            repository(
+                owner: $owner
+                name: $repository
+            ) {
+                discussion(
+                    number: $number
+                ) {
+                    id
+                    number
+                    title
+                    body
+                    url
+                    createdAt
+                    updatedAt
+                    locked
+
+                    category {
+                        id
+                        name
+                        slug
+                        emoji
+                    }
+
+                    author {
+                        login
+                        databaseId
+                        avatarUrl
+                        url
+                    }
+
+                    answerChosenAt
+
+                    answerChosenBy {
+                        login
+                        databaseId
+                    }
+                }
+            }
+        }
+    `;
+
+        const result =
+            await this.graphqlRequest<{
+                repository: {
+                    discussion: {
+                        id: string;
+                        number: number;
+                        title: string;
+                        body: string;
+                        url: string;
+                        createdAt: string;
+                        updatedAt: string;
+                        locked: boolean;
+
+                        category: {
+                            id: string;
+                            name: string;
+                            slug: string;
+                            emoji?: string;
+                        };
+
+                        author: {
+                            login: string;
+                            databaseId: number;
+                            avatarUrl?: string;
+                            url: string;
+                        } | null;
+
+                        answerChosenAt: string | null;
+
+                        answerChosenBy: {
+                            login: string;
+                            databaseId: number;
+                        } | null;
+                    } | null;
+                };
+            }>(
+                query,
+                {
+                    owner,
+                    repository,
+                    number: discussionNumber
+                }
+            );
+
+        if (
+            !result.repository.discussion
+        ) {
+            throw new Error(
+                `GitHub Discussion #${discussionNumber} was not found.`
+            );
+        }
+
+        const discussion =
+            result.repository.discussion;
+
+        return {
+            id: Number(
+                discussion.id
+                    .split("/")
+                    .pop() ?? 0
+            ),
+
+            number:
+                discussion.number,
+
+            title:
+                discussion.title,
+
+            body:
+                discussion.body,
+
+            html_url:
+                discussion.url,
+
+            category: {
+                id: Number(
+                    discussion.category.id
+                        .split("/")
+                        .pop() ?? 0
+                ),
+
+                name:
+                    discussion.category.name,
+
+                slug:
+                    discussion.category.slug,
+
+                emoji:
+                    discussion.category.emoji
+            },
+
+            user: {
+                login:
+                    discussion.author?.login ??
+                    "unknown",
+
+                id:
+                    discussion.author?.databaseId ??
+                    0,
+
+                avatar_url:
+                    discussion.author?.avatarUrl,
+
+                html_url:
+                    discussion.author?.url
+            },
+
+            locked:
+                discussion.locked,
+
+            answer_chosen_at:
+                discussion.answerChosenAt,
+
+            answer_chosen_by:
+                discussion.answerChosenBy
+                    ? {
+                        login:
+                            discussion.answerChosenBy.login,
+
+                        id:
+                            discussion.answerChosenBy.databaseId
+                    }
+                    : null,
+
+            created_at:
+                discussion.createdAt,
+
+            updated_at:
+                discussion.updatedAt
+        };
+    }
+
+    /**
+ * List comments for a GitHub Discussion.
+ */
+    public async listDiscussionComments(
+        owner: string,
+        repository: string,
+        discussionNumber: number,
+        first: number = 30
+    ): Promise<GitHubDiscussionCommentsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(discussionNumber) ||
+            discussionNumber <= 0
+        ) {
+            throw new Error(
+                "Discussion number must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(first) ||
+            first < 1 ||
+            first > 100
+        ) {
+            throw new Error(
+                "first must be between 1 and 100."
+            );
+        }
+
+        const query = `
+        query(
+            $owner: String!
+            $repository: String!
+            $number: Int!
+            $first: Int!
+        ) {
+            repository(
+                owner: $owner
+                name: $repository
+            ) {
+                discussion(
+                    number: $number
+                ) {
+                    comments(
+                        first: $first
+                    ) {
+                        totalCount
+
+                        nodes {
+                            id
+                            body
+                            url
+                            createdAt
+                            updatedAt
+
+                            author {
+                                login
+                                databaseId
+                                avatarUrl
+                                url
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `;
+
+        const result =
+            await this.graphqlRequest<{
+                repository: {
+                    discussion: {
+                        comments: {
+                            totalCount: number;
+
+                            nodes: Array<{
+                                id: string;
+                                body: string;
+                                url: string;
+                                createdAt: string;
+                                updatedAt: string;
+
+                                author: {
+                                    login: string;
+                                    databaseId: number;
+                                    avatarUrl?: string;
+                                    url: string;
+                                } | null;
+                            }>;
+                        };
+                    } | null;
+                };
+            }>(
+                query,
+                {
+                    owner,
+                    repository,
+                    number: discussionNumber,
+                    first
+                }
+            );
+
+        if (
+            !result.repository.discussion
+        ) {
+            throw new Error(
+                `GitHub Discussion #${discussionNumber} was not found.`
+            );
+        }
+
+        const comments =
+            result.repository.discussion.comments;
+
+        return {
+            total_count:
+                comments.totalCount,
+
+            comments:
+                comments.nodes.map(
+                    comment => ({
+                        id: Number(
+                            comment.id
+                                .split("/")
+                                .pop() ?? 0
+                        ),
+
+                        body:
+                            comment.body,
+
+                        html_url:
+                            comment.url,
+
+                        user: {
+                            login:
+                                comment.author?.login ??
+                                "unknown",
+
+                            id:
+                                comment.author?.databaseId ??
+                                0,
+
+                            avatar_url:
+                                comment.author?.avatarUrl,
+
+                            html_url:
+                                comment.author?.url
+                        },
+
+                        created_at:
+                            comment.createdAt,
+
+                        updated_at:
+                            comment.updatedAt
+                    })
+                )
+        };
+    }
+
+    /**
+ * List Discussion categories for a repository.
+ */
+    public async listDiscussionCategories(
+        owner: string,
+        repository: string
+    ): Promise<GitHubDiscussionCategoriesResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const query = `
+        query(
+            $owner: String!
+            $repository: String!
+        ) {
+            repository(
+                owner: $owner
+                name: $repository
+            ) {
+                discussionCategories(
+                    first: 100
+                ) {
+                    totalCount
+
+                    nodes {
+                        id
+                        name
+                        description
+                        emoji
+                        emojiHTML
+                        slug
+                        createdAt
+                        updatedAt
+                    }
+                }
+            }
+        }
+    `;
+
+        const result =
+            await this.graphqlRequest<{
+                repository: {
+                    discussionCategories: {
+                        totalCount: number;
+
+                        nodes: Array<{
+                            id: string;
+                            name: string;
+                            description: string;
+                            emoji: string;
+                            emojiHTML: string;
+                            slug: string;
+                            createdAt: string;
+                            updatedAt: string;
+                        }>;
+                    };
+                };
+            }>(
+                query,
+                {
+                    owner,
+                    repository
+                }
+            );
+
+        const categories =
+            result.repository
+                .discussionCategories;
+
+        return {
+            total_count:
+                categories.totalCount,
+
+            categories:
+                categories.nodes.map(
+                    category => ({
+                        id: Number(
+                            category.id
+                                .split("/")
+                                .pop() ?? 0
+                        ),
+
+                        name:
+                            category.name,
+
+                        description:
+                            category.description,
+
+                        emoji:
+                            category.emoji,
+
+                        emoji_html:
+                            category.emojiHTML,
+
+                        slug:
+                            category.slug,
+
+                        created_at:
+                            category.createdAt,
+
+                        updated_at:
+                            category.updatedAt
+                    })
+                )
+        };
     }
 
 }

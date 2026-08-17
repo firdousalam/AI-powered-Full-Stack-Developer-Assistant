@@ -166,6 +166,44 @@ export interface GitHubListWorkflowArtifactsArgs {
     perPage?: number;
 }
 
+export interface GitHubListDiscussionsArgs {
+
+    owner: string;
+
+    repository: string;
+
+    page?: number;
+
+    perPage?: number;
+}
+
+export interface GitHubGetDiscussionArgs {
+
+    owner: string;
+
+    repository: string;
+
+    discussionNumber: number;
+}
+
+export interface GitHubListDiscussionCommentsArgs {
+
+    owner: string;
+
+    repository: string;
+
+    discussionNumber: number;
+
+    first?: number;
+}
+
+export interface GitHubListDiscussionCategoriesArgs {
+
+    owner: string;
+
+    repository: string;
+}
+
 import {
     GitHubService,
     GitHubRepository,
@@ -192,7 +230,11 @@ import {
     GitHubWorkflowJob,
     GitHubWorkflowJobsResponse,
     GitHubArtifact,
-    GitHubArtifactsResponse
+    GitHubArtifactsResponse,
+    GitHubDiscussionsResponse,
+    GitHubDiscussion,
+    GitHubDiscussionCommentsResponse,
+    GitHubDiscussionCategoriesResponse
 } from "./github.service";
 
 /**
@@ -215,6 +257,7 @@ export class GitHubTools {
     public getTools(): MCPTool[] {
 
         return [
+
             this.getRepositoryTool(),
             this.getContentsTool(),
             this.listBranchesTool(),
@@ -242,7 +285,12 @@ export class GitHubTools {
             this.listWorkflowJobsTool(),
             this.getWorkflowJobTool(),
             this.getWorkflowJobLogsTool(),
-            this.listWorkflowArtifactsTool()
+            this.listWorkflowArtifactsTool(),
+
+            this.listDiscussionsTool(),
+            this.getDiscussionTool(),
+            this.listDiscussionCommentsTool(),
+            this.listDiscussionCategoriesTool()
         ];
     }
 
@@ -3003,6 +3051,358 @@ export class GitHubTools {
             }
         };
     }
+    public async listDiscussions(
+        args: GitHubListDiscussionsArgs
+    ): Promise<GitHubDiscussionsResponse> {
 
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listDiscussions(
+            args.owner,
+            args.repository,
+            args.page,
+            args.perPage
+        );
+    }
+    public async getDiscussion(
+        args: GitHubGetDiscussionArgs
+    ): Promise<GitHubDiscussion> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getDiscussion(
+            args.owner,
+            args.repository,
+            args.discussionNumber
+        );
+    }
+
+    public async listDiscussionComments(
+        args: GitHubListDiscussionCommentsArgs
+    ): Promise<GitHubDiscussionCommentsResponse> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listDiscussionComments(
+            args.owner,
+            args.repository,
+            args.discussionNumber,
+            args.first
+        );
+    }
+    public async listDiscussionCategories(
+        args: GitHubListDiscussionCategoriesArgs
+    ): Promise<GitHubDiscussionCategoriesResponse> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listDiscussionCategories(
+            args.owner,
+            args.repository
+        );
+    }
+    private validateDiscussionNumberArguments(
+        args: unknown
+    ): GitHubGetDiscussionArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        if (
+            typeof value.discussionNumber !== "number" ||
+            !Number.isInteger(
+                value.discussionNumber
+            ) ||
+            value.discussionNumber <= 0
+        ) {
+            throw new Error(
+                "discussionNumber must be a positive integer."
+            );
+        }
+
+        return {
+            ...repositoryArgs,
+
+            discussionNumber:
+                value.discussionNumber
+        };
+    }
+    private validateDiscussionCommentsArguments(
+        args: unknown
+    ): GitHubListDiscussionCommentsArgs {
+
+        const base =
+            this.validateDiscussionNumberArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        let first:
+            number | undefined;
+
+        if (
+            value.first !== undefined
+        ) {
+
+            if (
+                typeof value.first !== "number" ||
+                !Number.isInteger(value.first) ||
+                value.first < 1 ||
+                value.first > 100
+            ) {
+                throw new Error(
+                    "first must be between 1 and 100."
+                );
+            }
+
+            first =
+                value.first;
+        }
+
+        return {
+            ...base,
+            first
+        };
+    }
+    private listDiscussionsTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_list_discussions",
+
+            description:
+                "List GitHub Discussions for a repository, including titles, authors, categories, and answer status.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    },
+
+                    page: {
+                        type:
+                            "number"
+                    },
+
+                    perPage: {
+                        type:
+                            "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                const value =
+                    args as Record<string, unknown>;
+
+                return this.listDiscussions({
+                    ...repositoryArgs,
+
+                    ...this.validatePagination(
+                        value
+                    )
+                });
+            }
+        };
+    }
+    private getDiscussionTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_discussion",
+
+            description:
+                "Get a specific GitHub Discussion including its body, category, author, and accepted answer information.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    },
+
+                    discussionNumber: {
+                        type:
+                            "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "discussionNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                return this.getDiscussion(
+                    this.validateDiscussionNumberArguments(
+                        args
+                    )
+                );
+            }
+        };
+    }
+
+    private listDiscussionCommentsTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_list_discussion_comments",
+
+            description:
+                "List comments and community responses for a GitHub Discussion.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    },
+
+                    discussionNumber: {
+                        type:
+                            "number"
+                    },
+
+                    first: {
+                        type:
+                            "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "discussionNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                return this.listDiscussionComments(
+                    this.validateDiscussionCommentsArguments(
+                        args
+                    )
+                );
+            }
+        };
+    }
+    private listDiscussionCategoriesTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_list_discussion_categories",
+
+            description:
+                "List Discussion categories configured for a GitHub repository.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                return this.listDiscussionCategories(
+                    repositoryArgs
+                );
+            }
+        };
+    }
 
 }
