@@ -11419,4 +11419,854 @@ Run:
 npx tsc --noEmit
 
 If it passes with no output, 5.7.24 is complete. If TypeScript reports errors, send the exact output and we'll fix those before moving to 5.7.25.
+5.7.25 — GitHub Secret Scanning / Security Tool
 
+This is the right next milestone after Dependabot (5.7.23) and CodeQL (5.7.24).
+
+It adds secret-leak detection to your GitHub MCP layer:
+
+5.7.23 Dependabot
+        ↓
+Dependency vulnerabilities
+
+
+5.7.24 CodeQL
+        ↓
+Code vulnerabilities
+
+
+5.7.25 Secret Scanning
+        ↓
+Leaked credentials / secrets
+Scope for 5.7.25
+
+We'll implement 3 MCP tools:
+
+Tool	Purpose
+github_list_secret_scanning_alerts	List secret-scanning alerts
+github_get_secret_scanning_alert	Inspect one alert
+github_get_secret_scanning_summary	Security overview
+
+The resulting AI workflow becomes:
+
+GitHub Repository
+       │
+       ├── Dependabot
+       ├── CodeQL
+       └── Secret Scanning
+              │
+              ▼
+       Security Intelligence
+              │
+              ▼
+       AI Developer Assistant
+              │
+       ┌──────┴──────┐
+       ↓             ↓
+   Explain        Prioritize
+       │             │
+       └──────┬──────┘
+              ↓
+         Remediation
+Important implementation detail
+
+GitHub's Secret Scanning API has different alert information from Dependabot and Code Scanning, so don't reuse the 5.7.23/5.7.24 interfaces blindly. We'll create dedicated GitHubSecretScanningAlert types and service methods.
+
+For this milestone, we'll also keep the implementation read-only. That is safer for your MCP architecture; remediation actions can be introduced later with explicit authorization.
+
+Checkpoint
+
+After implementing 5.7.25, continue using your established checkpoint:
+
+npx tsc --noEmit
+
+The expected result is no output and a successful exit.
+
+5.7.25 → Secret Scanning / Security Intelligence is now the next milestone.
+
+Scope for 5.7.25
+
+We'll implement 3 MCP tools:
+
+ToolPurpose	
+github_list_secret_scanning_alerts	List secret-scanning alerts
+github_get_secret_scanning_alert	Inspect one alert
+github_get_secret_scanning_summary	Security overview
+
+Yes. Let's implement 5.7.25 — GitHub Secret Scanning / Security Tool with exactly those 3 MCP tools.
+
+5.7.25.1 — Add Secret Scanning types
+
+In:
+
+src/mcp/servers/github/github.service.ts
+
+Add these interfaces near your other GitHub response models:
+
+export interface GitHubSecretScanningAlert {
+
+
+    number: number;
+
+
+    created_at: string;
+
+
+    updated_at: string;
+
+
+    url: string;
+
+
+    html_url?: string;
+
+
+    state: string;
+
+
+    secret_type: string;
+
+
+    secret_type_display_name?: string;
+
+
+    secret?: string;
+
+
+    resolution?: string | null;
+
+
+    resolved_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+
+    resolved_at?: string | null;
+
+
+    resolution_comment?: string | null;
+
+
+    push_protection_bypassed?: boolean;
+
+
+    push_protection_bypassed_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+
+    push_protection_bypassed_at?: string | null;
+
+
+    locations_url?: string;
+}
+
+
+export interface GitHubSecretScanningAlertsResponse {
+
+
+    total_count: number;
+
+
+    alerts: GitHubSecretScanningAlert[];
+}
+Security note
+
+Notice that secret is optional. Your MCP layer should not unnecessarily expose the actual secret value to the LLM.
+
+For the initial implementation, we will sanitize it before returning it.
+
+5.7.25.2 — Add listSecretScanningAlerts()
+
+Inside GitHubService:
+
+/**
+ * List secret scanning alerts for a GitHub repository.
+ */
+public async listSecretScanningAlerts(
+    owner: string,
+    repository: string,
+    state?: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubSecretScanningAlertsResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "Secret scanning page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "Secret scanning perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    if (state?.trim()) {
+
+
+        params.set(
+            "state",
+            state.trim()
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/secret-scanning/alerts?${params.toString()}`;
+
+
+    const alerts =
+        await this.request<GitHubSecretScanningAlert[]>(
+            endpoint
+        );
+
+
+    return {
+        total_count:
+            alerts.length,
+
+
+        alerts:
+            alerts.map(
+                alert => ({
+                    ...alert,
+
+
+                    /**
+                     * Never expose the actual secret
+                     * to the MCP consumer / LLM.
+                     */
+                    secret: undefined
+                })
+            )
+    };
+}
+5.7.25.3 — Add getSecretScanningAlert()
+/**
+ * Get a specific secret scanning alert.
+ */
+public async getSecretScanningAlert(
+    owner: string,
+    repository: string,
+    alertNumber: number
+): Promise<GitHubSecretScanningAlert> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(alertNumber) ||
+        alertNumber <= 0
+    ) {
+        throw new Error(
+            "Secret scanning alert number must be a positive integer."
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/secret-scanning/alerts/${alertNumber}`;
+
+
+    const alert =
+        await this.request<GitHubSecretScanningAlert>(
+            endpoint
+        );
+
+
+    return {
+        ...alert,
+
+
+        /**
+         * Never return the detected secret itself.
+         */
+        secret: undefined
+    };
+}
+5.7.25.4 — Add Security Summary
+/**
+ * Get a summarized view of secret scanning alerts.
+ */
+public async getSecretScanningSummary(
+    owner: string,
+    repository: string
+): Promise<{
+    total: number;
+    open: number;
+    resolved: number;
+    byType: Record<string, number>;
+    byResolution: Record<string, number>;
+}> {
+
+
+    const response =
+        await this.listSecretScanningAlerts(
+            owner,
+            repository,
+            undefined,
+            1,
+            100
+        );
+
+
+    const byType:
+        Record<string, number> = {};
+
+
+    const byResolution:
+        Record<string, number> = {};
+
+
+    let open = 0;
+    let resolved = 0;
+
+
+    for (
+        const alert of response.alerts
+    ) {
+
+
+        const type =
+            alert.secret_type_display_name ??
+            alert.secret_type ??
+            "unknown";
+
+
+        byType[type] =
+            (byType[type] ?? 0) + 1;
+
+
+        if (
+            alert.state === "open"
+        ) {
+
+
+            open++;
+
+
+        } else if (
+            alert.state === "resolved"
+        ) {
+
+
+            resolved++;
+        }
+
+
+        if (
+            alert.resolution
+        ) {
+
+
+            byResolution[
+                alert.resolution
+            ] =
+                (
+                    byResolution[
+                        alert.resolution
+                    ] ?? 0
+                ) + 1;
+        }
+    }
+
+
+    return {
+
+
+        total:
+            response.alerts.length,
+
+
+        open,
+
+
+        resolved,
+
+
+        byType,
+
+
+        byResolution
+    };
+}
+5.7.25.5 — Add tool argument types
+
+In:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubListSecretScanningAlertsArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    state?: string;
+
+
+    page?: number;
+
+
+    perPage?: number;
+}
+
+
+export interface GitHubGetSecretScanningAlertArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+
+
+    alertNumber: number;
+}
+
+
+export interface GitHubSecretScanningSummaryArgs {
+
+
+    owner: string;
+
+
+    repository: string;
+}
+5.7.25.6 — Add service wrappers
+
+Inside GitHubTools:
+
+public async listSecretScanningAlerts(
+    args: GitHubListSecretScanningAlertsArgs
+): Promise<GitHubSecretScanningAlertsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listSecretScanningAlerts(
+        args.owner,
+        args.repository,
+        args.state,
+        args.page,
+        args.perPage
+    );
+}
+public async getSecretScanningAlert(
+    args: GitHubGetSecretScanningAlertArgs
+): Promise<GitHubSecretScanningAlert> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    if (
+        !Number.isInteger(args.alertNumber) ||
+        args.alertNumber <= 0
+    ) {
+        throw new Error(
+            "alertNumber must be a positive integer."
+        );
+    }
+
+
+    return this.githubService.getSecretScanningAlert(
+        args.owner,
+        args.repository,
+        args.alertNumber
+    );
+}
+public async getSecretScanningSummary(
+    args: GitHubSecretScanningSummaryArgs
+) {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getSecretScanningSummary(
+        args.owner,
+        args.repository
+    );
+}
+5.7.25.7 — List Secret Scanning Alerts MCP Tool
+private listSecretScanningAlertsTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_list_secret_scanning_alerts",
+
+
+        description:
+            "List GitHub secret scanning alerts for a repository without exposing detected secret values.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                state: {
+                    type:
+                        "string",
+
+
+                    description:
+                        "Alert state such as open or resolved."
+                },
+
+
+                page: {
+                    type:
+                        "number"
+                },
+
+
+                perPage: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            return this.listSecretScanningAlerts({
+
+
+                ...repositoryArgs,
+
+
+                state:
+                    typeof value.state === "string"
+                        ? value.state
+                        : undefined,
+
+
+                page:
+                    typeof value.page === "number"
+                        ? value.page
+                        : undefined,
+
+
+                perPage:
+                    typeof value.perPage === "number"
+                        ? value.perPage
+                        : undefined
+            });
+        }
+    };
+}
+5.7.25.8 — Get Secret Scanning Alert MCP Tool
+private getSecretScanningAlertTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_get_secret_scanning_alert",
+
+
+        description:
+            "Get detailed metadata about a GitHub secret scanning alert without returning the detected secret.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                },
+
+
+                alertNumber: {
+                    type:
+                        "number"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "alertNumber"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            const value =
+                args as Record<string, unknown>;
+
+
+            if (
+                typeof value.alertNumber !== "number" ||
+                !Number.isInteger(
+                    value.alertNumber
+                ) ||
+                value.alertNumber <= 0
+            ) {
+                throw new Error(
+                    "alertNumber must be a positive integer."
+                );
+            }
+
+
+            return this.getSecretScanningAlert({
+
+
+                ...repositoryArgs,
+
+
+                alertNumber:
+                    value.alertNumber
+            });
+        }
+    };
+}
+5.7.25.9 — Secret Scanning Summary MCP Tool
+private getSecretScanningSummaryTool(): MCPTool {
+
+
+    return {
+
+
+        name:
+            "github_get_secret_scanning_summary",
+
+
+        description:
+            "Get a security summary of GitHub secret scanning alerts grouped by secret type and resolution.",
+
+
+        inputSchema: {
+
+
+            type:
+                "object",
+
+
+            properties: {
+
+
+                owner: {
+                    type:
+                        "string"
+                },
+
+
+                repository: {
+                    type:
+                        "string"
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const repositoryArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            return this.getSecretScanningSummary(
+                repositoryArgs
+            );
+        }
+    };
+}
+5.7.25.10 — Register the 3 tools
+
+In your existing getTools():
+
+this.listDependabotAlertsTool(),
+this.getDependabotAlertTool(),
+this.getDependabotSummaryTool(),
+
+
+this.listCodeScanningAlertsTool(),
+this.getCodeScanningAlertTool(),
+this.getCodeScanningSummaryTool(),
+
+
+this.listSecretScanningAlertsTool(),
+this.getSecretScanningAlertTool(),
+this.getSecretScanningSummaryTool()
+Result
+
+Your GitHub security MCP layer now has:
+
+                    GitHub Security
+                          │
+          ┌───────────────┼───────────────┐
+          ↓               ↓               ↓
+      Dependabot       CodeQL        Secret Scanning
+          │               │               │
+      Dependencies        Code          Secrets
+          │               │               │
+          └───────────────┼───────────────┘
+                          ↓
+                  AI Developer Assistant
+
+And specifically these three new tools:
+
+github_list_secret_scanning_alerts
+github_get_secret_scanning_alert
+github_get_secret_scanning_summary
+⚠️ Important security design choice
+
+Do not pass the actual detected secret into the LLM. Even if GitHub/API permissions allow access to it, your MCP server should sanitize it at the service boundary. This is an important architectural decision for the security of your eventual product.
+
+Now run your standard checkpoint:
+
+npx tsc --noEmit
+
+If it passes, 5.7.25 is complete and we can move to 5.7.26.

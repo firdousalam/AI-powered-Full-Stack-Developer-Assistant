@@ -699,6 +699,56 @@ export interface GitHubCodeScanningAlertsResponse {
     alerts: GitHubCodeScanningAlert[];
 }
 
+export interface GitHubSecretScanningAlert {
+
+    number: number;
+
+    created_at: string;
+
+    updated_at: string;
+
+    url: string;
+
+    html_url?: string;
+
+    state: string;
+
+    secret_type: string;
+
+    secret_type_display_name?: string;
+
+    secret?: string;
+
+    resolution?: string | null;
+
+    resolved_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+    resolved_at?: string | null;
+
+    resolution_comment?: string | null;
+
+    push_protection_bypassed?: boolean;
+
+    push_protection_bypassed_by?: {
+        login: string;
+        id: number;
+    } | null;
+
+    push_protection_bypassed_at?: string | null;
+
+    locations_url?: string;
+}
+
+export interface GitHubSecretScanningAlertsResponse {
+
+    total_count: number;
+
+    alerts: GitHubSecretScanningAlert[];
+}
+
 
 export class GitHubService {
     private readonly config: GitHubConfig;
@@ -3080,6 +3130,233 @@ export class GitHubService {
         };
     }
 
+    /**
+     * List secret scanning alerts for a GitHub repository.
+     */
+    public async listSecretScanningAlerts(
+        owner: string,
+        repository: string,
+        state?: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubSecretScanningAlertsResponse> {
 
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Secret scanning page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Secret scanning perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        if (state?.trim()) {
+
+            params.set(
+                "state",
+                state.trim()
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/secret-scanning/alerts?${params.toString()}`;
+
+        const alerts =
+            await this.request<GitHubSecretScanningAlert[]>(
+                endpoint
+            );
+
+        return {
+            total_count:
+                alerts.length,
+
+            alerts:
+                alerts.map(
+                    alert => ({
+                        ...alert,
+
+                        /**
+                         * Never expose the actual secret
+                         * to the MCP consumer / LLM.
+                         */
+                        secret: undefined
+                    })
+                )
+        };
+    }
+
+    /**
+ * Get a specific secret scanning alert.
+ */
+    public async getSecretScanningAlert(
+        owner: string,
+        repository: string,
+        alertNumber: number
+    ): Promise<GitHubSecretScanningAlert> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(alertNumber) ||
+            alertNumber <= 0
+        ) {
+            throw new Error(
+                "Secret scanning alert number must be a positive integer."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/secret-scanning/alerts/${alertNumber}`;
+
+        const alert =
+            await this.request<GitHubSecretScanningAlert>(
+                endpoint
+            );
+
+        return {
+            ...alert,
+
+            /**
+             * Never return the detected secret itself.
+             */
+            secret: undefined
+        };
+    }
+
+    /**
+ * Get a summarized view of secret scanning alerts.
+ */
+    public async getSecretScanningSummary(
+        owner: string,
+        repository: string
+    ): Promise<{
+        total: number;
+        open: number;
+        resolved: number;
+        byType: Record<string, number>;
+        byResolution: Record<string, number>;
+    }> {
+
+        const response =
+            await this.listSecretScanningAlerts(
+                owner,
+                repository,
+                undefined,
+                1,
+                100
+            );
+
+        const byType:
+            Record<string, number> = {};
+
+        const byResolution:
+            Record<string, number> = {};
+
+        let open = 0;
+        let resolved = 0;
+
+        for (
+            const alert of response.alerts
+        ) {
+
+            const type =
+                alert.secret_type_display_name ??
+                alert.secret_type ??
+                "unknown";
+
+            byType[type] =
+                (byType[type] ?? 0) + 1;
+
+            if (
+                alert.state === "open"
+            ) {
+
+                open++;
+
+            } else if (
+                alert.state === "resolved"
+            ) {
+
+                resolved++;
+            }
+
+            if (
+                alert.resolution
+            ) {
+
+                byResolution[
+                    alert.resolution
+                ] =
+                    (
+                        byResolution[
+                        alert.resolution
+                        ] ?? 0
+                    ) + 1;
+            }
+        }
+
+        return {
+
+            total:
+                response.alerts.length,
+
+            open,
+
+            resolved,
+
+            byType,
+
+            byResolution
+        };
+    }
 
 }

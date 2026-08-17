@@ -235,6 +235,35 @@ export interface GitHubCodeScanningSummaryArgs {
     repository: string;
 }
 
+export interface GitHubListSecretScanningAlertsArgs {
+
+    owner: string;
+
+    repository: string;
+
+    state?: string;
+
+    page?: number;
+
+    perPage?: number;
+}
+
+export interface GitHubGetSecretScanningAlertArgs {
+
+    owner: string;
+
+    repository: string;
+
+    alertNumber: number;
+}
+
+export interface GitHubSecretScanningSummaryArgs {
+
+    owner: string;
+
+    repository: string;
+}
+
 
 
 import {
@@ -269,7 +298,9 @@ import {
     GitHubDiscussionCommentsResponse,
     GitHubDiscussionCategoriesResponse,
     GitHubCodeScanningAlertsResponse,
-    GitHubCodeScanningAlert
+    GitHubCodeScanningAlert,
+    GitHubSecretScanningAlertsResponse,
+    GitHubSecretScanningAlert
 } from "./github.service";
 
 /**
@@ -329,7 +360,16 @@ export class GitHubTools {
 
             this.listCodeScanningAlertsTool(),
             this.getCodeScanningAlertTool(),
-            this.getCodeScanningSummaryTool()
+            this.getCodeScanningSummaryTool(),
+
+
+            this.listCodeScanningAlertsTool(),
+            this.getCodeScanningAlertTool(),
+            this.getCodeScanningSummaryTool(),
+
+            this.listSecretScanningAlertsTool(),
+            this.getSecretScanningAlertTool(),
+            this.getSecretScanningSummaryTool()
         ];
     }
 
@@ -3722,7 +3762,269 @@ export class GitHubTools {
             }
         };
     }
+    public async listSecretScanningAlerts(
+        args: GitHubListSecretScanningAlertsArgs
+    ): Promise<GitHubSecretScanningAlertsResponse> {
 
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listSecretScanningAlerts(
+            args.owner,
+            args.repository,
+            args.state,
+            args.page,
+            args.perPage
+        );
+    }
+
+    public async getSecretScanningAlert(
+        args: GitHubGetSecretScanningAlertArgs
+    ): Promise<GitHubSecretScanningAlert> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        if (
+            !Number.isInteger(args.alertNumber) ||
+            args.alertNumber <= 0
+        ) {
+            throw new Error(
+                "alertNumber must be a positive integer."
+            );
+        }
+
+        return this.githubService.getSecretScanningAlert(
+            args.owner,
+            args.repository,
+            args.alertNumber
+        );
+    }
+
+    public async getSecretScanningSummary(
+        args: GitHubSecretScanningSummaryArgs
+    ) {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getSecretScanningSummary(
+            args.owner,
+            args.repository
+        );
+    }
+    private listSecretScanningAlertsTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_list_secret_scanning_alerts",
+
+            description:
+                "List GitHub secret scanning alerts for a repository without exposing detected secret values.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    },
+
+                    state: {
+                        type:
+                            "string",
+
+                        description:
+                            "Alert state such as open or resolved."
+                    },
+
+                    page: {
+                        type:
+                            "number"
+                    },
+
+                    perPage: {
+                        type:
+                            "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                const value =
+                    args as Record<string, unknown>;
+
+                return this.listSecretScanningAlerts({
+
+                    ...repositoryArgs,
+
+                    state:
+                        typeof value.state === "string"
+                            ? value.state
+                            : undefined,
+
+                    page:
+                        typeof value.page === "number"
+                            ? value.page
+                            : undefined,
+
+                    perPage:
+                        typeof value.perPage === "number"
+                            ? value.perPage
+                            : undefined
+                });
+            }
+        };
+    }
+    private getSecretScanningAlertTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_secret_scanning_alert",
+
+            description:
+                "Get detailed metadata about a GitHub secret scanning alert without returning the detected secret.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    },
+
+                    alertNumber: {
+                        type:
+                            "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "alertNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                const value =
+                    args as Record<string, unknown>;
+
+                if (
+                    typeof value.alertNumber !== "number" ||
+                    !Number.isInteger(
+                        value.alertNumber
+                    ) ||
+                    value.alertNumber <= 0
+                ) {
+                    throw new Error(
+                        "alertNumber must be a positive integer."
+                    );
+                }
+
+                return this.getSecretScanningAlert({
+
+                    ...repositoryArgs,
+
+                    alertNumber:
+                        value.alertNumber
+                });
+            }
+        };
+    }
+    private getSecretScanningSummaryTool(): MCPTool {
+
+        return {
+
+            name:
+                "github_get_secret_scanning_summary",
+
+            description:
+                "Get a security summary of GitHub secret scanning alerts grouped by secret type and resolution.",
+
+            inputSchema: {
+
+                type:
+                    "object",
+
+                properties: {
+
+                    owner: {
+                        type:
+                            "string"
+                    },
+
+                    repository: {
+                        type:
+                            "string"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                return this.getSecretScanningSummary(
+                    repositoryArgs
+                );
+            }
+        };
+    }
 
 
 }
