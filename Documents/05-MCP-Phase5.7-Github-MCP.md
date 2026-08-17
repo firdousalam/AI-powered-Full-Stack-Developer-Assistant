@@ -4963,3 +4963,2027 @@ Next recommended milestone: 5.7.16 — GitHub User/Organization Tool.
 
 That would allow the agent to inspect repository ownership and discover organizations/users before drilling into their repositories.
 
+5.7.17 — GitHub Contributors / Collaborators Tool
+
+For this milestone, I recommend implementing Contributors first and Collaborators separately.
+
+The distinction matters:
+
+Contributors → public repository contribution/activity data.
+Collaborators → repository access/permission information and may require authentication.
+
+So we should not incorrectly treat them as the same GitHub API.
+
+We'll add:
+
+github_list_contributors
+github_list_collaborators
+1. Add GitHub contributor types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubContributor {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+
+
+    contributions: number;
+
+
+    type: string;
+}
+
+Add collaborator types:
+
+export interface GitHubCollaborator {
+    login: string;
+    id: number;
+
+
+    avatar_url: string;
+    html_url: string;
+
+
+    type: string;
+
+
+    permissions?: {
+        pull?: boolean;
+        triage?: boolean;
+        push?: boolean;
+        maintain?: boolean;
+        admin?: boolean;
+    };
+}
+
+The permissions object is optional because the GitHub API response can vary depending on authentication and permissions.
+
+2. Add listContributors() to GitHubService
+
+Add:
+
+/**
+ * List contributors to a GitHub repository.
+ *
+ * Contributors are returned in descending order
+ * of contribution count by GitHub.
+ */
+public async listContributors(
+    owner: string,
+    repository: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubContributor[]> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "GitHub contributors page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "GitHub contributors perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}` +
+        `/contributors?${params.toString()}`;
+
+
+    return this.request<GitHubContributor[]>(
+        endpoint
+    );
+}
+3. Add listCollaborators()
+
+Add:
+
+/**
+ * List collaborators for a GitHub repository.
+ *
+ * This endpoint may require authentication and
+ * appropriate repository permissions.
+ */
+public async listCollaborators(
+    owner: string,
+    repository: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubCollaborator[]> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "GitHub collaborators page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "GitHub collaborators perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}` +
+        `/collaborators?${params.toString()}`;
+
+
+    return this.request<GitHubCollaborator[]>(
+        endpoint
+    );
+}
+Important
+
+Unlike contributors, collaborators are permission-sensitive.
+
+Your existing:
+
+GITHUB_TOKEN
+
+will therefore matter for this operation.
+
+Do not assume that an unauthenticated request can retrieve collaborator information.
+
+4. Add tool argument types
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubListContributorsArgs {
+    owner: string;
+    repository: string;
+    page?: number;
+    perPage?: number;
+}
+
+
+export interface GitHubListCollaboratorsArgs {
+    owner: string;
+    repository: string;
+    page?: number;
+    perPage?: number;
+}
+5. Import the new types
+
+Update your service import:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse,
+    GitHubIssue,
+    GitHubPullRequest,
+    GitHubCommit,
+    GitHubCompareResponse,
+    GitHubTreeResponse,
+    GitHubRelease,
+    GitHubTag,
+    GitHubRepositorySearchResponse,
+    GitHubUser,
+    GitHubOrganization,
+    GitHubContributor,
+    GitHubCollaborator
+} from "./github.service";
+6. Add contributors operation
+
+Inside GitHubTools:
+
+public async listContributors(
+    args: GitHubListContributorsArgs
+): Promise<GitHubContributor[]> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listContributors(
+        args.owner,
+        args.repository,
+        args.page,
+        args.perPage
+    );
+}
+7. Add collaborators operation
+public async listCollaborators(
+    args: GitHubListCollaboratorsArgs
+): Promise<GitHubCollaborator[]> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listCollaborators(
+        args.owner,
+        args.repository,
+        args.page,
+        args.perPage
+    );
+}
+8. Add Contributors MCP Tool
+
+Add:
+
+private listContributorsTool(): MCPTool {
+
+
+    return {
+        name: "github_list_contributors",
+
+
+        description:
+            "List contributors to a GitHub repository, including their contribution counts.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                },
+
+
+                page: {
+                    type: "number",
+                    description:
+                        "Page number. Defaults to 1."
+                },
+
+
+                perPage: {
+                    type: "number",
+                    description:
+                        "Number of contributors per page. Defaults to 30 and has a maximum of 100."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateListContributorsArguments(
+                    args
+                );
+
+
+            return this.listContributors(
+                validatedArgs
+            );
+        }
+    };
+}
+9. Add contributor validation
+private validateListContributorsArguments(
+    args: unknown
+): GitHubListContributorsArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    const result:
+        GitHubListContributorsArgs = {
+        ...repositoryArgs
+    };
+
+
+    if (
+        value.page !== undefined
+    ) {
+
+
+        if (
+            typeof value.page !== "number" ||
+            !Number.isInteger(value.page) ||
+            value.page < 1
+        ) {
+            throw new Error(
+                "GitHub contributors page must be a positive integer."
+            );
+        }
+
+
+        result.page =
+            value.page;
+    }
+
+
+    if (
+        value.perPage !== undefined
+    ) {
+
+
+        if (
+            typeof value.perPage !== "number" ||
+            !Number.isInteger(value.perPage) ||
+            value.perPage < 1 ||
+            value.perPage > 100
+        ) {
+            throw new Error(
+                "GitHub contributors perPage must be between 1 and 100."
+            );
+        }
+
+
+        result.perPage =
+            value.perPage;
+    }
+
+
+    return result;
+}
+10. Add Collaborators MCP Tool
+
+Add:
+
+private listCollaboratorsTool(): MCPTool {
+
+
+    return {
+        name: "github_list_collaborators",
+
+
+        description:
+            "List collaborators with access to a GitHub repository. This operation may require authentication and appropriate repository permissions.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization that owns the repository."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "Name of the GitHub repository."
+                },
+
+
+                page: {
+                    type: "number",
+                    description:
+                        "Page number. Defaults to 1."
+                },
+
+
+                perPage: {
+                    type: "number",
+                    description:
+                        "Number of collaborators per page. Defaults to 30 and has a maximum of 100."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateListCollaboratorsArguments(
+                    args
+                );
+
+
+            return this.listCollaborators(
+                validatedArgs
+            );
+        }
+    };
+}
+11. Add collaborator validation
+private validateListCollaboratorsArguments(
+    args: unknown
+): GitHubListCollaboratorsArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    const result:
+        GitHubListCollaboratorsArgs = {
+        ...repositoryArgs
+    };
+
+
+    if (
+        value.page !== undefined
+    ) {
+
+
+        if (
+            typeof value.page !== "number" ||
+            !Number.isInteger(value.page) ||
+            value.page < 1
+        ) {
+            throw new Error(
+                "GitHub collaborators page must be a positive integer."
+            );
+        }
+
+
+        result.page =
+            value.page;
+    }
+
+
+    if (
+        value.perPage !== undefined
+    ) {
+
+
+        if (
+            typeof value.perPage !== "number" ||
+            !Number.isInteger(value.perPage) ||
+            value.perPage < 1 ||
+            value.perPage > 100
+        ) {
+            throw new Error(
+                "GitHub collaborators perPage must be between 1 and 100."
+            );
+        }
+
+
+        result.perPage =
+            value.perPage;
+    }
+
+
+    return result;
+}
+12. Register both tools
+
+Your current getTools() has 15 tools.
+
+Change it to:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool(),
+        this.searchRepositoriesTool(),
+        this.getUserTool(),
+        this.getOrganizationTool(),
+        this.listContributorsTool(),
+        this.listCollaboratorsTool()
+    ];
+}
+
+You now have 17 GitHub MCP tools.
+
+13. Example — Contributors
+
+The agent can call:
+
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant"
+}
+
+Tool:
+
+github_list_contributors
+
+It can receive:
+
+Contributor A → 120 commits
+Contributor B → 74 commits
+Contributor C → 21 commits
+
+This lets the agent reason about repository contribution activity.
+
+14. Example — Collaborators
+{
+    "owner": "firdousalam",
+    "repository": "AI-powered-Full-Stack-Developer-Assistant"
+}
+
+Tool:
+
+github_list_collaborators
+
+Potential information:
+
+user
+permissions:
+  pull
+  triage
+  push
+  maintain
+  admin
+
+Again, the exact information depends on the authenticated GitHub token and repository permissions.
+
+15. Contributor vs Collaborator
+
+This distinction is important for your agent.
+
+                 Repository
+                     │
+          ┌──────────┴──────────┐
+          ▼                     ▼
+    Contributors           Collaborators
+          │                     │
+          ▼                     ▼
+  Contribution data       Access data
+          │                     │
+     "Who codes?"        "Who has access?"
+
+For example:
+
+"Who contributes most to this project?"
+
+Use:
+
+github_list_contributors
+
+Whereas:
+
+"Who has access to this repository?"
+
+Use:
+
+github_list_collaborators
+16. Agent workflow
+
+This becomes especially useful when combined with your existing history tools:
+
+github_list_contributors
+          │
+          ▼
+Identify active contributors
+          │
+          ▼
+github_list_commits
+          │
+          ▼
+Inspect recent work
+          │
+          ▼
+github_list_pull_requests
+          │
+          ▼
+Inspect development workflow
+          │
+          ▼
+AI activity analysis
+
+For example, the agent could eventually answer:
+
+"Who has been most active recently?"
+
+It could combine contributor data with commit history and PR information instead of relying on a single API response.
+
+17. Current GitHub MCP architecture
+
+You now have:
+
+                         GitHub MCP
+                             │
+       ┌─────────────────────┼─────────────────────┐
+       │                     │                     │
+       ▼                     ▼                     ▼
+   Discovery               Code                History
+       │                     │                     │
+   User / Org            Contents             Commits
+   Repository             Read File            Diff
+   Search                 Code Search          Releases
+   Tree                                        Tags
+   Branches
+       │                     │                     │
+       └─────────────────────┼─────────────────────┘
+                             ▼
+                       Collaboration
+                             │
+                    ┌────────┴────────┐
+                    ▼                 ▼
+              Contributors      Collaborators
+                    │                 │
+                    └────────┬────────┘
+                             ▼
+                         AI Agent
+
+This is now a fairly comprehensive read-oriented GitHub MCP layer.
+
+18. 5.7.17 checkpoint
+
+Run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+If there is no output:
+
+5.7.17 — GitHub Contributors / Collaborators Tool ✅
+
+Current tool count
+1.  github_get_repository
+2.  github_get_contents
+3.  github_list_branches
+4.  github_read_file
+5.  github_search_code
+6.  github_list_issues
+7.  github_list_pull_requests
+8.  github_list_commits
+9.  github_compare_commits
+10. github_get_tree
+11. github_list_releases
+12. github_list_tags
+13. github_search_repositories
+14. github_get_user
+15. github_get_organization
+16. github_list_contributors
+17. github_list_collaborators
+
+Next logical milestone: 5.7.18 — GitHub Repository Statistics / Activity Tool.
+
+That would combine repository-level statistics such as stars, forks, watchers, open issues, network size, and activity information into a developer-friendly MCP response rather than forcing the LLM to interpret raw GitHub metadata.
+
+npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> 
+
+✅ 5.7.17 — GitHub Contributors / Collaborators Tool completed successfully.
+
+Your TypeScript checkpoint is clean:
+
+npx tsc --noEmit
+
+0 errors.
+
+Current GitHub MCP tools: 17 ✅
+1.  github_get_repository
+2.  github_get_contents
+3.  github_list_branches
+4.  github_read_file
+5.  github_search_code
+6.  github_list_issues
+7.  github_list_pull_requests
+8.  github_list_commits
+9.  github_compare_commits
+10. github_get_tree
+11. github_list_releases
+12. github_list_tags
+13. github_search_repositories
+14. github_get_user
+15. github_get_organization
+16. github_list_contributors
+17. github_list_collaborators
+
+Your GitHub MCP server now covers:
+
+Discovery
+├── User
+├── Organization
+├── Repository Search
+└── Repository
+
+
+Repository Structure
+├── Tree
+├── Contents
+├── Files
+└── Branches
+
+
+Code Intelligence
+└── Code Search
+
+
+Development Activity
+├── Issues
+├── Pull Requests
+├── Commits
+├── Diff
+├── Contributors
+└── Collaborators
+
+
+Versioning
+├── Releases
+└── Tags
+Next: 5.7.18 — GitHub Repository Statistics / Activity Tool
+
+This is a good next step because it moves from raw GitHub API access toward structured developer intelligence:
+
+Repository
+   │
+   ├── Stars
+   ├── Forks
+   ├── Watchers
+   ├── Open Issues
+   ├── Size
+   ├── Language
+   ├── Network
+   └── Activity
+          │
+          ▼
+    AI Developer Assistant
+
+After that, we can start getting closer to the more interesting part: using these 18+ tools intelligently through the MCP Gateway/AI agent rather than simply exposing individual tools.
+
+how many more milestone like 5.7.18 — GitHub Repository Statistics / Activity Tool.   left
+
+You have 17 GitHub MCP tools completed through 5.7.17.
+
+If we continue at the same level of granularity, I would estimate around 8–10 more milestones for Chapter 5.7 before I would consider the GitHub MCP server feature-complete for your project.
+
+Suggested remaining 5.7 roadmap
+Milestone	Feature	Status
+5.7.18	Repository Statistics / Activity	⏳ Next
+5.7.19	Repository Languages / Tech Stack	⏳
+5.7.20	GitHub Workflows / Actions	⏳
+5.7.21	GitHub Discussions	⏳
+5.7.22	Repository Topics / Metadata	⏳
+5.7.23	Commit Activity / Contributor Analytics	⏳
+5.7.24	Repository Dependency / Manifest Analysis	⏳
+5.7.25	GitHub Security / Dependabot Information	⏳
+5.7.26	GitHub MCP Tool Aggregation / Optimization	⏳
+5.7.27	GitHub Server Integration & End-to-End Testing	⏳
+
+So, roughly 10 milestones remain if we follow this detailed roadmap.
+
+However, there's an important distinction:
+
+You don't need 10 more milestones just to "finish GitHub"
+
+Your current capabilities are already substantial:
+
+                 GitHub MCP
+                     │
+        ┌────────────┼────────────┐
+        ▼            ▼            ▼
+    Discovery      Code        History
+        │            │            │
+    User/Org      Files        Commits
+    Repo Search   Code Search   Diff
+    Repository    Tree          PRs
+    Branches      Contents      Issues
+                               Releases
+                               Tags
+        │
+        ▼
+ Collaboration
+        │
+ Contributors / Collaborators
+        │
+        ▼
+      AI Agent
+
+The most important architectural transition after the core GitHub tools is actually getting the AI to select and combine these tools intelligently.
+
+For your overall project, I would structure the remaining work approximately as:
+
+5.7 GitHub MCP
+│
+├── 5.7.18–5.7.25
+│   Additional GitHub intelligence
+│
+├── 5.7.26
+│   Tool aggregation / optimization
+│
+└── 5.7.27
+    Integration testing
+         │
+         ▼
+5.8 Git / Local Repository MCP
+         │
+         ▼
+5.9 Docker MCP
+         │
+         ▼
+5.10 Kubernetes MCP
+         │
+         ▼
+5.11 CI/CD MCP
+         │
+         ▼
+5.12 Developer Intelligence
+         │
+         ▼
+5.13 RAG / Project Knowledge
+         │
+         ▼
+5.14 Agent / Tool Orchestration
+         │
+         ▼
+5.15 Autonomous Developer Workflows
+My recommendation for your project
+
+Don't unnecessarily create dozens of tiny GitHub milestones. 5.7.18 → 5.7.25 is enough to round out GitHub. Then move to the next MCP server/domain.
+
+The real value of your project will come when something like this works:
+
+User:
+"Analyze why the latest version of my project
+is having Docker deployment problems."
+
+
+                     ↓
+
+
+              AI Agent
+                     ↓
+       ┌─────────────┼─────────────┐
+       ▼             ▼             ▼
+ GitHub Tools    Filesystem     Docker
+       │             │             │
+ commits         source code     images
+ PRs             Dockerfile      containers
+ issues          package.json    logs
+ diff            k8s manifests
+       │             │             │
+       └─────────────┼─────────────┘
+                     ▼
+               Agent Reasoning
+                     ↓
+              Root Cause Analysis
+                     ↓
+                 Solution
+
+That is the point where your project starts becoming an actual AI developer agent rather than an MCP tool collection.
+
+So I'd continue with 5.7.18 — GitHub Repository Statistics / Activity Tool, but after roughly 5.7.27, shift our focus from adding individual GitHub APIs to agent orchestration and intelligent MCP tool selection.
+
+Suggested remaining 5.7 roadmap
+Milestone	Feature	Status
+5.7.18	Repository Statistics / Activity	⏳ Next
+5.7.19	Repository Languages / Tech Stack	⏳
+5.7.20	GitHub Workflows / Actions	⏳
+5.7.21	GitHub Discussions	⏳
+5.7.22	Repository Topics / Metadata	⏳
+5.7.23	Commit Activity / Contributor Analytics	⏳
+5.7.24	Repository Dependency / Manifest Analysis	⏳
+5.7.25	GitHub Security / Dependabot Information	⏳
+5.7.26	GitHub MCP Tool Aggregation / Optimization	⏳
+5.7.27	GitHub Server Integration & End-to-End Testing	⏳
+
+✅ 5.7.19 — GitHub Repository Languages / Technology Stack Tool completed successfully.
+
+Checkpoint is clean:
+
+npx tsc --noEmit
+
+0 TypeScript errors.
+
+Current progress
+
+19 GitHub MCP tools completed ✅
+
+5.7.17  Contributors / Collaborators       ✅
+5.7.18  Repository Statistics / Activity   ✅
+5.7.19  Repository Languages               ✅
+Next milestone
+
+5.7.20 — GitHub Actions / Workflows Tool
+
+We'll add tools for inspecting:
+
+GitHub Actions workflows
+Workflow runs
+Run status/conclusion
+Failed workflow runs
+Workflow metadata
+Branch/workflow information
+
+This will be particularly useful for your AI assistant because it can eventually answer:
+
+"Why did my latest GitHub Actions deployment fail?"
+
+by combining:
+
+GitHub Actions
+      ↓
+Failed Run
+      ↓
+Workflow Logs / Status
+      ↓
+Commit
+      ↓
+Changed Files
+      ↓
+AI Root-Cause Analysis
+
+After implementing 5.7.20, we'll run the same checkpoint:
+
+npx tsc --noEmit
+
+and continue only when it is clean.
+
+5.7.20 — GitHub Actions / Workflows Tool  
+5.7.20 — GitHub Actions / Workflows Tool
+
+This milestone adds GitHub Actions visibility to your MCP server.
+
+We'll add three tools:
+
+github_list_workflows
+github_list_workflow_runs
+github_get_workflow_run
+
+This is better than creating one oversized tool because the AI can progressively inspect CI/CD:
+
+Repository
+    ↓
+List Workflows
+    ↓
+List Runs
+    ↓
+Inspect Specific Run
+    ↓
+AI analyzes CI/CD state
+1. Add GitHub Actions types
+
+Open:
+
+src/mcp/servers/github/github.service.ts
+
+Add:
+
+export interface GitHubWorkflow {
+    id: number;
+    name: string;
+    path: string;
+    state: string;
+    html_url: string;
+    created_at: string;
+    updated_at: string;
+}
+
+
+export interface GitHubWorkflowRun {
+    id: number;
+    name: string;
+    workflow_id: number;
+
+
+    head_branch: string | null;
+    head_sha: string;
+
+
+    status: string;
+    conclusion: string | null;
+
+
+    event: string;
+
+
+    html_url: string;
+
+
+    created_at: string;
+    updated_at: string;
+
+
+    run_number: number;
+    run_attempt?: number;
+}
+
+
+export interface GitHubWorkflowRunsResponse {
+    total_count: number;
+    workflow_runs: GitHubWorkflowRun[];
+}
+2. Add listWorkflows()
+
+Inside GitHubService:
+
+/**
+ * List GitHub Actions workflows for a repository.
+ */
+public async listWorkflows(
+    owner: string,
+    repository: string
+): Promise<GitHubWorkflow[]> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/actions/workflows`;
+
+
+    const response =
+        await this.request<{
+            total_count: number;
+            workflows: GitHubWorkflow[];
+        }>(endpoint);
+
+
+    return response.workflows;
+}
+3. Add listWorkflowRuns()
+/**
+ * List GitHub Actions workflow runs.
+ *
+ * Optionally filters by workflow, branch and status.
+ */
+public async listWorkflowRuns(
+    owner: string,
+    repository: string,
+    workflowId?: number,
+    branch?: string,
+    status?: string,
+    page: number = 1,
+    perPage: number = 30
+): Promise<GitHubWorkflowRunsResponse> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(page) ||
+        page < 1
+    ) {
+        throw new Error(
+            "Workflow runs page must be a positive integer."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(perPage) ||
+        perPage < 1 ||
+        perPage > 100
+    ) {
+        throw new Error(
+            "Workflow runs perPage must be between 1 and 100."
+        );
+    }
+
+
+    const params =
+        new URLSearchParams();
+
+
+    params.set(
+        "page",
+        String(page)
+    );
+
+
+    params.set(
+        "per_page",
+        String(perPage)
+    );
+
+
+    if (workflowId !== undefined) {
+        params.set(
+            "workflow_id",
+            String(workflowId)
+        );
+    }
+
+
+    if (branch?.trim()) {
+        params.set(
+            "branch",
+            branch.trim()
+        );
+    }
+
+
+    if (status?.trim()) {
+        params.set(
+            "status",
+            status.trim()
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/actions/runs?${params.toString()}`;
+
+
+    return this.request<GitHubWorkflowRunsResponse>(
+        endpoint
+    );
+}
+4. Add getWorkflowRun()
+/**
+ * Get details for a specific GitHub Actions workflow run.
+ */
+public async getWorkflowRun(
+    owner: string,
+    repository: string,
+    runId: number
+): Promise<GitHubWorkflowRun> {
+
+
+    if (!owner?.trim()) {
+        throw new Error(
+            "GitHub repository owner is required."
+        );
+    }
+
+
+    if (!repository?.trim()) {
+        throw new Error(
+            "GitHub repository name is required."
+        );
+    }
+
+
+    if (
+        !Number.isInteger(runId) ||
+        runId <= 0
+    ) {
+        throw new Error(
+            "GitHub workflow run ID must be a positive integer."
+        );
+    }
+
+
+    const endpoint =
+        `/repos/${encodeURIComponent(owner.trim())}` +
+        `/${encodeURIComponent(repository.trim())}` +
+        `/actions/runs/${runId}`;
+
+
+    return this.request<GitHubWorkflowRun>(
+        endpoint
+    );
+}
+5. Add tool argument interfaces
+
+Open:
+
+src/mcp/servers/github/github.tools.ts
+
+Add:
+
+export interface GitHubListWorkflowRunsArgs {
+    owner: string;
+    repository: string;
+
+
+    workflowId?: number;
+    branch?: string;
+    status?: string;
+
+
+    page?: number;
+    perPage?: number;
+}
+
+
+export interface GitHubGetWorkflowRunArgs {
+    owner: string;
+    repository: string;
+    runId: number;
+}
+6. Import the new types
+
+Add these to your existing service import:
+
+GitHubWorkflow,
+GitHubWorkflowRun,
+GitHubWorkflowRunsResponse
+
+For example:
+
+import {
+    GitHubService,
+    GitHubRepository,
+    GitHubContent,
+    GitHubBranch,
+    GitHubCodeSearchResponse,
+    GitHubIssue,
+    GitHubPullRequest,
+    GitHubCommit,
+    GitHubCompareResponse,
+    GitHubTreeResponse,
+    GitHubRelease,
+    GitHubTag,
+    GitHubRepositorySearchResponse,
+    GitHubUser,
+    GitHubOrganization,
+    GitHubContributor,
+    GitHubCollaborator,
+    GitHubRepositoryStatistics,
+    GitHubRepositoryLanguages,
+    GitHubWorkflow,
+    GitHubWorkflowRun,
+    GitHubWorkflowRunsResponse
+} from "./github.service";
+7. Add workflow operation
+
+Inside GitHubTools:
+
+public async listWorkflows(
+    args: {
+        owner: string;
+        repository: string;
+    }
+): Promise<GitHubWorkflow[]> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listWorkflows(
+        args.owner,
+        args.repository
+    );
+}
+8. Add workflow runs operation
+public async listWorkflowRuns(
+    args: GitHubListWorkflowRunsArgs
+): Promise<GitHubWorkflowRunsResponse> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.listWorkflowRuns(
+        args.owner,
+        args.repository,
+        args.workflowId,
+        args.branch,
+        args.status,
+        args.page,
+        args.perPage
+    );
+}
+9. Add workflow run operation
+public async getWorkflowRun(
+    args: GitHubGetWorkflowRunArgs
+): Promise<GitHubWorkflowRun> {
+
+
+    this.validateRepositoryArguments(
+        args
+    );
+
+
+    return this.githubService.getWorkflowRun(
+        args.owner,
+        args.repository,
+        args.runId
+    );
+}
+10. Workflow list MCP tool
+
+Add:
+
+private listWorkflowsTool(): MCPTool {
+
+
+    return {
+        name: "github_list_workflows",
+
+
+        description:
+            "List GitHub Actions workflows configured for a repository.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string",
+                    description:
+                        "GitHub username or organization."
+                },
+
+
+                repository: {
+                    type: "string",
+                    description:
+                        "GitHub repository name."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateRepositoryArguments(
+                    args
+                );
+
+
+            return this.listWorkflows(
+                validatedArgs
+            );
+        }
+    };
+}
+11. Workflow runs MCP tool
+
+Add:
+
+private listWorkflowRunsTool(): MCPTool {
+
+
+    return {
+        name: "github_list_workflow_runs",
+
+
+        description:
+            "List GitHub Actions workflow runs, optionally filtered by workflow, branch, status, page, or page size.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string"
+                },
+
+
+                repository: {
+                    type: "string"
+                },
+
+
+                workflowId: {
+                    type: "number",
+                    description:
+                        "Optional GitHub workflow ID."
+                },
+
+
+                branch: {
+                    type: "string",
+                    description:
+                        "Optional branch filter."
+                },
+
+
+                status: {
+                    type: "string",
+                    description:
+                        "Optional workflow status filter such as completed, in_progress, queued, or failure."
+                },
+
+
+                page: {
+                    type: "number",
+                    description:
+                        "Page number. Defaults to 1."
+                },
+
+
+                perPage: {
+                    type: "number",
+                    description:
+                        "Number of runs per page. Maximum 100."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateListWorkflowRunsArguments(
+                    args
+                );
+
+
+            return this.listWorkflowRuns(
+                validatedArgs
+            );
+        }
+    };
+}
+12. Add validation
+private validateListWorkflowRunsArguments(
+            typeof value.workflowId !== "number" ||
+            !Number.isInteger(value.workflowId) ||
+            value.workflowId <= 0
+        ) {
+            throw new Error(
+                "workflowId must be a positive integer."
+            );
+        }
+
+
+        result.workflowId =
+            value.workflowId;
+    }
+
+
+    if (
+        value.branch !== undefined
+    ) {
+
+
+        if (
+            typeof value.branch !== "string" ||
+            !value.branch.trim()
+        ) {
+            throw new Error(
+                "branch must be a non-empty string."
+            );
+        }
+
+
+        result.branch =
+            value.branch;
+    }
+
+
+    if (
+        value.status !== undefined
+    ) {
+
+
+        if (
+            typeof value.status !== "string" ||
+            !value.status.trim()
+        ) {
+            throw new Error(
+                "status must be a non-empty string."
+            );
+        }
+
+
+        result.status =
+            value.status;
+    }
+
+
+    if (
+        value.page !== undefined
+    ) {
+
+
+        if (
+            typeof value.page !== "number" ||
+            !Number.isInteger(value.page) ||
+            value.page < 1
+        ) {
+            throw new Error(
+                "page must be a positive integer."
+            );
+        }
+
+
+        result.page =
+            value.page;
+    }
+
+
+    if (
+        value.perPage !== undefined
+    ) {
+
+
+        if (
+            typeof value.perPage !== "number" ||
+            !Number.isInteger(value.perPage) ||
+            value.perPage < 1 ||
+            value.perPage > 100
+        ) {
+            throw new Error(
+                "perPage must be between 1 and 100."
+            );
+        }
+
+
+        result.perPage =
+            value.perPage;
+    }
+
+
+    return result;
+}
+13. Get workflow run MCP tool
+
+Add:
+
+private getWorkflowRunTool(): MCPTool {
+
+
+    return {
+        name: "github_get_workflow_run",
+
+
+        description:
+            "Get detailed information about a specific GitHub Actions workflow run.",
+
+
+        inputSchema: {
+            type: "object",
+
+
+            properties: {
+                owner: {
+                    type: "string"
+                },
+
+
+                repository: {
+                    type: "string"
+                },
+
+
+                runId: {
+                    type: "number",
+                    description:
+                        "GitHub Actions workflow run ID."
+                }
+            },
+
+
+            required: [
+                "owner",
+                "repository",
+                "runId"
+            ]
+        },
+
+
+        execute: async (
+            args?: Record<string, unknown>
+        ) => {
+
+
+            const validatedArgs =
+                this.validateGetWorkflowRunArguments(
+                    args
+                );
+
+
+            return this.getWorkflowRun(
+                validatedArgs
+            );
+        }
+    };
+}
+
+Add validation:
+
+private validateGetWorkflowRunArguments(
+    args: unknown
+): GitHubGetWorkflowRunArgs {
+
+
+    const repositoryArgs =
+        this.validateRepositoryArguments(
+            args
+        );
+
+
+    const value =
+        args as Record<string, unknown>;
+
+
+    if (
+        typeof value.runId !== "number" ||
+        !Number.isInteger(value.runId) ||
+        value.runId <= 0
+    ) {
+        throw new Error(
+            "runId must be a positive integer."
+        );
+    }
+
+
+    return {
+        ...repositoryArgs,
+        runId: value.runId
+    };
+}
+14. Register the three tools
+
+Update getTools().
+
+Your current list has 19 tools.
+
+Make it:
+
+public getTools(): MCPTool[] {
+
+
+    return [
+        this.getRepositoryTool(),
+        this.getContentsTool(),
+        this.listBranchesTool(),
+        this.readFileTool(),
+        this.searchCodeTool(),
+        this.listIssuesTool(),
+        this.listPullRequestsTool(),
+        this.listCommitsTool(),
+        this.compareCommitsTool(),
+        this.getTreeTool(),
+        this.listReleasesTool(),
+        this.listTagsTool(),
+        this.searchRepositoriesTool(),
+        this.getUserTool(),
+        this.getOrganizationTool(),
+        this.listContributorsTool(),
+        this.listCollaboratorsTool(),
+        this.getRepositoryStatisticsTool(),
+        this.getRepositoryLanguagesTool(),
+
+
+        this.listWorkflowsTool(),
+        this.listWorkflowRunsTool(),
+        this.getWorkflowRunTool()
+    ];
+}
+
+You now have:
+
+22 GitHub MCP tools.
+
+15. Example workflow
+
+The agent can now perform:
+
+User:
+"Check whether my CI pipeline is healthy."
+
+Agent:
+
+github_list_workflows
+        ↓
+Find workflows
+        ↓
+github_list_workflow_runs
+        ↓
+Find latest run
+        ↓
+github_get_workflow_run
+        ↓
+Inspect status/conclusion
+        ↓
+AI response
+
+For example:
+
+CI workflow
+Status: completed
+Conclusion: failure
+Branch: main
+Commit: abc123
+16. Why this milestone is important
+
+This is a significant step for your project because your assistant now starts connecting source code intelligence with CI/CD intelligence.
+
+Later, you can build:
+
+                 AI Developer Agent
+                         │
+        ┌────────────────┼────────────────┐
+        ▼                ▼                ▼
+      GitHub           Docker          Kubernetes
+        │                │                │
+      Code             Image           Pods
+      Commit           Build           Deployment
+      PR               Container       Service
+      Actions          Logs            Events
+        │                │                │
+        └────────────────┼────────────────┘
+                         ▼
+                  Root Cause Analysis
+
+For example:
+
+"My deployment failed after the latest commit."
+
+The agent could eventually inspect:
+
+1. github_get_workflow_run
+2. github_list_commits
+3. github_compare_commits
+4. github_read_file
+5. Docker tools
+6. Kubernetes tools
+
+and determine the likely cause.
+
+17. One important correction
+
+For this milestone, don't implement workflow logs yet.
+
+GitHub Actions has additional endpoints around:
+
+workflow run
+jobs
+job logs
+artifacts
+
+Those are useful, but they deserve their own milestone because log retrieval introduces substantially more data and processing.
+
+We'll keep:
+
+5.7.20
+
+focused on:
+
+Workflows
+Workflow Runs
+Workflow Run Details
+
+Then later we can add:
+
+5.7.21 — GitHub Actions Jobs / Logs / Artifacts
+
+That will be much more useful for diagnosing CI failures.
+
+18. Checkpoint
+
+Now run:
+
+npx tsc --noEmit
+
+Expected:
+
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend>
+
+If there is no output:
+
+✅ 5.7.20 completed
+
+Your GitHub MCP layer will have:
+
+22 tools
+
+with the new:
+
+github_list_workflows
+github_list_workflow_runs
+github_get_workflow_run
+
+Next milestone: 5.7.21 — GitHub Actions Jobs / Logs / Artifacts Tool.
+
+npx tsc --noEmit
+PS C:\Users\techn\TechnophileFirdous\AI-powered-Full-Stack-Developer-Assistant\backend> 
+
+✅ 5.7.20 — GitHub Actions / Workflows Tool completed successfully.
+
+Checkpoint is clean:
+
+npx tsc --noEmit
+
+0 TypeScript errors.
+
+Current GitHub MCP progress
+
+22 tools completed ✅
+
+5.7.18  Repository Statistics / Activity   ✅
+5.7.19  Repository Languages              ✅
+5.7.20  GitHub Actions / Workflows        ✅
+
+New tools added:
+
+github_list_workflows
+github_list_workflow_runs
+github_get_workflow_run
+
+Your architecture is now moving beyond repository inspection into CI/CD intelligence:
+
+GitHub Repository
+       │
+       ├── Source Code
+       ├── Commits
+       ├── PRs
+       ├── Issues
+       └── GitHub Actions
+              │
+              ├── Workflows
+              ├── Runs
+              └── Run Details
+                     │
+                     ▼
+                 AI Agent
+Next: 5.7.21 — GitHub Actions Jobs / Logs / Artifacts Tool
+
+This is an especially valuable one because it will let the assistant move from:
+
+"The workflow failed."
+
+to eventually:
+
+"The workflow failed in the Docker build job, and the relevant job/log information points to the Dockerfile/build step."
+
+We'll add:
+
+github_list_workflow_jobs
+github_get_workflow_job
+github_get_workflow_job_logs
+github_list_workflow_artifacts
+
+Then your GitHub MCP layer will have much stronger CI/CD troubleshooting capability.

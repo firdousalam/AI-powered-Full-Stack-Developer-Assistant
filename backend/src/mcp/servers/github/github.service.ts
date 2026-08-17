@@ -4,10 +4,28 @@ export interface GitHubRepository {
     id: number;
     name: string;
     full_name: string;
-    private: boolean;
     html_url: string;
-    description: string | null;
+    private: boolean;
+
+    stargazers_count: number;
+    forks_count: number;
+    watchers_count: number;
+    open_issues_count: number;
+
+    size: number;
+
+    language: string | null;
+
+    visibility?: string | null;
+
+    archived: boolean;
+    disabled: boolean;
+
     default_branch: string;
+
+    created_at: string;
+    updated_at: string;
+    pushed_at: string | null;
 }
 
 export interface GitHubContent {
@@ -283,6 +301,204 @@ export interface GitHubOrganization {
     updated_at: string;
 }
 
+export interface GitHubContributor {
+    login: string;
+    id: number;
+    avatar_url: string;
+    html_url: string;
+
+    contributions: number;
+
+    type: string;
+}
+
+export interface GitHubCollaborator {
+    login: string;
+    id: number;
+
+    avatar_url: string;
+    html_url: string;
+
+    type: string;
+
+    permissions?: {
+        pull?: boolean;
+        triage?: boolean;
+        push?: boolean;
+        maintain?: boolean;
+        admin?: boolean;
+    };
+}
+
+export interface GitHubRepositoryStatistics {
+    fullName: string;
+
+    stars: number;
+    forks: number;
+    watchers: number;
+
+    openIssues: number;
+
+    sizeKb: number;
+
+    language: string | null;
+
+    defaultBranch: string;
+
+    visibility: string | null;
+
+    archived: boolean;
+    disabled: boolean;
+
+    createdAt: string;
+    updatedAt: string;
+    pushedAt: string | null;
+
+    openIssuesAndPullRequests: number;
+
+    htmlUrl: string;
+}
+
+export interface GitHubRepositoryLanguage {
+    language: string;
+    bytes: number;
+    percentage: number;
+}
+
+export interface GitHubRepositoryLanguages {
+    totalBytes: number;
+    languages: GitHubRepositoryLanguage[];
+}
+
+export interface GitHubWorkflow {
+    id: number;
+    name: string;
+    path: string;
+    state: string;
+    html_url: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface GitHubWorkflowRun {
+    id: number;
+    name: string;
+    workflow_id: number;
+
+    head_branch: string | null;
+    head_sha: string;
+
+    status: string;
+    conclusion: string | null;
+
+    event: string;
+
+    html_url: string;
+
+    created_at: string;
+    updated_at: string;
+
+    run_number: number;
+    run_attempt?: number;
+}
+
+export interface GitHubWorkflowRunsResponse {
+    total_count: number;
+    workflow_runs: GitHubWorkflowRun[];
+}
+
+export interface GitHubWorkflowJob {
+
+    id: number;
+
+    run_id: number;
+
+    workflow_name?: string | null;
+
+    head_branch: string | null;
+
+    head_sha: string;
+
+    run_attempt?: number;
+
+    node_id?: string;
+
+    url: string;
+
+    html_url: string;
+
+    status: string;
+
+    conclusion: string | null;
+
+    started_at: string | null;
+
+    completed_at: string | null;
+
+    name: string;
+
+    steps?: GitHubWorkflowStep[];
+}
+
+export interface GitHubWorkflowStep {
+
+    name: string;
+
+    status: string;
+
+    conclusion: string | null;
+
+    number: number;
+
+    started_at: string | null;
+
+    completed_at: string | null;
+}
+
+export interface GitHubWorkflowJobsResponse {
+
+    total_count: number;
+
+    jobs: GitHubWorkflowJob[];
+}
+
+export interface GitHubArtifact {
+
+    id: number;
+
+    node_id?: string;
+
+    name: string;
+
+    size_in_bytes: number;
+
+    url: string;
+
+    archive_download_url: string;
+
+    expired: boolean;
+
+    created_at: string;
+
+    expires_at: string | null;
+
+    updated_at: string;
+
+    workflow_run?: {
+        id: number;
+        repository_id?: number;
+        head_repository_id?: number;
+        head_branch?: string;
+        head_sha?: string;
+    } | null;
+}
+
+export interface GitHubArtifactsResponse {
+
+    total_count: number;
+
+    artifacts: GitHubArtifact[];
+}
 
 export class GitHubService {
     private readonly config: GitHubConfig;
@@ -856,6 +1072,705 @@ export class GitHubService {
 
         return this.request<GitHubOrganization>(
             `/orgs/${encodeURIComponent(organization.trim())}`
+        );
+    }
+
+    /**
+ * List contributors to a GitHub repository.
+ *
+ * Contributors are returned in descending order
+ * of contribution count by GitHub.
+ */
+    public async listContributors(
+        owner: string,
+        repository: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubContributor[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "GitHub contributors page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "GitHub contributors perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}` +
+            `/contributors?${params.toString()}`;
+
+        return this.request<GitHubContributor[]>(
+            endpoint
+        );
+    }
+    /**
+     * List collaborators for a GitHub repository.
+     *
+     * This endpoint may require authentication and
+     * appropriate repository permissions.
+     */
+    public async listCollaborators(
+        owner: string,
+        repository: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubCollaborator[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "GitHub collaborators page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "GitHub collaborators perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}` +
+            `/collaborators?${params.toString()}`;
+
+        return this.request<GitHubCollaborator[]>(
+            endpoint
+        );
+    }
+
+    /**
+ * Get developer-oriented repository statistics.
+ */
+    public async getRepositoryStatistics(
+        owner: string,
+        repository: string
+    ): Promise<GitHubRepositoryStatistics> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const result =
+            await this.getRepository(
+                owner.trim(),
+                repository.trim()
+            );
+
+        return {
+            fullName:
+                result.full_name,
+
+            stars:
+                result.stargazers_count,
+
+            forks:
+                result.forks_count,
+
+            watchers:
+                result.watchers_count,
+
+            openIssues:
+                result.open_issues_count,
+
+            sizeKb:
+                result.size,
+
+            language:
+                result.language ?? null,
+
+            defaultBranch:
+                result.default_branch,
+
+            visibility:
+                result.visibility ?? null,
+
+            archived:
+                result.archived,
+
+            disabled:
+                result.disabled,
+
+            createdAt:
+                result.created_at,
+
+            updatedAt:
+                result.updated_at,
+
+            pushedAt:
+                result.pushed_at ?? null,
+
+            openIssuesAndPullRequests:
+                result.open_issues_count,
+
+            htmlUrl:
+                result.html_url
+        };
+    }
+
+    /**
+ * Get programming languages used by a GitHub repository.
+ *
+ * GitHub returns language usage as byte counts.
+ * This method converts those counts into
+ * AI-friendly percentages.
+ */
+    public async getRepositoryLanguages(
+        owner: string,
+        repository: string
+    ): Promise<GitHubRepositoryLanguages> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/languages`;
+
+        const response =
+            await this.request<Record<string, number>>(
+                endpoint
+            );
+
+        const totalBytes =
+            Object.values(response)
+                .reduce(
+                    (total, bytes) =>
+                        total + bytes,
+                    0
+                );
+
+        if (totalBytes === 0) {
+
+            return {
+                totalBytes: 0,
+                languages: []
+            };
+        }
+
+        const languages =
+            Object.entries(response)
+                .map(
+                    ([language, bytes]) => ({
+                        language,
+                        bytes,
+                        percentage:
+                            Number(
+                                (
+                                    bytes /
+                                    totalBytes *
+                                    100
+                                ).toFixed(2)
+                            )
+                    })
+                )
+                .sort(
+                    (a, b) =>
+                        b.bytes - a.bytes
+                );
+
+        return {
+            totalBytes,
+            languages
+        };
+    }
+
+    /**
+ * List GitHub Actions workflows for a repository.
+ */
+    public async listWorkflows(
+        owner: string,
+        repository: string
+    ): Promise<GitHubWorkflow[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/actions/workflows`;
+
+        const response =
+            await this.request<{
+                total_count: number;
+                workflows: GitHubWorkflow[];
+            }>(endpoint);
+
+        return response.workflows;
+    }
+
+    /**
+ * List GitHub Actions workflow runs.
+ *
+ * Optionally filters by workflow, branch and status.
+ */
+    public async listWorkflowRuns(
+        owner: string,
+        repository: string,
+        workflowId?: number,
+        branch?: string,
+        status?: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubWorkflowRunsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Workflow runs page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Workflow runs perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        if (workflowId !== undefined) {
+            params.set(
+                "workflow_id",
+                String(workflowId)
+            );
+        }
+
+        if (branch?.trim()) {
+            params.set(
+                "branch",
+                branch.trim()
+            );
+        }
+
+        if (status?.trim()) {
+            params.set(
+                "status",
+                status.trim()
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/actions/runs?${params.toString()}`;
+
+        return this.request<GitHubWorkflowRunsResponse>(
+            endpoint
+        );
+    }
+
+    /**
+ * Get details for a specific GitHub Actions workflow run.
+ */
+    public async getWorkflowRun(
+        owner: string,
+        repository: string,
+        runId: number
+    ): Promise<GitHubWorkflowRun> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(runId) ||
+            runId <= 0
+        ) {
+            throw new Error(
+                "GitHub workflow run ID must be a positive integer."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/actions/runs/${runId}`;
+
+        return this.request<GitHubWorkflowRun>(
+            endpoint
+        );
+    }
+
+    /**
+ * List jobs belonging to a GitHub Actions workflow run.
+ */
+    public async listWorkflowJobs(
+        owner: string,
+        repository: string,
+        runId: number,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubWorkflowJobsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(runId) ||
+            runId <= 0
+        ) {
+            throw new Error(
+                "Workflow run ID must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Workflow jobs page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Workflow jobs perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/actions/runs/${runId}/jobs?${params.toString()}`;
+
+        return this.request<GitHubWorkflowJobsResponse>(
+            endpoint
+        );
+    }
+    /**
+ * Get details about a specific GitHub Actions job.
+ */
+    public async getWorkflowJob(
+        owner: string,
+        repository: string,
+        jobId: number
+    ): Promise<GitHubWorkflowJob> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(jobId) ||
+            jobId <= 0
+        ) {
+            throw new Error(
+                "Workflow job ID must be a positive integer."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/actions/jobs/${jobId}`;
+
+        return this.request<GitHubWorkflowJob>(
+            endpoint
+        );
+    }
+    /**
+ * Retrieve logs for a GitHub Actions job.
+ *
+ * GitHub returns the job log as text.
+ */
+    public async getWorkflowJobLogs(
+        owner: string,
+        repository: string,
+        jobId: number
+    ): Promise<string> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(jobId) ||
+            jobId <= 0
+        ) {
+            throw new Error(
+                "Workflow job ID must be a positive integer."
+            );
+        }
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/actions/jobs/${jobId}/logs`;
+
+        return this.request<string>(
+            endpoint
+        );
+    }
+    private async requestText(
+        endpoint: string
+    ): Promise<string> {
+
+        const response =
+            await fetch(
+                `${this.config.apiUrl}${endpoint}`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        Accept:
+                            "application/vnd.github+json",
+
+                        ...(this.config.token
+                            ? {
+                                Authorization:
+                                    `Bearer ${this.config.token}`
+                            }
+                            : {})
+                    }
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                `GitHub API request failed: ${response.status} ${response.statusText}`
+            );
+        }
+
+        return response.text();
+    }
+    /**
+ * List artifacts generated by GitHub Actions
+ * for a repository.
+ */
+    public async listWorkflowArtifacts(
+        owner: string,
+        repository: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubArtifactsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Artifacts page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Artifacts perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "page",
+            String(page)
+        );
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        const endpoint =
+            `/repos/${encodeURIComponent(owner.trim())}` +
+            `/${encodeURIComponent(repository.trim())}` +
+            `/actions/artifacts?${params.toString()}`;
+
+        return this.request<GitHubArtifactsResponse>(
+            endpoint
         );
     }
 

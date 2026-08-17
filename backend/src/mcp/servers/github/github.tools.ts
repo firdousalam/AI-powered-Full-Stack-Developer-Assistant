@@ -97,6 +97,75 @@ export interface GitHubGetUserArgs {
 export interface GitHubGetOrganizationArgs {
     organization: string;
 }
+
+export interface GitHubListContributorsArgs {
+    owner: string;
+    repository: string;
+    page?: number;
+    perPage?: number;
+}
+
+export interface GitHubListCollaboratorsArgs {
+    owner: string;
+    repository: string;
+    page?: number;
+    perPage?: number;
+}
+export interface GitHubRepositoryStatisticsArgs {
+    owner: string;
+    repository: string;
+}
+
+export interface GitHubRepositoryLanguagesArgs {
+    owner: string;
+    repository: string;
+}
+
+export interface GitHubListWorkflowRunsArgs {
+    owner: string;
+    repository: string;
+
+    workflowId?: number;
+    branch?: string;
+    status?: string;
+
+    page?: number;
+    perPage?: number;
+}
+
+export interface GitHubGetWorkflowRunArgs {
+    owner: string;
+    repository: string;
+    runId: number;
+}
+
+export interface GitHubListWorkflowJobsArgs {
+    owner: string;
+    repository: string;
+    runId: number;
+    page?: number;
+    perPage?: number;
+}
+
+export interface GitHubGetWorkflowJobArgs {
+    owner: string;
+    repository: string;
+    jobId: number;
+}
+
+export interface GitHubGetWorkflowJobLogsArgs {
+    owner: string;
+    repository: string;
+    jobId: number;
+}
+
+export interface GitHubListWorkflowArtifactsArgs {
+    owner: string;
+    repository: string;
+    page?: number;
+    perPage?: number;
+}
+
 import {
     GitHubService,
     GitHubRepository,
@@ -112,7 +181,18 @@ import {
     GitHubTag,
     GitHubRepositorySearchResponse,
     GitHubUser,
-    GitHubOrganization
+    GitHubOrganization,
+    GitHubContributor,
+    GitHubCollaborator,
+    GitHubRepositoryStatistics,
+    GitHubRepositoryLanguages,
+    GitHubWorkflow,
+    GitHubWorkflowRun,
+    GitHubWorkflowRunsResponse,
+    GitHubWorkflowJob,
+    GitHubWorkflowJobsResponse,
+    GitHubArtifact,
+    GitHubArtifactsResponse
 } from "./github.service";
 
 /**
@@ -149,7 +229,20 @@ export class GitHubTools {
             this.listTagsTool(),
             this.searchRepositoriesTool(),
             this.getUserTool(),
-            this.getOrganizationTool()
+            this.getOrganizationTool(),
+            this.listContributorsTool(),
+            this.listCollaboratorsTool(),
+            this.getRepositoryStatisticsTool(),
+            this.getRepositoryLanguagesTool(),
+
+            this.listWorkflowsTool(),
+            this.listWorkflowRunsTool(),
+            this.getWorkflowRunTool(),
+
+            this.listWorkflowJobsTool(),
+            this.getWorkflowJobTool(),
+            this.getWorkflowJobLogsTool(),
+            this.listWorkflowArtifactsTool()
         ];
     }
 
@@ -1805,5 +1898,1111 @@ export class GitHubTools {
                 value.organization.trim()
         };
     }
+
+    public async listContributors(
+        args: GitHubListContributorsArgs
+    ): Promise<GitHubContributor[]> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listContributors(
+            args.owner,
+            args.repository,
+            args.page,
+            args.perPage
+        );
+    }
+
+    public async listCollaborators(
+        args: GitHubListCollaboratorsArgs
+    ): Promise<GitHubCollaborator[]> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listCollaborators(
+            args.owner,
+            args.repository,
+            args.page,
+            args.perPage
+        );
+    }
+    private listContributorsTool(): MCPTool {
+
+        return {
+            name: "github_list_contributors",
+
+            description:
+                "List contributors to a GitHub repository, including their contribution counts.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization that owns the repository."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "Name of the GitHub repository."
+                    },
+
+                    page: {
+                        type: "number",
+                        description:
+                            "Page number. Defaults to 1."
+                    },
+
+                    perPage: {
+                        type: "number",
+                        description:
+                            "Number of contributors per page. Defaults to 30 and has a maximum of 100."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateListContributorsArguments(
+                        args
+                    );
+
+                return this.listContributors(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private validateListContributorsArguments(
+        args: unknown
+    ): GitHubListContributorsArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        const result:
+            GitHubListContributorsArgs = {
+            ...repositoryArgs
+        };
+
+        if (
+            value.page !== undefined
+        ) {
+
+            if (
+                typeof value.page !== "number" ||
+                !Number.isInteger(value.page) ||
+                value.page < 1
+            ) {
+                throw new Error(
+                    "GitHub contributors page must be a positive integer."
+                );
+            }
+
+            result.page =
+                value.page;
+        }
+
+        if (
+            value.perPage !== undefined
+        ) {
+
+            if (
+                typeof value.perPage !== "number" ||
+                !Number.isInteger(value.perPage) ||
+                value.perPage < 1 ||
+                value.perPage > 100
+            ) {
+                throw new Error(
+                    "GitHub contributors perPage must be between 1 and 100."
+                );
+            }
+
+            result.perPage =
+                value.perPage;
+        }
+
+        return result;
+    }
+
+    private listCollaboratorsTool(): MCPTool {
+
+        return {
+            name: "github_list_collaborators",
+
+            description:
+                "List collaborators with access to a GitHub repository. This operation may require authentication and appropriate repository permissions.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization that owns the repository."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "Name of the GitHub repository."
+                    },
+
+                    page: {
+                        type: "number",
+                        description:
+                            "Page number. Defaults to 1."
+                    },
+
+                    perPage: {
+                        type: "number",
+                        description:
+                            "Number of collaborators per page. Defaults to 30 and has a maximum of 100."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateListCollaboratorsArguments(
+                        args
+                    );
+
+                return this.listCollaborators(
+                    validatedArgs
+                );
+            }
+        };
+    }
+
+    private validateListCollaboratorsArguments(
+        args: unknown
+    ): GitHubListCollaboratorsArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        const result:
+            GitHubListCollaboratorsArgs = {
+            ...repositoryArgs
+        };
+
+        if (
+            value.page !== undefined
+        ) {
+
+            if (
+                typeof value.page !== "number" ||
+                !Number.isInteger(value.page) ||
+                value.page < 1
+            ) {
+                throw new Error(
+                    "GitHub collaborators page must be a positive integer."
+                );
+            }
+
+            result.page =
+                value.page;
+        }
+
+        if (
+            value.perPage !== undefined
+        ) {
+
+            if (
+                typeof value.perPage !== "number" ||
+                !Number.isInteger(value.perPage) ||
+                value.perPage < 1 ||
+                value.perPage > 100
+            ) {
+                throw new Error(
+                    "GitHub collaborators perPage must be between 1 and 100."
+                );
+            }
+
+            result.perPage =
+                value.perPage;
+        }
+
+        return result;
+    }
+
+    public async getRepositoryStatistics(
+        args: GitHubRepositoryStatisticsArgs
+    ): Promise<GitHubRepositoryStatistics> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getRepositoryStatistics(
+            args.owner,
+            args.repository
+        );
+    }
+
+    private getRepositoryStatisticsTool(): MCPTool {
+
+        return {
+            name: "github_get_repository_statistics",
+
+            description:
+                "Get developer-oriented statistics and activity metadata for a GitHub repository, including stars, forks, watchers, issues, language, size, default branch, timestamps, and repository status.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization that owns the repository."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "Name of the GitHub repository."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                return this.getRepositoryStatistics(
+                    validatedArgs
+                );
+            }
+        };
+    }
+
+    public async getRepositoryLanguages(
+        args: GitHubRepositoryLanguagesArgs
+    ): Promise<GitHubRepositoryLanguages> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getRepositoryLanguages(
+            args.owner,
+            args.repository
+        );
+    }
+    private getRepositoryLanguagesTool(): MCPTool {
+
+        return {
+            name: "github_get_repository_languages",
+
+            description:
+                "Get the programming languages used by a GitHub repository, including byte counts and percentage distribution.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization that owns the repository."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "Name of the GitHub repository."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                return this.getRepositoryLanguages(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    public async listWorkflows(
+        args: {
+            owner: string;
+            repository: string;
+        }
+    ): Promise<GitHubWorkflow[]> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listWorkflows(
+            args.owner,
+            args.repository
+        );
+    }
+    public async listWorkflowRuns(
+        args: GitHubListWorkflowRunsArgs
+    ): Promise<GitHubWorkflowRunsResponse> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listWorkflowRuns(
+            args.owner,
+            args.repository,
+            args.workflowId,
+            args.branch,
+            args.status,
+            args.page,
+            args.perPage
+        );
+    }
+    public async getWorkflowRun(
+        args: GitHubGetWorkflowRunArgs
+    ): Promise<GitHubWorkflowRun> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getWorkflowRun(
+            args.owner,
+            args.repository,
+            args.runId
+        );
+    }
+    private listWorkflowsTool(): MCPTool {
+
+        return {
+            name: "github_list_workflows",
+
+            description:
+                "List GitHub Actions workflows configured for a repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub username or organization."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                return this.listWorkflows(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private listWorkflowRunsTool(): MCPTool {
+
+        return {
+            name: "github_list_workflow_runs",
+
+            description:
+                "List GitHub Actions workflow runs, optionally filtered by workflow, branch, status, page, or page size.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    workflowId: {
+                        type: "number",
+                        description:
+                            "Optional GitHub workflow ID."
+                    },
+
+                    branch: {
+                        type: "string",
+                        description:
+                            "Optional branch filter."
+                    },
+
+                    status: {
+                        type: "string",
+                        description:
+                            "Optional workflow status filter such as completed, in_progress, queued, or failure."
+                    },
+
+                    page: {
+                        type: "number",
+                        description:
+                            "Page number. Defaults to 1."
+                    },
+
+                    perPage: {
+                        type: "number",
+                        description:
+                            "Number of runs per page. Maximum 100."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateListWorkflowRunsArguments(
+                        args
+                    );
+
+                return this.listWorkflowRuns(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private validateListWorkflowRunsArguments(
+        args: unknown
+    ): GitHubListWorkflowRunsArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        const result:
+            GitHubListWorkflowRunsArgs = {
+            ...repositoryArgs
+        };
+
+        if (
+            value.workflowId !== undefined
+        ) {
+
+            if (
+                typeof value.workflowId !== "number" ||
+                !Number.isInteger(value.workflowId) ||
+                value.workflowId <= 0
+            ) {
+                throw new Error(
+                    "workflowId must be a positive integer."
+                );
+            }
+
+            result.workflowId =
+                value.workflowId;
+        }
+
+        if (
+            value.branch !== undefined
+        ) {
+
+            if (
+                typeof value.branch !== "string" ||
+                !value.branch.trim()
+            ) {
+                throw new Error(
+                    "branch must be a non-empty string."
+                );
+            }
+
+            result.branch =
+                value.branch;
+        }
+
+        if (
+            value.status !== undefined
+        ) {
+
+            if (
+                typeof value.status !== "string" ||
+                !value.status.trim()
+            ) {
+                throw new Error(
+                    "status must be a non-empty string."
+                );
+            }
+
+            result.status =
+                value.status;
+        }
+
+        if (
+            value.page !== undefined
+        ) {
+
+            if (
+                typeof value.page !== "number" ||
+                !Number.isInteger(value.page) ||
+                value.page < 1
+            ) {
+                throw new Error(
+                    "page must be a positive integer."
+                );
+            }
+
+            result.page =
+                value.page;
+        }
+
+        if (
+            value.perPage !== undefined
+        ) {
+
+            if (
+                typeof value.perPage !== "number" ||
+                !Number.isInteger(value.perPage) ||
+                value.perPage < 1 ||
+                value.perPage > 100
+            ) {
+                throw new Error(
+                    "perPage must be between 1 and 100."
+                );
+            }
+
+            result.perPage =
+                value.perPage;
+        }
+
+        return result;
+    }
+    private getWorkflowRunTool(): MCPTool {
+
+        return {
+            name: "github_get_workflow_run",
+
+            description:
+                "Get detailed information about a specific GitHub Actions workflow run.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    runId: {
+                        type: "number",
+                        description:
+                            "GitHub Actions workflow run ID."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "runId"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateGetWorkflowRunArguments(
+                        args
+                    );
+
+                return this.getWorkflowRun(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private validateGetWorkflowRunArguments(
+        args: unknown
+    ): GitHubGetWorkflowRunArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        if (
+            typeof value.runId !== "number" ||
+            !Number.isInteger(value.runId) ||
+            value.runId <= 0
+        ) {
+            throw new Error(
+                "runId must be a positive integer."
+            );
+        }
+
+        return {
+            ...repositoryArgs,
+            runId: value.runId
+        };
+    }
+
+    public async listWorkflowJobs(
+        args: GitHubListWorkflowJobsArgs
+    ): Promise<GitHubWorkflowJobsResponse> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listWorkflowJobs(
+            args.owner,
+            args.repository,
+            args.runId,
+            args.page,
+            args.perPage
+        );
+    }
+    public async getWorkflowJob(
+        args: GitHubGetWorkflowJobArgs
+    ): Promise<GitHubWorkflowJob> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getWorkflowJob(
+            args.owner,
+            args.repository,
+            args.jobId
+        );
+    }
+    public async getWorkflowJobLogs(
+        args: GitHubGetWorkflowJobLogsArgs
+    ): Promise<string> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.getWorkflowJobLogs(
+            args.owner,
+            args.repository,
+            args.jobId
+        );
+    }
+    public async listWorkflowArtifacts(
+        args: GitHubListWorkflowArtifactsArgs
+    ): Promise<GitHubArtifactsResponse> {
+
+        this.validateRepositoryArguments(
+            args
+        );
+
+        return this.githubService.listWorkflowArtifacts(
+            args.owner,
+            args.repository,
+            args.page,
+            args.perPage
+        );
+    }
+    private validatePagination(
+        value: Record<string, unknown>
+    ): {
+        page?: number;
+        perPage?: number;
+    } {
+
+        const result: {
+            page?: number;
+            perPage?: number;
+        } = {};
+
+        if (value.page !== undefined) {
+
+            if (
+                typeof value.page !== "number" ||
+                !Number.isInteger(value.page) ||
+                value.page < 1
+            ) {
+                throw new Error(
+                    "page must be a positive integer."
+                );
+            }
+
+            result.page =
+                value.page;
+        }
+
+        if (value.perPage !== undefined) {
+
+            if (
+                typeof value.perPage !== "number" ||
+                !Number.isInteger(value.perPage) ||
+                value.perPage < 1 ||
+                value.perPage > 100
+            ) {
+                throw new Error(
+                    "perPage must be between 1 and 100."
+                );
+            }
+
+            result.perPage =
+                value.perPage;
+        }
+
+        return result;
+    }
+    private validateWorkflowJobArguments(
+        args: unknown
+    ): GitHubListWorkflowJobsArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        if (
+            typeof value.runId !== "number" ||
+            !Number.isInteger(value.runId) ||
+            value.runId <= 0
+        ) {
+            throw new Error(
+                "runId must be a positive integer."
+            );
+        }
+
+        return {
+            ...repositoryArgs,
+            runId: value.runId,
+            ...this.validatePagination(value)
+        };
+    }
+    private validateWorkflowJobIdArguments(
+        args: unknown
+    ): GitHubGetWorkflowJobArgs {
+
+        const repositoryArgs =
+            this.validateRepositoryArguments(
+                args
+            );
+
+        const value =
+            args as Record<string, unknown>;
+
+        if (
+            typeof value.jobId !== "number" ||
+            !Number.isInteger(value.jobId) ||
+            value.jobId <= 0
+        ) {
+            throw new Error(
+                "jobId must be a positive integer."
+            );
+        }
+
+        return {
+            ...repositoryArgs,
+            jobId: value.jobId
+        };
+    }
+    private listWorkflowJobsTool(): MCPTool {
+
+        return {
+            name: "github_list_workflow_jobs",
+
+            description:
+                "List jobs belonging to a GitHub Actions workflow run, including job status, conclusion, timing, and steps.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    runId: {
+                        type: "number",
+                        description:
+                            "GitHub Actions workflow run ID."
+                    },
+
+                    page: {
+                        type: "number"
+                    },
+
+                    perPage: {
+                        type: "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "runId"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateWorkflowJobArguments(
+                        args
+                    );
+
+                return this.listWorkflowJobs(
+                    validatedArgs
+                );
+            }
+        };
+    }
+
+    private getWorkflowJobTool(): MCPTool {
+
+        return {
+            name: "github_get_workflow_job",
+
+            description:
+                "Get detailed information about a GitHub Actions job and its execution steps.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    jobId: {
+                        type: "number",
+                        description:
+                            "GitHub Actions job ID."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "jobId"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateWorkflowJobIdArguments(
+                        args
+                    );
+
+                return this.getWorkflowJob(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private getWorkflowJobLogsTool(): MCPTool {
+
+        return {
+            name: "github_get_workflow_job_logs",
+
+            description:
+                "Retrieve the logs produced by a GitHub Actions job for CI/CD failure analysis.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    jobId: {
+                        type: "number",
+                        description:
+                            "GitHub Actions job ID."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "jobId"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const validatedArgs =
+                    this.validateWorkflowJobIdArguments(
+                        args
+                    );
+
+                return this.getWorkflowJobLogs(
+                    validatedArgs
+                );
+            }
+        };
+    }
+    private listWorkflowArtifactsTool(): MCPTool {
+
+        return {
+            name: "github_list_workflow_artifacts",
+
+            description:
+                "List artifacts generated by GitHub Actions workflows for a repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string"
+                    },
+
+                    repository: {
+                        type: "string"
+                    },
+
+                    page: {
+                        type: "number"
+                    },
+
+                    perPage: {
+                        type: "number"
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const repositoryArgs =
+                    this.validateRepositoryArguments(
+                        args
+                    );
+
+                const value =
+                    args as Record<string, unknown>;
+
+                return this.listWorkflowArtifacts({
+                    ...repositoryArgs,
+                    ...this.validatePagination(value)
+                });
+            }
+        };
+    }
+
 
 }
