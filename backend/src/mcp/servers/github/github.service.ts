@@ -1382,6 +1382,80 @@ export interface GitHubIssueSummary {
     withAssignees: number;
     withLabels: number;
 }
+
+export interface GitHubPullRequestReviewer {
+    login: string;
+    id: number;
+    avatar_url?: string;
+    html_url?: string;
+    type?: string;
+}
+
+export interface GitHubPullRequestReview {
+    id: number;
+    user: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    } | null;
+    body: string;
+    state: string;
+    submitted_at?: string;
+    html_url?: string;
+    commit_id?: string;
+}
+
+export interface GitHubPullRequestReviewComment {
+    id: number;
+    body: string;
+    user: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    } | null;
+    path?: string;
+    line?: number;
+    side?: string;
+    commit_id?: string;
+    created_at?: string;
+    updated_at?: string;
+    html_url?: string;
+}
+
+export interface GitHubPullRequestCheck {
+    id: number;
+    name: string;
+    status: string;
+    conclusion: string | null;
+    started_at?: string;
+    completed_at?: string;
+    html_url?: string;
+}
+
+export interface GitHubPullRequestSummary {
+    number: number;
+    title: string;
+    state: string;
+    merged: boolean;
+    draft: boolean;
+    mergeable: boolean | null;
+
+    reviewers: number;
+    reviews: number;
+    reviewComments: number;
+
+    checks: {
+        total: number;
+        passed: number;
+        failed: number;
+        pending: number;
+    };
+
+    requestedReviewers: GitHubPullRequestReviewer[];
+}
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -7032,7 +7106,450 @@ export class GitHubService {
             withLabels
         };
     }
+    public async getPullRequestReviewers(
+        owner: string,
+        repository: string,
+        pullNumber: number
+    ): Promise<GitHubPullRequestReviewer[]> {
 
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(pullNumber) ||
+            pullNumber < 1
+        ) {
+            throw new Error(
+                "Pull request number must be a positive integer."
+            );
+        }
+
+        const result = await this.request<{
+            users?: Array<{
+                login: string;
+                id: number;
+                avatar_url?: string;
+                html_url?: string;
+                type?: string;
+            }>;
+        }>(
+            `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/pulls/${pullNumber}/requested_reviewers`
+        );
+
+        return (result.users ?? []).map(
+            user => ({
+                login: user.login,
+                id: user.id,
+                avatar_url: user.avatar_url,
+                html_url: user.html_url,
+                type: user.type
+            })
+        );
+    }
+    public async getPullRequestReviews(
+        owner: string,
+        repository: string,
+        pullNumber: number
+    ): Promise<GitHubPullRequestReview[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(pullNumber) ||
+            pullNumber < 1
+        ) {
+            throw new Error(
+                "Pull request number must be a positive integer."
+            );
+        }
+
+        const result =
+            await this.request<
+                Array<{
+                    id: number;
+                    user: {
+                        login: string;
+                        id: number;
+                        avatar_url?: string;
+                        html_url?: string;
+                    } | null;
+                    body: string;
+                    state: string;
+                    submitted_at?: string;
+                    html_url?: string;
+                    commit_id?: string;
+                }>
+            >(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/pulls/${pullNumber}/reviews`
+            );
+
+        return result.map(
+            review => ({
+                id: review.id,
+
+                user: review.user
+                    ? {
+                        login: review.user.login,
+                        id: review.user.id,
+                        avatar_url:
+                            review.user.avatar_url,
+                        html_url:
+                            review.user.html_url
+                    }
+                    : null,
+
+                body:
+                    review.body,
+
+                state:
+                    review.state,
+
+                submitted_at:
+                    review.submitted_at,
+
+                html_url:
+                    review.html_url,
+
+                commit_id:
+                    review.commit_id
+            })
+        );
+    }
+    public async getPullRequestReviewComments(
+        owner: string,
+        repository: string,
+        pullNumber: number
+    ): Promise<GitHubPullRequestReviewComment[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(pullNumber) ||
+            pullNumber < 1
+        ) {
+            throw new Error(
+                "Pull request number must be a positive integer."
+            );
+        }
+
+        const result =
+            await this.request<
+                Array<{
+                    id: number;
+                    body: string;
+                    user: {
+                        login: string;
+                        id: number;
+                        avatar_url?: string;
+                        html_url?: string;
+                    } | null;
+                    path?: string;
+                    line?: number | null;
+                    side?: string | null;
+                    commit_id?: string;
+                    created_at?: string;
+                    updated_at?: string;
+                    html_url?: string;
+                }>
+            >(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/pulls/${pullNumber}/comments`
+            );
+
+        return result.map(
+            comment => ({
+                id:
+                    comment.id,
+
+                body:
+                    comment.body,
+
+                user:
+                    comment.user
+                        ? {
+                            login:
+                                comment.user.login,
+
+                            id:
+                                comment.user.id,
+
+                            avatar_url:
+                                comment.user.avatar_url,
+
+                            html_url:
+                                comment.user.html_url
+                        }
+                        : null,
+
+                path:
+                    comment.path,
+
+                line:
+                    comment.line ?? undefined,
+
+                side:
+                    comment.side ?? undefined,
+
+                commit_id:
+                    comment.commit_id,
+
+                created_at:
+                    comment.created_at,
+
+                updated_at:
+                    comment.updated_at,
+
+                html_url:
+                    comment.html_url
+            })
+        );
+    }
+    public async getPullRequestChecks(
+        owner: string,
+        repository: string,
+        pullNumber: number
+    ): Promise<GitHubPullRequestCheck[]> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(pullNumber) ||
+            pullNumber < 1
+        ) {
+            throw new Error(
+                "Pull request number must be a positive integer."
+            );
+        }
+
+        const pullRequest =
+            await this.request<{
+                head: {
+                    sha: string;
+                };
+            }>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/pulls/${pullNumber}`
+            );
+
+        const result =
+            await this.request<{
+                check_runs?: Array<{
+                    id: number;
+                    name: string;
+                    status: string;
+                    conclusion: string | null;
+                    started_at?: string;
+                    completed_at?: string;
+                    html_url?: string;
+                }>;
+            }>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits/${encodeURIComponent(pullRequest.head.sha)}/check-runs`
+            );
+
+        return (result.check_runs ?? []).map(
+            check => ({
+                id:
+                    check.id,
+
+                name:
+                    check.name,
+
+                status:
+                    check.status,
+
+                conclusion:
+                    check.conclusion,
+
+                started_at:
+                    check.started_at,
+
+                completed_at:
+                    check.completed_at,
+
+                html_url:
+                    check.html_url
+            })
+        );
+    }
+    public async getPullRequestSummary(
+        owner: string,
+        repository: string,
+        pullNumber: number
+    ): Promise<GitHubPullRequestSummary> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(pullNumber) ||
+            pullNumber < 1
+        ) {
+            throw new Error(
+                "Pull request number must be a positive integer."
+            );
+        }
+
+        const [
+            pullRequest,
+            reviewers,
+            reviews,
+            comments,
+            checks
+        ] = await Promise.all([
+            this.request<{
+                number: number;
+                title: string;
+                state: string;
+                merged: boolean;
+                draft: boolean;
+                mergeable: boolean | null;
+            }>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/pulls/${pullNumber}`
+            ),
+
+            this.getPullRequestReviewers(
+                owner,
+                repository,
+                pullNumber
+            ),
+
+            this.getPullRequestReviews(
+                owner,
+                repository,
+                pullNumber
+            ),
+
+            this.getPullRequestReviewComments(
+                owner,
+                repository,
+                pullNumber
+            ),
+
+            this.getPullRequestChecks(
+                owner,
+                repository,
+                pullNumber
+            )
+        ]);
+
+        let passed = 0;
+        let failed = 0;
+        let pending = 0;
+
+        for (const check of checks) {
+
+            if (check.status !== "completed") {
+                pending++;
+                continue;
+            }
+
+            if (check.conclusion === "success") {
+                passed++;
+                continue;
+            }
+
+            if (
+                check.conclusion === "failure" ||
+                check.conclusion === "cancelled" ||
+                check.conclusion === "timed_out" ||
+                check.conclusion === "action_required"
+            ) {
+                failed++;
+                continue;
+            }
+
+            pending++;
+        }
+
+        return {
+            number:
+                pullRequest.number,
+
+            title:
+                pullRequest.title,
+
+            state:
+                pullRequest.state,
+
+            merged:
+                pullRequest.merged,
+
+            draft:
+                pullRequest.draft,
+
+            mergeable:
+                pullRequest.mergeable,
+
+            reviewers:
+                reviewers.length,
+
+            reviews:
+                reviews.length,
+
+            reviewComments:
+                comments.length,
+
+            checks: {
+                total:
+                    checks.length,
+
+                passed,
+
+                failed,
+
+                pending
+            },
+
+            requestedReviewers:
+                reviewers
+        };
+    }
 
 
 }

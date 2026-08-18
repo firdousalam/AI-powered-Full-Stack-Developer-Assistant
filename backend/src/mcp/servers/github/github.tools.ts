@@ -431,6 +431,19 @@ export class GitHubTools {
 
             this.getIssueSummaryTool(),
 
+            /*
+            * Advanced Pull Requests
+            */
+            this.getPullRequestReviewersTool(),
+
+            this.getPullRequestReviewsTool(),
+
+            this.getPullRequestReviewCommentsTool(),
+
+            this.getPullRequestChecksTool(),
+
+            this.getPullRequestSummaryTool(),
+
         ];
     }
 
@@ -5482,4 +5495,280 @@ export class GitHubTools {
             }
         };
     }
+    private getPullRequestReviewersTool(): MCPTool {
+
+        return {
+            name:
+                "github_get_pull_request_reviewers",
+
+            description:
+                "Get reviewers currently requested for a GitHub pull request.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    pullNumber: {
+                        type: "number",
+                        description:
+                            "Pull request number.",
+                        minimum: 1
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "pullNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                const owner =
+                    String(args?.owner ?? "");
+
+                const repository =
+                    String(args?.repository ?? "");
+
+                const pullNumber =
+                    Number(args?.pullNumber);
+
+                return this.githubService
+                    .getPullRequestReviewers(
+                        owner,
+                        repository,
+                        pullNumber
+                    );
+            }
+        };
+    }
+
+    private getPullRequestReviewsTool(): MCPTool {
+
+        return {
+            name:
+                "github_get_pull_request_reviews",
+
+            description:
+                "Get reviews submitted on a GitHub pull request.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    pullNumber: {
+                        type: "number",
+                        description:
+                            "Pull request number.",
+                        minimum: 1
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "pullNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                return this.githubService
+                    .getPullRequestReviews(
+                        String(args?.owner ?? ""),
+                        String(args?.repository ?? ""),
+                        Number(args?.pullNumber)
+                    );
+            }
+        };
+    }
+    private getPullRequestReviewCommentsTool(): MCPTool {
+
+        return {
+            name:
+                "github_get_pull_request_review_comments",
+
+            description:
+                "Get review comments for a GitHub pull request.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    pullNumber: {
+                        type: "number",
+                        description:
+                            "Pull request number.",
+                        minimum: 1
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "pullNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                return this.githubService
+                    .getPullRequestReviewComments(
+                        String(args?.owner ?? ""),
+                        String(args?.repository ?? ""),
+                        Number(args?.pullNumber)
+                    );
+            }
+        };
+    }
+    private getPullRequestChecksTool(): MCPTool {
+
+        return {
+            name:
+                "github_get_pull_request_checks",
+
+            description:
+                "Get CI check runs associated with a GitHub pull request.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    pullNumber: {
+                        type: "number",
+                        description:
+                            "Pull request number.",
+                        minimum: 1
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "pullNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                return this.githubService
+                    .getPullRequestChecks(
+                        String(args?.owner ?? ""),
+                        String(args?.repository ?? ""),
+                        Number(args?.pullNumber)
+                    );
+            }
+        };
+    }
+    private getPullRequestSummaryTool(): MCPTool {
+
+        return {
+            name:
+                "github_get_pull_request_summary",
+
+            description:
+                "Get an AI-friendly summary of a GitHub pull request including reviewers, reviews, comments and CI checks.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    pullNumber: {
+                        type: "number",
+                        description:
+                            "Pull request number.",
+                        minimum: 1
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "pullNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) => {
+
+                return this.githubService
+                    .getPullRequestSummary(
+                        String(args?.owner ?? ""),
+                        String(args?.repository ?? ""),
+                        Number(args?.pullNumber)
+                    );
+            }
+        };
+    }
+
 }
