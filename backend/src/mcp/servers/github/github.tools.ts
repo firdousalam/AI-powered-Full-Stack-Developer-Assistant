@@ -362,11 +362,6 @@ export class GitHubTools {
             this.getCodeScanningAlertTool(),
             this.getCodeScanningSummaryTool(),
 
-
-            this.listCodeScanningAlertsTool(),
-            this.getCodeScanningAlertTool(),
-            this.getCodeScanningSummaryTool(),
-
             this.listSecretScanningAlertsTool(),
             this.getSecretScanningAlertTool(),
             this.getSecretScanningSummaryTool(),
