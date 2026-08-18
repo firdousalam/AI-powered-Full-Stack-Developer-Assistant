@@ -372,8 +372,8 @@ export class GitHubTools {
             this.getSecretScanningSummaryTool(),
 
             /*
-          * Security findings tools
-          */
+            * Security findings tools
+            */
             this.getSecurityFindingsTool(),
             this.getSecuritySummaryTool(),
 
@@ -385,8 +385,8 @@ export class GitHubTools {
             this.getSecurityConfigurationSummaryTool(),
 
             /*
-        * Repository Administration
-        */
+            * Repository Administration
+            */
             this.getRepositoryAdministrationTool(),
 
             this.getRepositorySettingsTool(),
@@ -405,8 +405,8 @@ export class GitHubTools {
             this.getBranchRulesTool(),
 
             /*
- * Repository Environments
- */
+            * Repository Environments
+            */
             this.getListEnvironmentsTool(),
 
             this.getGetEnvironmentTool(),
@@ -414,13 +414,22 @@ export class GitHubTools {
             this.getGetEnvironmentSummaryTool(),
 
             /*
- * Repository Projects
- */
+            * Repository Projects
+            */
             this.getListProjectsTool(),
 
             this.getGetProjectTool(),
 
             this.getGetProjectSummaryTool(),
+
+            /*
+            * Advanced Issues
+            */
+            this.getListAdvancedIssuesTool(),
+
+            this.getIssueTimelineTool(),
+
+            this.getIssueSummaryTool(),
 
         ];
     }
@@ -5219,6 +5228,256 @@ export class GitHubTools {
                     .getProjectSummary(
                         String(args?.owner ?? ""),
                         String(args?.repository ?? "")
+                    );
+            }
+        };
+    }
+    private getListAdvancedIssuesTool(): MCPTool {
+        return {
+            name:
+                "github_list_advanced_issues",
+
+            description:
+                "List GitHub repository issues with advanced filtering by state, labels, assignee, milestone and pagination.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    state: {
+                        type: "string",
+                        enum: [
+                            "open",
+                            "closed",
+                            "all"
+                        ],
+                        description:
+                            "Issue state filter."
+                    },
+
+                    labels: {
+                        type: "string",
+                        description:
+                            "Comma-separated issue labels."
+                    },
+
+                    assignee: {
+                        type: "string",
+                        description:
+                            "GitHub username assigned to the issue."
+                    },
+
+                    milestone: {
+                        type: "string",
+                        description:
+                            "Milestone number or * for issues assigned to milestones."
+                    },
+
+                    page: {
+                        type: "number",
+                        minimum: 1,
+                        description:
+                            "Page number."
+                    },
+
+                    perPage: {
+                        type: "number",
+                        minimum: 1,
+                        maximum: 100,
+                        description:
+                            "Number of results per page."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                return this.githubService
+                    .listAdvancedIssues(
+                        String(
+                            args?.owner ?? ""
+                        ),
+
+                        String(
+                            args?.repository ?? ""
+                        ),
+
+                        (
+                            args?.state === "closed" ||
+                            args?.state === "all"
+                        )
+                            ? args.state
+                            : "open",
+
+                        args?.labels
+                            ? String(args.labels)
+                            : undefined,
+
+                        args?.assignee
+                            ? String(args.assignee)
+                            : undefined,
+
+                        args?.milestone
+                            ? String(args.milestone)
+                            : undefined,
+
+                        Number(
+                            args?.page ?? 1
+                        ),
+
+                        Number(
+                            args?.perPage ?? 30
+                        )
+                    );
+            }
+        };
+    }
+    private getIssueTimelineTool(): MCPTool {
+        return {
+            name:
+                "github_get_issue_timeline",
+
+            description:
+                "Get the event timeline of a GitHub issue.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    issueNumber: {
+                        type: "number",
+                        minimum: 1,
+                        description:
+                            "GitHub issue number."
+                    },
+
+                    page: {
+                        type: "number",
+                        minimum: 1,
+                        description:
+                            "Page number."
+                    },
+
+                    perPage: {
+                        type: "number",
+                        minimum: 1,
+                        maximum: 100,
+                        description:
+                            "Number of events per page."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "issueNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                return this.githubService
+                    .getIssueTimeline(
+                        String(
+                            args?.owner ?? ""
+                        ),
+
+                        String(
+                            args?.repository ?? ""
+                        ),
+
+                        Number(
+                            args?.issueNumber ?? 0
+                        ),
+
+                        Number(
+                            args?.page ?? 1
+                        ),
+
+                        Number(
+                            args?.perPage ?? 30
+                        )
+                    );
+            }
+        };
+    }
+    private getIssueSummaryTool(): MCPTool {
+        return {
+            name:
+                "github_get_issue_summary",
+
+            description:
+                "Get an AI-friendly summary of repository issues.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                return this.githubService
+                    .getIssueSummary(
+                        String(
+                            args?.owner ?? ""
+                        ),
+
+                        String(
+                            args?.repository ?? ""
+                        )
                     );
             }
         };

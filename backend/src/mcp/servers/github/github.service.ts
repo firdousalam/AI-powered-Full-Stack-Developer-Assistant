@@ -1305,7 +1305,83 @@ export interface GitHubProjectSummary {
     public: number;
     private: number;
 }
+export interface GitHubAdvancedIssue {
+    id: number;
+    number: number;
+    title: string;
+    body?: string;
+    state: string;
+    stateReason?: string;
+    locked: boolean;
+    comments: number;
+    labels: Array<{
+        id: number;
+        name: string;
+        color?: string;
+        description?: string;
+    }>;
+    assignees: Array<{
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    }>;
+    user: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    };
+    milestone?: {
+        id: number;
+        number: number;
+        title: string;
+        state: string;
+    };
+    html_url: string;
+    created_at: string;
+    updated_at: string;
+    closed_at?: string;
+}
 
+export interface GitHubAdvancedIssuesResponse {
+    total_count: number;
+    issues: GitHubAdvancedIssue[];
+}
+
+export interface GitHubIssueTimelineEvent {
+    id: number;
+    event: string;
+    actor?: {
+        login: string;
+        id: number;
+        avatar_url?: string;
+        html_url?: string;
+    };
+    created_at: string;
+    label?: string;
+    assignee?: string;
+    milestone?: string;
+    rename?: {
+        from?: string;
+        to?: string;
+    };
+}
+
+export interface GitHubIssueTimelineResponse {
+    total_count: number;
+    events: GitHubIssueTimelineEvent[];
+}
+
+export interface GitHubIssueSummary {
+    total: number;
+    open: number;
+    closed: number;
+    locked: number;
+    pullRequests: number;
+    withAssignees: number;
+    withLabels: number;
+}
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -6503,5 +6579,460 @@ export class GitHubService {
                 publicProjects
         };
     }
+
+    public async listAdvancedIssues(
+        owner: string,
+        repository: string,
+        state: "open" | "closed" | "all" = "open",
+        labels?: string,
+        assignee?: string,
+        milestone?: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubAdvancedIssuesResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            state !== "open" &&
+            state !== "closed" &&
+            state !== "all"
+        ) {
+            throw new Error(
+                "Issue state must be open, closed, or all."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Issue page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Issue perPage must be between 1 and 100."
+            );
+        }
+
+        const params = new URLSearchParams();
+
+        params.set("state", state);
+        params.set("page", String(page));
+        params.set("per_page", String(perPage));
+
+        if (labels?.trim()) {
+            params.set("labels", labels);
+        }
+
+        if (assignee?.trim()) {
+            params.set("assignee", assignee);
+        }
+
+        if (milestone?.trim()) {
+            params.set("milestone", milestone);
+        }
+
+        const result =
+            await this.request<
+                Array<{
+                    id: number;
+                    number: number;
+                    title: string;
+                    body?: string | null;
+                    state: string;
+                    state_reason?: string | null;
+                    locked: boolean;
+                    comments: number;
+
+                    labels: Array<{
+                        id: number;
+                        name: string;
+                        color?: string;
+                        description?: string | null;
+                    }>;
+
+                    assignees: Array<{
+                        login: string;
+                        id: number;
+                        avatar_url?: string;
+                        html_url?: string;
+                    }>;
+
+                    user: {
+                        login: string;
+                        id: number;
+                        avatar_url?: string;
+                        html_url?: string;
+                    };
+
+                    milestone?: {
+                        id: number;
+                        number: number;
+                        title: string;
+                        state: string;
+                    } | null;
+
+                    html_url: string;
+                    created_at: string;
+                    updated_at: string;
+                    closed_at?: string | null;
+
+                    pull_request?: unknown;
+                }>
+            >(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/issues?${params.toString()}`
+            );
+
+        const issues =
+            result.map(
+                issue => ({
+                    id:
+                        issue.id,
+
+                    number:
+                        issue.number,
+
+                    title:
+                        issue.title,
+
+                    body:
+                        issue.body ?? undefined,
+
+                    state:
+                        issue.state,
+
+                    stateReason:
+                        issue.state_reason ?? undefined,
+
+                    locked:
+                        issue.locked,
+
+                    comments:
+                        issue.comments,
+
+                    labels:
+                        issue.labels.map(
+                            label => ({
+                                id:
+                                    label.id,
+
+                                name:
+                                    label.name,
+
+                                color:
+                                    label.color,
+
+                                description:
+                                    label.description ??
+                                    undefined
+                            })
+                        ),
+
+                    assignees:
+                        issue.assignees.map(
+                            assignee => ({
+                                login:
+                                    assignee.login,
+
+                                id:
+                                    assignee.id,
+
+                                avatar_url:
+                                    assignee.avatar_url,
+
+                                html_url:
+                                    assignee.html_url
+                            })
+                        ),
+
+                    user: {
+                        login:
+                            issue.user.login,
+
+                        id:
+                            issue.user.id,
+
+                        avatar_url:
+                            issue.user.avatar_url,
+
+                        html_url:
+                            issue.user.html_url
+                    },
+
+                    milestone:
+                        issue.milestone
+                            ? {
+                                id:
+                                    issue.milestone.id,
+
+                                number:
+                                    issue.milestone.number,
+
+                                title:
+                                    issue.milestone.title,
+
+                                state:
+                                    issue.milestone.state
+                            }
+                            : undefined,
+
+                    html_url:
+                        issue.html_url,
+
+                    created_at:
+                        issue.created_at,
+
+                    updated_at:
+                        issue.updated_at,
+
+                    closed_at:
+                        issue.closed_at ??
+                        undefined
+                })
+            );
+
+        return {
+            total_count:
+                issues.length,
+
+            issues
+        };
+    }
+    public async getIssueTimeline(
+        owner: string,
+        repository: string,
+        issueNumber: number,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubIssueTimelineResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(issueNumber) ||
+            issueNumber < 1
+        ) {
+            throw new Error(
+                "Issue number must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Issue timeline page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Issue timeline perPage must be between 1 and 100."
+            );
+        }
+
+        const result =
+            await this.request<
+                Array<{
+                    id: number;
+                    event: string;
+                    actor?: {
+                        login: string;
+                        id: number;
+                        avatar_url?: string;
+                        html_url?: string;
+                    } | null;
+
+                    created_at: string;
+
+                    label?: {
+                        name?: string;
+                    } | null;
+
+                    assignee?: {
+                        login?: string;
+                    } | null;
+
+                    milestone?: {
+                        title?: string;
+                    } | null;
+
+                    rename?: {
+                        from?: string;
+                        to?: string;
+                    } | null;
+                }>
+            >(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/issues/${issueNumber}/timeline?page=${page}&per_page=${perPage}`
+            );
+
+        const events =
+            result.map(
+                event => ({
+                    id:
+                        event.id,
+
+                    event:
+                        event.event,
+
+                    actor:
+                        event.actor
+                            ? {
+                                login:
+                                    event.actor.login,
+
+                                id:
+                                    event.actor.id,
+
+                                avatar_url:
+                                    event.actor.avatar_url,
+
+                                html_url:
+                                    event.actor.html_url
+                            }
+                            : undefined,
+
+                    created_at:
+                        event.created_at,
+
+                    label:
+                        event.label?.name,
+
+                    assignee:
+                        event.assignee?.login,
+
+                    milestone:
+                        event.milestone?.title,
+
+                    rename:
+                        event.rename
+                            ? {
+                                from:
+                                    event.rename.from,
+
+                                to:
+                                    event.rename.to
+                            }
+                            : undefined
+                })
+            );
+
+        return {
+            total_count:
+                events.length,
+
+            events
+        };
+    }
+
+    public async getIssueSummary(
+        owner: string,
+        repository: string
+    ): Promise<GitHubIssueSummary> {
+
+        const result =
+            await this.listAdvancedIssues(
+                owner,
+                repository,
+                "all",
+                undefined,
+                undefined,
+                undefined,
+                1,
+                100
+            );
+
+        const issues =
+            result.issues;
+
+        const open =
+            issues.filter(
+                issue =>
+                    issue.state === "open"
+            ).length;
+
+        const closed =
+            issues.filter(
+                issue =>
+                    issue.state === "closed"
+            ).length;
+
+        const locked =
+            issues.filter(
+                issue =>
+                    issue.locked
+            ).length;
+
+        const pullRequests =
+            issues.filter(
+                issue =>
+                    issue.number > 0 &&
+                    issue.html_url.includes("/pull/")
+            ).length;
+
+        const withAssignees =
+            issues.filter(
+                issue =>
+                    issue.assignees.length > 0
+            ).length;
+
+        const withLabels =
+            issues.filter(
+                issue =>
+                    issue.labels.length > 0
+            ).length;
+
+        return {
+            total:
+                issues.length,
+
+            open,
+
+            closed,
+
+            locked,
+
+            pullRequests,
+
+            withAssignees,
+
+            withLabels
+        };
+    }
+
+
 
 }
