@@ -8,25 +8,9 @@
 
 **Current Phase:** Phase 5 — MCP & Project Intelligence
 
-**Current Milestone:** 5.7 — GitHub MCP
+**Current Focus:** Developer Tool Framework + Project Analyzer
 
-**Current Focus:**
-
-```text
-MCP Gateway
-     ↓
-MCP Servers
-     ↓
-Developer Tool Framework
-     ↓
-Project Analyzer
-     ↓
-GitHub Developer Tools
-     ↓
-AI ↔ MCP Orchestration
-```
-
-**Architecture Status:** Core MCP infrastructure is implemented. Filesystem MCP and a large GitHub MCP toolset are implemented, while Project Intelligence and AI-to-tool orchestration continue to evolve.
+**Architecture Status:** Core MCP infrastructure implemented; intelligent project analysis and AI-to-tool orchestration are under active development.
 
 ---
 
@@ -35,47 +19,43 @@ AI ↔ MCP Orchestration
 * [1. Project Overview](#1-project-overview)
 * [2. Project Vision](#2-project-vision)
 * [3. Why This Project](#3-why-this-project)
-* [4. Current MVP Scope](#4-current-mvp-scope)
-* [5. Out of Scope for Current MVP](#5-out-of-scope-for-current-mvp)
-* [6. What the Project Will Do](#6-what-the-project-will-do)
-* [7. Current Capabilities](#7-current-capabilities)
-* [8. Future Capabilities](#8-future-capabilities)
-* [9. Core Architecture](#9-core-architecture)
-* [10. Complete Request Flow](#10-complete-request-flow)
-* [11. Architecture Layers](#11-architecture-layers)
-* [12. Chrome Extension](#12-chrome-extension)
-* [13. Backend](#13-backend)
-* [14. AI Service](#14-ai-service)
-* [15. Ollama and Local LLMs](#15-ollama-and-local-llms)
-* [16. MCP Architecture](#16-mcp-architecture)
-* [17. MCP Gateway](#17-mcp-gateway)
-* [18. Filesystem MCP Server](#18-filesystem-mcp-server)
-* [19. GitHub MCP Server](#19-github-mcp-server)
-* [20. Developer Tool Framework](#20-developer-tool-framework)
-* [21. Project Analyzer](#21-project-analyzer)
-* [22. AI-MCP Orchestration](#22-ai-mcp-orchestration)
-* [23. RAG Architecture](#23-rag-architecture)
-* [24. AI Developer Agent](#24-ai-developer-agent)
-* [25. Code Modification and Validation](#25-code-modification-and-validation)
-* [26. VS Code Extension](#26-vs-code-extension)
-* [27. Advanced MCP Ecosystem](#27-advanced-mcp-ecosystem)
-* [28. Next MVP — DevOps and CI/CD](#28-next-mvp--devops-and-cicd)
-* [29. MCP Marketplace](#29-mcp-marketplace)
-* [30. Phase-Wise Roadmap](#30-phase-wise-roadmap)
-* [31. Current Project Progress](#31-current-project-progress)
-* [32. Technology Stack](#32-technology-stack)
-* [33. Repository Structure](#33-repository-structure)
-* [34. Development Strategy](#34-development-strategy)
-* [35. Testing Strategy](#35-testing-strategy)
-* [36. Local Development](#36-local-development)
-* [37. Hardware Requirements](#37-hardware-requirements)
-* [38. Security and Privacy](#38-security-and-privacy)
-* [39. Design Principles](#39-design-principles)
-* [40. Learning Outcomes](#40-learning-outcomes)
-* [41. Long-Term Vision](#41-long-term-vision)
-* [42. Contribution](#42-contribution)
-* [43. License](#43-license)
-* [44. Final Goal](#44-final-goal)
+* [4. What the Project Will Do](#4-what-the-project-will-do)
+* [5. Current Capabilities](#5-current-capabilities)
+* [6. Future Capabilities](#6-future-capabilities)
+* [7. Core Architecture](#7-core-architecture)
+* [8. Complete Request Flow](#8-complete-request-flow)
+* [9. Architecture Layers](#9-architecture-layers)
+* [10. Chrome Extension](#10-chrome-extension)
+* [11. Backend](#11-backend)
+* [12. AI Service](#12-ai-service)
+* [13. Ollama and Local LLMs](#13-ollama-and-local-llms)
+* [14. MCP Architecture](#14-mcp-architecture)
+* [15. MCP Gateway](#15-mcp-gateway)
+* [16. Filesystem MCP Server](#16-filesystem-mcp-server)
+* [17. Developer Tool Framework](#17-developer-tool-framework)
+* [18. Project Analyzer](#18-project-analyzer)
+* [19. AI-MCP Orchestration](#19-ai-mcp-orchestration)
+* [20. RAG Architecture](#20-rag-architecture)
+* [21. AI Developer Agent](#21-ai-developer-agent)
+* [22. Code Modification and Validation](#22-code-modification-and-validation)
+* [23. VS Code Extension](#23-vs-code-extension)
+* [24. Advanced MCP Ecosystem](#24-advanced-mcp-ecosystem)
+* [25. DevOps and Cloud](#25-devops-and-cloud)
+* [26. MCP Marketplace](#26-mcp-marketplace)
+* [27. Phase-Wise Roadmap](#27-phase-wise-roadmap)
+* [28. Current Project Progress](#28-current-project-progress)
+* [29. Technology Stack](#29-technology-stack)
+* [30. Repository Structure](#30-repository-structure)
+* [31. Development Strategy](#31-development-strategy)
+* [32. Testing Strategy](#32-testing-strategy)
+* [33. Local Development](#33-local-development)
+* [34. Hardware Requirements](#34-hardware-requirements)
+* [35. Security and Privacy](#35-security-and-privacy)
+* [36. Design Principles](#36-design-principles)
+* [37. Learning Outcomes](#37-learning-outcomes)
+* [38. Long-Term Vision](#38-long-term-vision)
+* [39. Contribution](#39-contribution)
+* [40. License](#40-license)
 
 ---
 
@@ -83,25 +63,9 @@ AI ↔ MCP Orchestration
 
 The **AI-Powered Full-Stack Developer Assistant** is a full-stack AI development platform designed to assist software developers throughout the software development lifecycle.
 
-The project starts with a browser-based AI assistant and progressively evolves into a:
+The project starts with a browser-based AI assistant and progressively evolves into a **project-aware AI developer assistant**, then into an **AI developer agent**, and eventually into a broader **AI software engineering platform**.
 
-```text
-AI Chatbot
-     ↓
-Context-Aware Assistant
-     ↓
-Project-Aware Assistant
-     ↓
-Tool-Using AI
-     ↓
-AI Developer Agent
-     ↓
-AI Software Engineering Platform
-```
-
-The current MVP focuses on the **developer intelligence layer** rather than attempting to solve the entire DevOps lifecycle at once.
-
-The current platform combines:
+The project combines:
 
 ```text
 Artificial Intelligence
@@ -116,14 +80,18 @@ Developer Tools
         +
 Project Analysis
         +
-GitHub Integration
-        +
 RAG
         +
 Agentic Workflows
+        +
+Full-Stack Development
+        +
+DevOps
+        +
+Cloud Native Technologies
 ```
 
-Docker, Kubernetes, and CI/CD are intentionally deferred to the next MVP so that the current architecture can remain focused and manageable.
+The project is intentionally built in phases so that each phase introduces an important engineering concept and produces a working capability.
 
 ---
 
@@ -197,24 +165,25 @@ Deliver
 
 ---
 
-# 3. Why This Project
+# 3. Why This Project?
 
-Modern software projects are becoming increasingly complex.
+Modern developers work with increasingly complex systems.
 
-A project may contain:
+A single project may contain:
 
 * Frontend applications
 * Backend services
 * Databases
 * APIs
-* Multiple programming languages
+* Containers
+* Kubernetes manifests
+* CI/CD pipelines
+* Cloud infrastructure
 * Configuration files
-* Tests
 * Documentation
-* Git repositories
-* GitHub repositories
+* Tests
 * External services
-* Complex dependencies
+* Multiple programming languages
 
 An LLM alone does not automatically know the structure or current state of such a project.
 
@@ -231,8 +200,6 @@ Developer Tools
  +
 Project Analyzer
  +
-GitHub
- +
 RAG
 ```
 
@@ -244,163 +211,15 @@ Developer Tools provide high-level development capabilities.
 
 Project Analyzer provides structured project understanding.
 
-GitHub MCP provides repository intelligence.
-
 RAG provides semantic retrieval.
 
 Together they form the foundation for an AI software engineering assistant.
 
 ---
 
-# 4. Current MVP Scope
+# 4. What the Project Will Do
 
-The current MVP is intentionally focused.
-
-## Current MVP includes
-
-```text
-Chrome Extension
-        ↓
-Backend
-        ↓
-AI Service
-        ↓
-Ollama / Local LLM
-        ↓
-MCP Gateway
-        ↓
-Filesystem MCP
-        ↓
-GitHub MCP
-        ↓
-Developer Tools
-        ↓
-Project Analyzer
-        ↓
-Project Context
-```
-
-The current MVP focuses on:
-
-### AI
-
-* Local LLM integration
-* Ollama
-* Context-aware AI
-* AI reasoning foundation
-
-### MCP
-
-* MCP architecture
-* MCP Gateway
-* MCP server registry
-* MCP connection management
-* MCP tool discovery
-* MCP tool execution
-* MCP health monitoring
-
-### Filesystem
-
-* Read files
-* List directories
-* Search files
-* File metadata
-* Project tree
-* Workspace analysis
-
-### Project Intelligence
-
-* Project metadata
-* Programming language detection
-* Framework detection
-* Runtime detection
-* Package manager detection
-* Build tool detection
-* Entry point detection
-* Git detection
-* Dependency analysis
-* Source analysis
-
-### GitHub
-
-The GitHub MCP layer provides repository-oriented developer capabilities including:
-
-```text
-Repositories
-Contents
-Branches
-Code Search
-Issues
-Pull Requests
-Commits
-Trees
-Releases
-Tags
-Users
-Organizations
-Contributors
-Collaborators
-Statistics
-Languages
-GitHub Actions
-Discussions
-Security
-Repository Administration
-Branch Protection
-Environments
-Projects
-Advanced Issues
-Advanced Pull Requests
-Webhooks / Events
-```
-
-The exact toolset will continue to evolve.
-
----
-
-# 5. Out of Scope for Current MVP
-
-To keep the project focused, the following are **not part of the current MVP implementation scope**:
-
-```text
-Docker
-Kubernetes
-Helm
-CI/CD
-Jenkins
-GitHub Actions deployment automation
-Container orchestration
-Cloud infrastructure automation
-Production DevOps automation
-```
-
-This does **not** mean these technologies are abandoned.
-
-They are intentionally moved to the **Next MVP**.
-
-The current GitHub Actions MCP functionality is primarily repository/workflow intelligence. Full CI/CD automation and deployment orchestration are deferred.
-
-The project therefore follows:
-
-```text
-CURRENT MVP
-     ↓
-Developer Intelligence
-     ↓
-AI + MCP + Project + GitHub
-     ↓
-NEXT MVP
-     ↓
-Docker + Kubernetes + CI/CD + Cloud
-```
-
-This separation keeps the architecture easier to understand, test, maintain, and extend.
-
----
-
-# 6. What the Project Will Do
-
-The completed current MVP is intended to support workflows such as:
+The completed platform is intended to support workflows such as:
 
 ## Project Understanding
 
@@ -416,9 +235,11 @@ The assistant can eventually determine:
 * Package manager
 * Build tools
 * Entry points
-* Project structure
+* Architecture
+* Docker usage
+* Kubernetes usage
 * Git configuration
-* Dependencies
+* CI/CD configuration
 
 ---
 
@@ -446,49 +267,21 @@ Explain Authentication
 
 ---
 
-## GitHub Understanding
-
-```text
-"Show me the open issues related to authentication."
-```
-
-The system can eventually:
-
-```text
-User Request
-      ↓
-AI
-      ↓
-MCP Gateway
-      ↓
-GitHub MCP
-      ↓
-GitHub API
-      ↓
-Issue Information
-      ↓
-AI
-      ↓
-Developer-Friendly Response
-```
-
----
-
 ## Debugging
 
 ```text
 "Why is my application failing to start?"
 ```
 
-The system can inspect:
+The system can eventually inspect:
 
 * Project configuration
 * Entry point
 * Dependencies
 * Source code
-* Runtime configuration
-* Git information
-* Relevant GitHub information
+* Build configuration
+* Docker configuration
+* Error information
 
 and provide a project-specific diagnosis.
 
@@ -496,7 +289,7 @@ and provide a project-specific diagnosis.
 
 ## Code Modification
 
-Future versions will support:
+Future versions will support requests such as:
 
 ```text
 "Add validation to the registration API."
@@ -526,7 +319,7 @@ Validate
 
 ---
 
-# 7. Current Capabilities
+# 5. Current Capabilities
 
 The project currently contains the foundations for:
 
@@ -543,55 +336,44 @@ The project currently contains the foundations for:
 * MCP tool execution
 * MCP health checking
 * Filesystem MCP Server
-* GitHub MCP Server
-* Developer Tool Framework
+* Developer Tool Framework foundation
 * Project Analyzer foundation
 * Project detection architecture
-* GitHub repository intelligence
-* GitHub security intelligence
-* GitHub repository administration
-* GitHub branch protection
-* GitHub environments
-* GitHub projects
-* Advanced issue intelligence
-* Advanced pull request intelligence
-* GitHub webhook/event intelligence
 
-The project is still under active development.
+The original project documentation also defines broader functionality such as AI chat, browser extension support, RAG, vector databases, GitHub repository chat, Docker/Kubernetes assistance, OCR, voice, and production deployment. These are part of the broader roadmap rather than being treated as all-completed functionality today.
 
 ---
 
-# 8. Future Capabilities
+# 6. Future Capabilities
 
 The roadmap includes:
 
-* AI ↔ MCP orchestration
 * RAG
 * Vector database
 * Semantic code search
 * Repository chat
 * Documentation chat
 * PDF chat
-* Advanced Git integration
-* Advanced GitHub integration
+* Git integration
+* GitHub integration
+* Docker integration
+* Kubernetes integration
+* CI/CD integration
 * AI developer agent
 * Multi-step tool execution
 * Code modification
 * Automated testing
 * Build/Test/Fix loops
 * VS Code Extension
-* Docker integration
-* Kubernetes integration
-* CI/CD integration
 * Cloud deployment
 * Advanced MCP ecosystem
 * MCP Marketplace
 
 ---
 
-# 9. Core Architecture
+# 7. Core Architecture
 
-The current architecture is designed around a reusable AI platform.
+The architecture is designed around a reusable AI platform.
 
 ```text
                          ┌──────────────────────┐
@@ -625,48 +407,43 @@ The current architecture is designed around a reusable AI platform.
            │ Ollama / LLM   │          │   MCP Gateway    │
            └────────────────┘          └────────┬─────────┘
                                                 │
-                       ┌────────────────────────┼───────────────────────┐
-                       │                        │                       │
-                       ▼                        ▼                       ▼
-              ┌────────────────┐      ┌────────────────┐      ┌────────────────┐
-              │ Filesystem MCP │      │ GitHub MCP     │      │ Future MCP     │
-              │ Server         │      │ Server         │      │ Servers        │
-              └───────┬────────┘      └────────────────┘      └────────────────┘
-                      │
-                      ▼
-              ┌────────────────┐
-              │ Developer      │
-              │ Tools          │
-              └───────┬────────┘
-                      │
-          ┌───────────┼───────────┐
-          │           │           │
-          ▼           ▼           ▼
-      Project      Source      Dependency
-      Analyzer     Analyzer    Analyzer
-          │           │           │
-          └───────────┼───────────┘
-                      ▼
-               Project Context
-                      │
-                      ▼
-                     LLM
+                        ┌───────────────────────┼──────────────────────┐
+                        │                       │                      │
+                        ▼                       ▼                      ▼
+               ┌────────────────┐     ┌────────────────┐     ┌────────────────┐
+               │ Filesystem MCP │     │ Developer      │     │ Future MCP     │
+               │ Server         │     │ Tools          │     │ Servers        │
+               └────────────────┘     └───────┬────────┘     └────────────────┘
+                                              │
+                          ┌───────────────────┼───────────────────┐
+                          │                   │                   │
+                          ▼                   ▼                   ▼
+                    ┌──────────┐       ┌──────────┐       ┌──────────────┐
+                    │ Project  │       │ Source   │       │ Dependency   │
+                    │ Analyzer │       │ Analyzer │       │ Analyzer     │
+                    └──────────┘       └──────────┘       └──────────────┘
+                                              │
+                                              ▼
+                                      Project Context
+                                              │
+                                              ▼
+                                             LLM
 ```
 
 ---
 
-# 10. Complete Request Flow
+# 8. Complete Request Flow
 
 Consider:
 
 > "Explain the authentication flow in this project."
 
-The request flow is:
+The future request flow is:
 
 ```text
 User
  ↓
-Chrome / VS Code / Web
+Chrome / VS Code
  ↓
 Backend API
  ↓
@@ -693,15 +470,13 @@ Response
 Developer Client
 ```
 
-The critical architectural concept is:
+The critical architectural concept is that the LLM does not need to inspect everything.
 
-> **The LLM should not need to inspect the entire project.**
-
-Only relevant context should be collected.
+Only relevant context is collected.
 
 ---
 
-# 11. Architecture Layers
+# 9. Architecture Layers
 
 The platform consists of several logical layers.
 
@@ -763,29 +538,22 @@ Responsible for understanding the project.
 
 ---
 
-## Layer 7 — External Developer Systems
+## Layer 7 — External Systems
 
-Current and planned systems include:
+Potential systems include:
 
-```text
-Filesystem
-Git
-GitHub
-```
-
-Future systems include:
-
-```text
-Docker
-Kubernetes
-CI/CD
-Cloud
-Databases
-```
+* Filesystem
+* Git
+* GitHub
+* Docker
+* Kubernetes
+* Databases
+* CI/CD
+* Cloud services
 
 ---
 
-# 12. Chrome Extension
+# 10. Chrome Extension
 
 The Chrome Extension is one of the initial developer interfaces.
 
@@ -835,7 +603,7 @@ or:
 
 ---
 
-# 13. Backend
+# 11. Backend
 
 The backend provides the central API layer.
 
@@ -869,11 +637,11 @@ Potential backend responsibilities include:
 
 ---
 
-# 14. AI Service
+# 12. AI Service
 
 The AI Service is the intelligence layer.
 
-It coordinates:
+It is responsible for coordinating:
 
 ```text
 User Prompt
@@ -889,7 +657,7 @@ RAG Results
 LLM
 ```
 
-The AI Service should eventually determine:
+The AI Service should eventually be able to determine:
 
 ```text
 Does this request require a tool?
@@ -915,7 +683,7 @@ This is the foundation for agentic behavior.
 
 ---
 
-# 15. Ollama and Local LLMs
+# 13. Ollama and Local LLMs
 
 Ollama provides the local model runtime.
 
@@ -942,7 +710,7 @@ The exact models may change as the project evolves.
 
 ---
 
-# 16. MCP Architecture
+# 14. MCP Architecture
 
 MCP stands for **Model Context Protocol**.
 
@@ -954,8 +722,9 @@ Instead of embedding every developer operation directly into the AI Service:
 AI Service
  ├── Filesystem implementation
  ├── Git implementation
- ├── GitHub implementation
- └── Future integrations
+ ├── Docker implementation
+ ├── Kubernetes implementation
+ └── GitHub implementation
 ```
 
 the architecture becomes:
@@ -972,7 +741,7 @@ This provides modularity and extensibility.
 
 ---
 
-# 17. MCP Gateway
+# 15. MCP Gateway
 
 The MCP Gateway acts as the central manager for MCP servers.
 
@@ -1007,32 +776,31 @@ executeTool()
 healthCheck()
 ```
 
-Conceptually:
+The conceptual architecture is:
 
 ```text
-                    MCP Gateway
-                         │
-             ┌───────────┼───────────┐
-             │           │           │
-             ▼           ▼           ▼
-        Filesystem     GitHub      Future
-           MCP          MCP       MCP Servers
-             │           │
-             └─────┬─────┘
-                   ▼
-             Tool Discovery
-                   │
-                   ▼
-             Tool Execution
+                  MCP Gateway
+                       │
+             ┌─────────┼─────────┐
+             │         │         │
+             ▼         ▼         ▼
+        Filesystem   GitHub    Docker
+           MCP        MCP       MCP
+             │
+             ▼
+       Tool Discovery
+             │
+             ▼
+       Tool Execution
 ```
 
 ---
 
-# 18. Filesystem MCP Server
+# 16. Filesystem MCP Server
 
 The Filesystem MCP Server provides controlled project filesystem operations.
 
-Capabilities include:
+Planned/implemented capabilities include:
 
 ```text
 Read File
@@ -1044,7 +812,7 @@ Search Files
 Project Tree
 ```
 
-Architecture:
+The architecture is:
 
 ```text
 MCP Gateway
@@ -1060,172 +828,7 @@ The filesystem layer is intentionally kept separate from higher-level developer 
 
 ---
 
-# 19. GitHub MCP Server
-
-GitHub MCP is a major part of the current Phase 5 development.
-
-The GitHub integration exposes repository intelligence through MCP tools.
-
-Current tool categories include:
-
-## Repository
-
-```text
-github_get_repository
-github_get_repository_statistics
-github_get_repository_languages
-```
-
-## Contents
-
-```text
-github_read_file
-github_get_contents
-github_get_tree
-```
-
-## Branches
-
-```text
-github_list_branches
-```
-
-## Code Search
-
-```text
-github_search_code
-github_search_repositories
-```
-
-## Issues
-
-```text
-github_list_issues
-github_list_advanced_issues
-github_get_issue_timeline
-github_get_issue_summary
-```
-
-## Pull Requests
-
-```text
-github_list_pull_requests
-github_get_pull_request_reviewers
-github_get_pull_request_reviews
-github_get_pull_request_review_comments
-github_get_pull_request_checks
-github_get_pull_request_summary
-```
-
-## Commits
-
-```text
-github_list_commits
-github_compare_commits
-```
-
-## Releases and Tags
-
-```text
-github_list_releases
-github_list_tags
-```
-
-## Repository Information
-
-```text
-github_get_user
-github_get_organization
-github_list_contributors
-github_list_collaborators
-```
-
-## GitHub Actions
-
-```text
-github_list_workflows
-github_list_workflow_runs
-github_get_workflow_run
-github_list_workflow_jobs
-github_get_workflow_job
-github_get_workflow_job_logs
-github_list_workflow_artifacts
-```
-
-These tools provide repository/workflow intelligence.
-
-Full CI/CD automation remains outside the current MVP scope.
-
-## Discussions
-
-```text
-github_list_discussions
-github_get_discussion
-github_list_discussion_comments
-github_list_discussion_categories
-```
-
-## Security
-
-The GitHub MCP layer also provides security-oriented information such as:
-
-```text
-Code Scanning
-Secret Scanning
-Security Findings
-Security Summary
-Security Policy
-Security Features
-Security Configuration
-```
-
-## Repository Administration
-
-```text
-github_get_repository_administration
-github_get_repository_settings
-github_get_repository_features
-github_get_repository_merge_configuration
-```
-
-## Branch Protection
-
-```text
-github_list_branch_protection
-github_get_branch_protection
-github_get_branch_rules
-```
-
-## Environments
-
-```text
-github_list_environments
-github_get_environment
-github_get_environment_summary
-```
-
-## Projects
-
-```text
-github_list_projects
-github_get_project
-github_get_project_summary
-```
-
-## Webhooks / Events
-
-```text
-github_list_webhooks
-github_get_webhook
-github_list_webhook_deliveries
-github_get_webhook_delivery
-```
-
-The GitHub MCP layer is designed to make GitHub repository information accessible to the AI through standardized developer tools.
-
----
-
-# 20. Developer Tool Framework
+# 17. Developer Tool Framework
 
 The Developer Tool Framework is a major architectural improvement over simply exposing raw filesystem functions.
 
@@ -1257,11 +860,11 @@ This allows the AI to work with meaningful concepts rather than repeatedly perfo
 
 ---
 
-# 21. Project Analyzer
+# 18. Project Analyzer
 
 The Project Analyzer discovers the characteristics of a project.
 
-For the **current MVP**, the detector architecture is intentionally focused on software-project intelligence:
+The planned detector architecture is:
 
 ```text
 Project Analyzer
@@ -1273,28 +876,19 @@ Project Analyzer
 ├── Package Manager Detector
 ├── Build Tool Detector
 ├── Entry Point Detector
-└── Git Detector
+├── Docker Detector
+├── Kubernetes Detector
+├── Git Detector
+└── CI/CD Detector
 ```
 
-Docker, Kubernetes, and CI/CD detectors are **deferred to the next MVP**.
-
-This is intentional.
-
-The current analyzer should focus on answering:
+The detectors produce structured information that is aggregated into:
 
 ```text
-What is this project?
-How is it structured?
-What technologies does it use?
-How does the source code fit together?
-How is it version controlled?
+ProjectAnalysisResult
 ```
 
-rather than trying to understand the entire deployment infrastructure.
-
----
-
-## Example Project Analysis
+Example:
 
 ```json
 {
@@ -1304,11 +898,14 @@ rather than trying to understand the entire deployment infrastructure.
   "packageManager": "npm",
   "buildTool": "tsc",
   "entryPoint": "src/server.ts",
-  "git": true
+  "docker": true,
+  "kubernetes": false,
+  "git": true,
+  "cicd": "GitHub Actions"
 }
 ```
 
-This structured result can then be provided to the AI.
+This allows the AI to understand a project without reading every file.
 
 ---
 
@@ -1359,9 +956,9 @@ This keeps detector development incremental and prevents multiple errors from ac
 
 ---
 
-# 22. AI-MCP Orchestration
+# 19. AI-MCP Orchestration
 
-After the Developer Tool Framework and Project Analyzer are sufficiently mature, the next major step is intelligent orchestration.
+After the Developer Tool Framework is complete, the next major step is intelligent orchestration.
 
 The AI should decide when tools are required.
 
@@ -1376,8 +973,8 @@ The AI can determine:
 
 ```text
 Required:
-- Project structure
 - Source search
+- Project structure
 - Authentication-related files
 ```
 
@@ -1407,7 +1004,7 @@ to:
 
 ---
 
-# 23. RAG Architecture
+# 20. RAG Architecture
 
 RAG stands for Retrieval-Augmented Generation.
 
@@ -1455,7 +1052,8 @@ Actions
 Structured resources
 Filesystem
 Git
-GitHub
+Docker
+Kubernetes
 ```
 
 ### RAG
@@ -1483,7 +1081,7 @@ LLM
 
 ---
 
-# 24. AI Developer Agent
+# 21. AI Developer Agent
 
 The next evolution is an AI Developer Agent.
 
@@ -1527,7 +1125,7 @@ For example:
 "Find why the login API is failing."
 ```
 
-Possible workflow:
+Possible agent workflow:
 
 ```text
 1. Analyze project
@@ -1544,7 +1142,7 @@ Possible workflow:
 
 ---
 
-# 25. Code Modification and Validation
+# 22. Code Modification and Validation
 
 The eventual goal is not just to explain code.
 
@@ -1592,7 +1190,7 @@ The agent should not simply generate code and assume it works.
 
 ---
 
-# 26. VS Code Extension
+# 23. VS Code Extension
 
 VS Code integration is a major planned part of the project.
 
@@ -1600,7 +1198,7 @@ The key design principle is:
 
 > **VS Code should be another client of the same AI Developer Platform.**
 
-Architecture:
+The architecture should therefore be:
 
 ```text
 Chrome Extension ─┐
@@ -1660,7 +1258,7 @@ Eventually allow multi-step development workflows.
 
 ---
 
-# 27. Advanced MCP Ecosystem
+# 24. Advanced MCP Ecosystem
 
 The long-term MCP ecosystem can include:
 
@@ -1670,114 +1268,87 @@ MCP Gateway
 ├── Filesystem MCP
 ├── Git MCP
 ├── GitHub MCP
-├── Database MCP
 ├── Docker MCP
 ├── Kubernetes MCP
+├── Database MCP
 ├── CI/CD MCP
 ├── Cloud MCP
 └── Custom MCP Servers
 ```
 
-The current MVP deliberately concentrates on:
+This allows the AI to work across the development lifecycle.
+
+Example:
 
 ```text
-Filesystem
 GitHub
-Project Intelligence
-Developer Tools
-```
-
-Additional infrastructure integrations can be added without changing the fundamental MCP Gateway architecture.
-
----
-
-# 28. Next MVP — DevOps and CI/CD
-
-Docker, Kubernetes, CI/CD, and cloud infrastructure have **not been removed from the vision**.
-
-They have been moved into the **next MVP**.
-
-The next MVP can introduce:
-
-```text
-                    AI Developer Agent
-                           │
-                           ▼
-                     MCP Gateway
-                           │
-          ┌────────────────┼─────────────────┐
-          │                │                 │
-          ▼                ▼                 ▼
-       Docker         Kubernetes          CI/CD
-          │                │                 │
-          └────────────────┼─────────────────┘
-                           ▼
-                         Cloud
-```
-
-Potential capabilities:
-
-## Docker
-
-* Dockerfile analysis
-* Image analysis
-* Container inspection
-* Docker Compose analysis
-* Container troubleshooting
-
-## Kubernetes
-
-* Manifest analysis
-* Deployment analysis
-* Pod inspection
-* Service analysis
-* Logs
-* Configuration analysis
-* Troubleshooting
-
-## CI/CD
-
-* GitHub Actions
-* Jenkins
-* Pipeline analysis
-* Build status
-* Test status
-* Deployment status
-* Failure diagnosis
-
-## Cloud
-
-Potential future integrations include:
-
-* AWS
-* Azure
-* Google Cloud
-
-The objective will be to let the AI reason across:
-
-```text
-Source Code
-    ↓
-GitHub
-    ↓
-Build
-    ↓
-Container
-    ↓
-Deployment
-    ↓
-Runtime
-    ↓
+   ↓
+CI/CD
+   ↓
+Docker
+   ↓
+Kubernetes
+   ↓
 Logs
-    ↓
-AI Diagnosis
+   ↓
+Source Code
+   ↓
+AI
 ```
 
-This belongs to the next stage of the platform rather than the current MVP.
+A future request such as:
+
+> "Why did my deployment fail?"
+
+could potentially involve multiple systems automatically.
 
 ---
 
-# 29. MCP Marketplace
+# 25. DevOps and Cloud
+
+The project also has a long-term cloud-native direction.
+
+Potential infrastructure:
+
+```text
+Docker
+   ↓
+Docker Compose
+   ↓
+Kubernetes
+   ↓
+Helm
+   ↓
+CI/CD
+   ↓
+Cloud
+```
+
+Potential operational capabilities:
+
+* Containerization
+* Kubernetes deployment
+* Helm charts
+* Jenkins
+* GitHub Actions
+* Health checks
+* Metrics
+* Logging
+* Monitoring
+
+Potential monitoring stack:
+
+```text
+Prometheus
++
+Grafana
++
+Loki
+```
+
+---
+
+# 26. MCP Marketplace
 
 A long-term goal is to allow developers to extend the platform through an MCP marketplace.
 
@@ -1798,7 +1369,7 @@ Conceptually:
                        AI Agent
 ```
 
-Potential marketplace models include:
+Potential future marketplace models include:
 
 * Free MCP tools
 * Premium MCP tools
@@ -1809,9 +1380,9 @@ Potential marketplace models include:
 
 ---
 
-# 30. Phase-Wise Roadmap
+# 27. Phase-Wise Roadmap
 
-The revised roadmap is:
+The complete project roadmap is:
 
 ```text
 Phase 1
@@ -1842,27 +1413,21 @@ Phase 9
 Code Modification + Build/Test/Fix
         ↓
 Phase 10
-VS Code Extension
-        ↓
-Phase 11
 Advanced MCP Ecosystem
         ↓
-Phase 12
-NEXT MVP
-Docker + Kubernetes + CI/CD
+Phase 11
+VS Code Extension
         ↓
-Phase 13
+Phase 12
 Cloud + Production
         ↓
-Phase 14
+Phase 13
 MCP Marketplace
 ```
 
-This ordering intentionally separates **developer intelligence** from **infrastructure automation**.
-
 ---
 
-# 31. Current Project Progress
+# 28. Current Project Progress
 
 | Component                   | Status         |
 | --------------------------- | -------------- |
@@ -1879,17 +1444,6 @@ This ordering intentionally separates **developer intelligence** from **infrastr
 | MCP Tool Execution          | ✅ Complete     |
 | MCP Health Monitoring       | ✅ Complete     |
 | Filesystem MCP Server       | ✅ Complete     |
-| GitHub MCP Foundation       | ✅ Complete     |
-| GitHub Repository Tools     | ✅ Complete     |
-| GitHub Actions Intelligence | ✅ Complete     |
-| GitHub Security Tools       | ✅ Complete     |
-| Repository Administration   | ✅ Complete     |
-| Branch Protection           | ✅ Complete     |
-| GitHub Environments         | ✅ Complete     |
-| GitHub Projects             | ✅ Complete     |
-| Advanced Issues             | ✅ Complete     |
-| Advanced Pull Requests      | ✅ Complete     |
-| GitHub Webhooks / Events    | ✅ Complete     |
 | Developer Tool Framework    | 🟡 In Progress |
 | Project Analyzer            | 🟡 In Progress |
 | Project Detectors           | 🟡 In Progress |
@@ -1899,17 +1453,14 @@ This ordering intentionally separates **developer intelligence** from **infrastr
 | AI Developer Agent          | ⏳ Planned      |
 | Code Modification           | ⏳ Planned      |
 | Build/Test/Fix Loop         | ⏳ Planned      |
+| Advanced MCP                | ⏳ Planned      |
 | VS Code Extension           | ⏳ Planned      |
-| Advanced MCP Ecosystem      | ⏳ Planned      |
-| Docker Integration          | ⏳ Next MVP     |
-| Kubernetes Integration      | ⏳ Next MVP     |
-| CI/CD Integration           | ⏳ Next MVP     |
-| Cloud Deployment            | ⏳ Future       |
+| Cloud Deployment            | ⏳ Planned      |
 | MCP Marketplace             | ⏳ Future       |
 
 ---
 
-# 32. Technology Stack
+# 29. Technology Stack
 
 | Layer             | Technology                   |
 | ----------------- | ---------------------------- |
@@ -1926,28 +1477,20 @@ This ordering intentionally separates **developer intelligence** from **infrastr
 | Vector Database   | ChromaDB                     |
 | RAG               | LangChain / Custom Retrieval |
 | Database          | MongoDB                      |
+| Containers        | Docker                       |
+| Orchestration     | Kubernetes                   |
+| Packaging         | Helm                         |
+| CI/CD             | Jenkins / GitHub Actions     |
+| Monitoring        | Prometheus / Grafana         |
+| Logging           | Loki                         |
 | Version Control   | Git / GitHub                 |
 | Future IDE        | VS Code Extension            |
 
-### Next MVP technologies
-
-The following are intentionally **not required for the current MVP**:
-
-| Technology                      | Scope    |
-| ------------------------------- | -------- |
-| Docker                          | Next MVP |
-| Kubernetes                      | Next MVP |
-| Helm                            | Next MVP |
-| Jenkins                         | Next MVP |
-| GitHub Actions CI/CD Automation | Next MVP |
-| Prometheus                      | Future   |
-| Grafana                         | Future   |
-| Loki                            | Future   |
-| Cloud Infrastructure            | Future   |
+The initial project documentation also identifies React/Vite/Tailwind/Zustand, Node.js/Express, Ollama, ChromaDB, MongoDB, Docker, Kubernetes, Helm, Jenkins, GitHub Actions, Prometheus, Grafana, and Loki as part of the technology direction.
 
 ---
 
-# 33. Repository Structure
+# 30. Repository Structure
 
 The repository is organized around major platform components.
 
@@ -1963,10 +1506,6 @@ AI-powered-Full-Stack-Developer-Assistant/
 │   ├── src/
 │   │   ├── ai/
 │   │   ├── mcp/
-│   │   │   ├── gateway/
-│   │   │   └── servers/
-│   │   │       ├── filesystem/
-│   │   │       └── github/
 │   │   ├── developer-tools/
 │   │   ├── project-analyzer/
 │   │   └── ...
@@ -1975,6 +1514,12 @@ AI-powered-Full-Stack-Developer-Assistant/
 ├── dashboard/
 │
 ├── docs/
+│
+├── docker/
+│
+├── kubernetes/
+│
+├── helm/
 │
 ├── scripts/
 │
@@ -1986,11 +1531,11 @@ AI-powered-Full-Stack-Developer-Assistant/
 └── CONTRIBUTING.md
 ```
 
-Infrastructure directories such as Docker, Kubernetes, and Helm can be introduced when the next MVP begins.
+The exact structure can evolve as implementation progresses.
 
 ---
 
-# 34. Development Strategy
+# 31. Development Strategy
 
 Development follows incremental milestones.
 
@@ -2005,37 +1550,11 @@ Each milestone should:
 7. Commit the changes
 8. Move to the next milestone
 
-The project intentionally avoids implementing every possible technology simultaneously.
-
-The current strategy is:
-
-```text
-MCP Foundation
-      ↓
-Developer Intelligence
-      ↓
-Project Understanding
-      ↓
-GitHub Intelligence
-      ↓
-AI Tool Orchestration
-      ↓
-RAG
-      ↓
-Agent
-      ↓
-Code Modification
-      ↓
-Validation
-      ↓
-DevOps / Infrastructure
-```
-
-This reduces architectural complexity while preserving the long-term vision.
+The project should avoid building the entire system at once.
 
 ---
 
-# 35. Testing Strategy
+# 32. Testing Strategy
 
 Testing should happen continuously.
 
@@ -2045,15 +1564,7 @@ Testing should happen continuously.
 npx tsc --noEmit
 ```
 
-This is the primary TypeScript checkpoint during development.
-
-Especially for:
-
-* MCP tools
-* MCP servers
-* Developer Tools
-* Project Analyzer
-* Project Detectors
+This is especially important while implementing Project Analyzer detectors.
 
 ---
 
@@ -2082,7 +1593,6 @@ AI → MCP Gateway
 Gateway → MCP Server
 MCP → Developer Tool
 Developer Tool → Filesystem
-GitHub MCP → GitHub API
 ```
 
 ---
@@ -2111,9 +1621,11 @@ should be tested as an end-to-end workflow.
 
 ---
 
-# 36. Local Development
+# 33. Local Development
 
-The current local architecture is intentionally lightweight:
+The project is designed to support local development.
+
+Typical local architecture:
 
 ```text
 Chrome Extension
@@ -2124,7 +1636,7 @@ Ollama
        ↓
 MCP Gateway
        ↓
-Filesystem / GitHub
+Local Workspace
 ```
 
 For future RAG:
@@ -2137,21 +1649,17 @@ Embedding Model
 ChromaDB
 ```
 
-The next MVP will extend the environment with:
+For future infrastructure:
 
 ```text
 Docker
    ↓
 Kubernetes
-   ↓
-CI/CD
 ```
-
-but these are not required for the current development workflow.
 
 ---
 
-# 37. Hardware Requirements
+# 34. Hardware Requirements
 
 The initial project direction targets a development environment around:
 
@@ -2163,19 +1671,20 @@ The initial project direction targets a development environment around:
 | OS          | Windows / Linux                     |
 | Browser     | Chrome                              |
 | Development | VS Code                             |
+| Containers  | Docker                              |
 | Local AI    | Ollama                              |
 
 A 16 GB system should be treated as a practical development target, not a guarantee that every future model or workload will run comfortably.
 
-The current MVP is deliberately designed to avoid requiring a local Kubernetes or large container environment.
-
 ---
 
-# 38. Security and Privacy
+# 35. Security and Privacy
 
 Security becomes increasingly important as the project gains tool execution capabilities.
 
-## Authentication
+Future production architecture should consider:
+
+### Authentication
 
 ```text
 User
@@ -2185,7 +1694,7 @@ Authentication
 Authorized Workspace
 ```
 
-## Tool Permissions
+### Tool Permissions
 
 Not every tool should automatically be allowed to execute every operation.
 
@@ -2199,21 +1708,15 @@ Network
 Infrastructure
 ```
 
-The current MVP should primarily focus on controlled read-oriented developer intelligence.
-
-## Workspace Isolation
+### Workspace Isolation
 
 Each user's project/workspace should be isolated.
 
-## Secrets
+### Secrets
 
 Sensitive configuration should not be placed directly into source code.
 
-## GitHub Tokens
-
-GitHub credentials should be securely managed and never hard-coded into source files.
-
-## Audit Logging
+### Audit Logging
 
 Future agent actions should be traceable:
 
@@ -2229,11 +1732,11 @@ Execution
 Result
 ```
 
-This becomes especially important when the agent gains code modification and infrastructure capabilities.
+This becomes especially important when the agent gains code modification and execution capabilities.
 
 ---
 
-# 39. Design Principles
+# 36. Design Principles
 
 The project follows several important principles.
 
@@ -2285,39 +1788,7 @@ MCP should make it possible to add new developer capabilities without rewriting 
 
 ---
 
-## 9. Controlled Scope
-
-Each MVP should focus on a manageable set of capabilities.
-
-The current MVP focuses on:
-
-```text
-AI
-+
-MCP
-+
-Filesystem
-+
-GitHub
-+
-Project Intelligence
-```
-
-The next MVP will focus on:
-
-```text
-Docker
-+
-Kubernetes
-+
-CI/CD
-+
-Cloud
-```
-
----
-
-# 40. Learning Outcomes
+# 37. Learning Outcomes
 
 Completing this project provides practical exposure to several areas of modern software engineering.
 
@@ -2368,9 +1839,8 @@ Completing this project provides practical exposure to several areas of modern s
 * Source Analysis
 * Architecture Detection
 * Code Search
-* GitHub Repository Intelligence
 
-## Future DevOps
+## DevOps
 
 * Docker
 * Kubernetes
@@ -2379,9 +1849,6 @@ Completing this project provides practical exposure to several areas of modern s
 * GitHub Actions
 * Monitoring
 * Logging
-* Cloud
-
-These DevOps technologies are intentionally part of the next stage rather than the current MVP.
 
 ## Developer Platforms
 
@@ -2394,11 +1861,11 @@ These DevOps technologies are intentionally part of the next stage rather than t
 
 ---
 
-# 41. Long-Term Vision
+# 38. Long-Term Vision
 
 The ultimate vision is to create a platform where developers can connect their development environment to an AI agent.
 
-The complete future concept is:
+The complete concept is:
 
 ```text
                          DEVELOPER
@@ -2422,10 +1889,14 @@ The complete future concept is:
                 ▼                       ▼                        ▼
            Filesystem                 Git                   GitHub
                 │                       │                        │
+                ├───────────────────────┼────────────────────────┤
+                │                       │                        │
+                ▼                       ▼                        ▼
+             Docker               Kubernetes                CI/CD
+                │                       │                        │
                 └───────────────────────┼────────────────────────┘
-                                        │
                                         ▼
-                              PROJECT INTELLIGENCE
+                                  PROJECT INTELLIGENCE
                                         │
                               ┌─────────┴─────────┐
                               ▼                   ▼
@@ -2457,41 +1928,9 @@ The complete future concept is:
                                   └──────→ TEST
 ```
 
-After the core developer platform becomes stable:
-
-```text
-                    CORE AI PLATFORM
-                           │
-                           ▼
-                    MCP Gateway
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-        ▼                  ▼                  ▼
-   Filesystem           GitHub          Project Tools
-        │                  │                  │
-        └──────────────────┼──────────────────┘
-                           │
-                           ▼
-                      AI Agent
-                           │
-                           ▼
-                    NEXT MVP / DEVOPS
-                           │
-             ┌─────────────┼─────────────┐
-             ▼             ▼             ▼
-          Docker       Kubernetes      CI/CD
-             │             │             │
-             └─────────────┼─────────────┘
-                           ▼
-                         Cloud
-```
-
-This separation allows the core AI Developer Platform to mature before adding infrastructure automation.
-
 ---
 
-# 42. Contribution
+# 39. Contribution
 
 Contributions are welcome.
 
@@ -2507,11 +1946,11 @@ Potential contribution areas include:
 * Documentation
 * Chrome Extension
 * VS Code Extension
-* GitHub integration
+* Docker
+* Kubernetes
+* CI/CD
+* Monitoring
 * Security
-* Future Docker integration
-* Future Kubernetes integration
-* Future CI/CD integration
 
 Before contributing, contributors should understand the architectural boundaries between:
 
@@ -2527,7 +1966,7 @@ Project Analyzer
 
 ---
 
-# 43. License
+# 40. License
 
 This project is intended to use open-source technologies.
 
@@ -2535,7 +1974,7 @@ The repository license should define the terms under which the source code can b
 
 ---
 
-# 44. Final Goal
+# 🏁 Final Goal
 
 The final goal of the project is to move through the following evolution:
 
@@ -2563,11 +2002,6 @@ The final goal of the project is to move through the following evolution:
                   ┌───────────────────┐
                   │ AI Software       │
                   │ Engineering Agent │
-                  └─────────┬─────────┘
-                            ↓
-                  ┌───────────────────┐
-                  │ DevOps-Aware AI   │
-                  │ Engineering Agent │
                   └───────────────────┘
 ```
 
@@ -2584,13 +2018,11 @@ MCP
 +
 Developer Tools
 +
-GitHub Intelligence
-+
 RAG
 +
 Agentic Workflows
 +
-Code Modification
+Code Execution
 +
 Testing
 +
@@ -2599,11 +2031,9 @@ Developer Interfaces
 
 work together to help developers build and maintain real software.
 
-Docker, Kubernetes, CI/CD, and cloud infrastructure will eventually extend this platform, but they are intentionally separated into a later MVP.
-
 ---
 
-# 🏁 Current Next Step
+## 🚀 Current Next Step
 
 The immediate development target is:
 
@@ -2619,36 +2049,14 @@ Complete Detectors
 Expose Developer Tools through MCP
       ↓
 Implement AI ↔ MCP Orchestration
-      ↓
-Introduce RAG
-      ↓
-Build AI Developer Agent
 ```
 
-After the core AI Developer Platform becomes stable:
-
-```text
-NEXT MVP
-      ↓
-Docker MCP
-      ↓
-Kubernetes MCP
-      ↓
-CI/CD MCP
-      ↓
-Cloud MCP
-```
-
-This gives the project a much more manageable progression.
+Once this is complete, the project will have the foundation required to move from a **project-aware assistant** toward an **AI developer agent**.
 
 ---
 
-# ⭐ Project Philosophy
+## ⭐ Project Philosophy
 
 > **Don't just ask AI to write code. Give AI the ability to understand the project, use developer tools, reason about the system, validate its work, and progressively become an AI software engineering partner.**
-
-The current goal is to build the **developer intelligence foundation first**.
-
-Infrastructure automation comes next.
 
 **Built with open-source technologies. Designed for developers. Evolving toward an AI software engineering platform.**
