@@ -444,6 +444,20 @@ export class GitHubTools {
 
             this.getPullRequestSummaryTool(),
 
+            /*
+            * Repository Webhooks / Events
+            */
+
+            this.getListWebhooksTool(),
+
+            this.getGetWebhookTool(),
+
+            this.getListWebhookDeliveriesTool(),
+
+            this.getGetWebhookDeliveryTool(),
+
+
+
         ];
     }
 
@@ -5768,6 +5782,261 @@ export class GitHubTools {
                         Number(args?.pullNumber)
                     );
             }
+        };
+    }
+
+    private getListWebhooksTool(): MCPTool {
+
+        return {
+            name:
+                "github_list_webhooks",
+
+            description:
+                "List webhooks configured for a GitHub repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    page: {
+                        type: "number",
+                        description:
+                            "Page number.",
+                        minimum: 1
+                    },
+
+                    perPage: {
+                        type: "number",
+                        description:
+                            "Number of webhooks per page.",
+                        minimum: 1,
+                        maximum: 100
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) =>
+                this.githubService.listWebhooks(
+                    String(args?.owner ?? ""),
+                    String(args?.repository ?? ""),
+                    Number(args?.page ?? 1),
+                    Number(args?.perPage ?? 30)
+                )
+        };
+    }
+
+    private getGetWebhookTool(): MCPTool {
+
+        return {
+            name:
+                "github_get_webhook",
+
+            description:
+                "Get a specific webhook configured for a GitHub repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    hookId: {
+                        type: "number",
+                        description:
+                            "GitHub webhook ID.",
+                        minimum: 1
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "hookId"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) =>
+                this.githubService.getWebhook(
+                    String(args?.owner ?? ""),
+                    String(args?.repository ?? ""),
+                    Number(args?.hookId)
+                )
+        };
+    }
+    private getListWebhookDeliveriesTool(): MCPTool {
+
+        return {
+            name:
+                "github_list_webhook_deliveries",
+
+            description:
+                "List recent deliveries for a GitHub repository webhook.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    hookId: {
+                        type: "number",
+                        description:
+                            "GitHub webhook ID.",
+                        minimum: 1
+                    },
+
+                    perPage: {
+                        type: "number",
+                        description:
+                            "Number of deliveries to return.",
+                        minimum: 1,
+                        maximum: 100
+                    },
+
+                    cursor: {
+                        type: "string",
+                        description:
+                            "Cursor for delivery pagination."
+                    },
+
+                    status: {
+                        type: "string",
+                        enum: [
+                            "success",
+                            "failure"
+                        ],
+                        description:
+                            "Filter deliveries by outcome."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "hookId"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) =>
+                this.githubService.listWebhookDeliveries(
+                    String(args?.owner ?? ""),
+                    String(args?.repository ?? ""),
+                    Number(args?.hookId),
+                    Number(args?.perPage ?? 30),
+                    args?.cursor
+                        ? String(args.cursor)
+                        : undefined,
+                    args?.status === "success" ||
+                        args?.status === "failure"
+                        ? args.status
+                        : undefined
+                )
+        };
+    }
+    private getGetWebhookDeliveryTool(): MCPTool {
+
+        return {
+            name:
+                "github_get_webhook_delivery",
+
+            description:
+                "Inspect a specific GitHub repository webhook delivery.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    hookId: {
+                        type: "number",
+                        description:
+                            "GitHub webhook ID.",
+                        minimum: 1
+                    },
+
+                    deliveryId: {
+                        type: "number",
+                        description:
+                            "GitHub webhook delivery ID.",
+                        minimum: 1
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "hookId",
+                    "deliveryId"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ) =>
+                this.githubService.getWebhookDelivery(
+                    String(args?.owner ?? ""),
+                    String(args?.repository ?? ""),
+                    Number(args?.hookId),
+                    Number(args?.deliveryId)
+                )
         };
     }
 

@@ -1455,7 +1455,86 @@ export interface GitHubPullRequestSummary {
 
     requestedReviewers: GitHubPullRequestReviewer[];
 }
+export interface GitHubWebhookConfig {
+    url?: string;
+    content_type?: string;
+    insecure_ssl?: string;
+}
 
+export interface GitHubWebhookLastResponse {
+    code?: number | null;
+    status?: string | null;
+    message?: string | null;
+}
+
+export interface GitHubWebhook {
+    id: number;
+    name: string;
+    active: boolean;
+    events: string[];
+
+    config: GitHubWebhookConfig;
+
+    updated_at: string;
+    created_at: string;
+
+    url: string;
+    test_url: string;
+    ping_url: string;
+    deliveries_url: string;
+
+    last_response: GitHubWebhookLastResponse | null;
+}
+
+export interface GitHubWebhookDelivery {
+    id: number;
+    guid: string;
+
+    delivered_at: string;
+
+    redelivery: boolean;
+
+    duration: number;
+
+    status: string;
+
+    status_code: number;
+
+    event: string;
+
+    action: string | null;
+
+    installation_id: number | null;
+
+    repository_id: number | null;
+
+    throttled_at: string | null;
+}
+
+export interface GitHubWebhookDeliveryDetails
+    extends GitHubWebhookDelivery {
+
+    url: string;
+
+    request: {
+        headers: Record<string, string>;
+        payload: unknown;
+    };
+
+    response: {
+        headers: Record<string, string>;
+        payload: unknown;
+    };
+}
+
+export interface GitHubWebhooksResponse {
+    total_count: number;
+    webhooks: GitHubWebhook[];
+}
+
+export interface GitHubWebhookDeliveriesResponse {
+    deliveries: GitHubWebhookDelivery[];
+}
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -7550,6 +7629,266 @@ export class GitHubService {
                 reviewers
         };
     }
+    /**
+     * List repository webhooks.
+     *
+     * Returns normalized webhook configuration information.
+     */
+    public async listWebhooks(
+        owner: string,
+        repository: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubWebhooksResponse> {
 
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Webhook page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Webhook perPage must be between 1 and 100."
+            );
+        }
+
+        const result =
+            await this.request<GitHubWebhook[]>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/hooks?page=${page}&per_page=${perPage}`
+            );
+
+        return {
+            total_count:
+                result.length,
+
+            webhooks:
+                result.map(
+                    webhook => ({
+                        id:
+                            webhook.id,
+
+                        name:
+                            webhook.name,
+
+                        active:
+                            webhook.active,
+
+                        events:
+                            webhook.events,
+
+                        config: {
+                            url:
+                                webhook.config?.url,
+
+                            content_type:
+                                webhook.config?.content_type,
+
+                            insecure_ssl:
+                                webhook.config?.insecure_ssl
+                        },
+
+                        updated_at:
+                            webhook.updated_at,
+
+                        created_at:
+                            webhook.created_at,
+
+                        url:
+                            webhook.url,
+
+                        test_url:
+                            webhook.test_url,
+
+                        ping_url:
+                            webhook.ping_url,
+
+                        deliveries_url:
+                            webhook.deliveries_url,
+
+                        last_response:
+                            webhook.last_response
+                    })
+                )
+        };
+    }
+    /**
+ * Get a single repository webhook.
+ */
+    public async getWebhook(
+        owner: string,
+        repository: string,
+        hookId: number
+    ): Promise<GitHubWebhook> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(hookId) ||
+            hookId < 1
+        ) {
+            throw new Error(
+                "Webhook hookId must be a positive integer."
+            );
+        }
+
+        const result =
+            await this.request<GitHubWebhook>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/hooks/${hookId}`
+            );
+
+        return result;
+    }
+    /**
+ * List deliveries for a repository webhook.
+ */
+    public async listWebhookDeliveries(
+        owner: string,
+        repository: string,
+        hookId: number,
+        perPage: number = 30,
+        cursor?: string,
+        status?: "success" | "failure"
+    ): Promise<GitHubWebhookDeliveriesResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(hookId) ||
+            hookId < 1
+        ) {
+            throw new Error(
+                "Webhook hookId must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Webhook delivery perPage must be between 1 and 100."
+            );
+        }
+
+        const params =
+            new URLSearchParams();
+
+        params.set(
+            "per_page",
+            String(perPage)
+        );
+
+        if (cursor?.trim()) {
+            params.set(
+                "cursor",
+                cursor
+            );
+        }
+
+        if (status) {
+            params.set(
+                "status",
+                status
+            );
+        }
+
+        const result =
+            await this.request<GitHubWebhookDelivery[]>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/hooks/${hookId}/deliveries?${params.toString()}`
+            );
+
+        return {
+            deliveries:
+                result
+        };
+    }
+    /**
+ * Get a single webhook delivery.
+ */
+    public async getWebhookDelivery(
+        owner: string,
+        repository: string,
+        hookId: number,
+        deliveryId: number
+    ): Promise<GitHubWebhookDeliveryDetails> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(hookId) ||
+            hookId < 1
+        ) {
+            throw new Error(
+                "Webhook hookId must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(deliveryId) ||
+            deliveryId < 1
+        ) {
+            throw new Error(
+                "Webhook deliveryId must be a positive integer."
+            );
+        }
+
+        const result =
+            await this.request<GitHubWebhookDeliveryDetails>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/hooks/${hookId}/deliveries/${deliveryId}`
+            );
+
+        return result;
+    }
 
 }
