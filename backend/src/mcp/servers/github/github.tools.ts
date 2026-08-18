@@ -404,6 +404,15 @@ export class GitHubTools {
 
             this.getBranchRulesTool(),
 
+            /*
+ * Repository Environments
+ */
+            this.getListEnvironmentsTool(),
+
+            this.getGetEnvironmentTool(),
+
+            this.getGetEnvironmentSummaryTool(),
+
         ];
     }
 
@@ -4885,6 +4894,191 @@ export class GitHubTools {
                             branch
                         );
                 }
+        };
+    }
+    /**
+ * List repository environments.
+ */
+    private getListEnvironmentsTool(): MCPTool {
+        return {
+            name: "github_list_environments",
+
+            description:
+                "List deployment environments configured for a GitHub repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    page: {
+                        type: "number",
+                        description:
+                            "Page number. Defaults to 1.",
+                        minimum: 1
+                    },
+
+                    perPage: {
+                        type: "number",
+                        description:
+                            "Number of environments per page. Defaults to 30. Maximum is 100.",
+                        minimum: 1,
+                        maximum: 100
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                const owner =
+                    String(args?.owner ?? "");
+
+                const repository =
+                    String(args?.repository ?? "");
+
+                const page =
+                    Number(args?.page ?? 1);
+
+                const perPage =
+                    Number(args?.perPage ?? 30);
+
+                return this.githubService.listEnvironments(
+                    owner,
+                    repository,
+                    page,
+                    perPage
+                );
+            }
+        };
+    }
+    /**
+ * Get a repository environment.
+ */
+    private getGetEnvironmentTool(): MCPTool {
+        return {
+            name: "github_get_environment",
+
+            description:
+                "Get the configuration and protection settings of a GitHub repository environment.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    environment: {
+                        type: "string",
+                        description:
+                            "GitHub environment name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "environment"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                const owner =
+                    String(args?.owner ?? "");
+
+                const repository =
+                    String(args?.repository ?? "");
+
+                const environment =
+                    String(args?.environment ?? "");
+
+                return this.githubService.getEnvironment(
+                    owner,
+                    repository,
+                    environment
+                );
+            }
+        };
+    }
+    /**
+ * Get an AI-friendly summary of repository environments.
+ */
+    private getGetEnvironmentSummaryTool(): MCPTool {
+        return {
+            name: "github_get_environment_summary",
+
+            description:
+                "Get an AI-friendly summary of repository environments, including protection settings, required reviewers, wait timers, and branch policies.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                const owner =
+                    String(args?.owner ?? "");
+
+                const repository =
+                    String(args?.repository ?? "");
+
+                return this.githubService
+                    .getEnvironmentSummary(
+                        owner,
+                        repository
+                    );
+            }
         };
     }
 

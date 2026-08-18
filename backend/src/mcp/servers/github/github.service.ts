@@ -1229,6 +1229,57 @@ export interface GitHubBranchProtection {
     allowDeletions: boolean;
 }
 
+export interface GitHubEnvironment {
+    id: number;
+    name: string;
+
+    url?: string;
+
+    html_url?: string;
+
+    protection_rules: {
+        required_reviewers: number;
+        wait_timer: number;
+        prevent_self_review: boolean;
+    };
+
+    deployment_branch_policy: {
+        protected_branches: boolean;
+        custom_branch_policies: boolean;
+    };
+
+    custom_branch_policies: Array<{
+        id: number;
+        name: string;
+        type?: string;
+    }>;
+
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface GitHubEnvironmentsResponse {
+    total_count: number;
+    environments: GitHubEnvironment[];
+}
+
+export interface GitHubEnvironmentSummary {
+    total: number;
+
+    environments: Array<{
+        name: string;
+        id: number;
+        protected: boolean;
+        requiredReviewers: number;
+        waitTimer: number;
+        protectedBranches: boolean;
+        customBranchPolicies: boolean;
+    }>;
+
+    protectedCount: number;
+    unprotectedCount: number;
+}
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -5876,6 +5927,354 @@ export class GitHubService {
                 protection.protected,
 
             rules
+        };
+    }
+
+    public async listEnvironments(
+        owner: string,
+        repository: string,
+        page: number = 1,
+        perPage: number = 30
+    ): Promise<GitHubEnvironmentsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(page) ||
+            page < 1
+        ) {
+            throw new Error(
+                "Environments page must be a positive integer."
+            );
+        }
+
+        if (
+            !Number.isInteger(perPage) ||
+            perPage < 1 ||
+            perPage > 100
+        ) {
+            throw new Error(
+                "Environments perPage must be between 1 and 100."
+            );
+        }
+
+        const result =
+            await this.request<{
+                total_count: number;
+                environments: Array<{
+                    id: number;
+                    name: string;
+                    url?: string;
+                    html_url?: string;
+
+                    protection_rules?: Array<{
+                        id: number;
+                        node_id?: string;
+                        type: string;
+                        wait_timer?: number;
+                    }>;
+
+                    deployment_branch_policy?: {
+                        protected_branches?: boolean;
+                        custom_branch_policies?: boolean;
+                    };
+
+                    custom_branch_policies?: Array<{
+                        id: number;
+                        name: string;
+                        type?: string;
+                    }>;
+
+                    created_at?: string;
+                    updated_at?: string;
+                }>;
+            }>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/environments?page=${page}&per_page=${perPage}`
+            );
+
+        return {
+            total_count:
+                result.total_count,
+
+            environments:
+                result.environments.map(
+                    environment => {
+
+                        const requiredReviewers =
+                            environment.protection_rules
+                                ?.filter(
+                                    rule =>
+                                        rule.type ===
+                                        "required_reviewers"
+                                )
+                                .length ?? 0;
+
+                        const waitTimer =
+                            environment.protection_rules
+                                ?.find(
+                                    rule =>
+                                        rule.type ===
+                                        "wait_timer"
+                                )
+                                ?.wait_timer ?? 0;
+
+                        return {
+                            id:
+                                environment.id,
+
+                            name:
+                                environment.name,
+
+                            url:
+                                environment.url,
+
+                            html_url:
+                                environment.html_url,
+
+                            protection_rules: {
+                                required_reviewers:
+                                    requiredReviewers,
+
+                                wait_timer:
+                                    waitTimer,
+
+                                prevent_self_review:
+                                    false
+                            },
+
+                            deployment_branch_policy: {
+                                protected_branches:
+                                    environment
+                                        .deployment_branch_policy
+                                        ?.protected_branches ??
+                                    false,
+
+                                custom_branch_policies:
+                                    environment
+                                        .deployment_branch_policy
+                                        ?.custom_branch_policies ??
+                                    false
+                            },
+
+                            custom_branch_policies:
+                                environment
+                                    .custom_branch_policies ??
+                                [],
+
+                            created_at:
+                                environment.created_at,
+
+                            updated_at:
+                                environment.updated_at
+                        };
+                    }
+                )
+        };
+    }
+    public async getEnvironment(
+        owner: string,
+        repository: string,
+        environment: string
+    ): Promise<GitHubEnvironment> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (!environment?.trim()) {
+            throw new Error(
+                "GitHub environment name is required."
+            );
+        }
+
+        const result =
+            await this.request<{
+                id: number;
+                name: string;
+                url?: string;
+                html_url?: string;
+
+                protection_rules?: Array<{
+                    id: number;
+                    type: string;
+                    wait_timer?: number;
+                }>;
+
+                deployment_branch_policy?: {
+                    protected_branches?: boolean;
+                    custom_branch_policies?: boolean;
+                };
+
+                custom_branch_policies?: Array<{
+                    id: number;
+                    name: string;
+                    type?: string;
+                }>;
+
+                created_at?: string;
+                updated_at?: string;
+            }>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/environments/${encodeURIComponent(environment)}`
+            );
+
+        const requiredReviewers =
+            result.protection_rules
+                ?.filter(
+                    rule =>
+                        rule.type ===
+                        "required_reviewers"
+                )
+                .length ?? 0;
+
+        const waitTimer =
+            result.protection_rules
+                ?.find(
+                    rule =>
+                        rule.type ===
+                        "wait_timer"
+                )
+                ?.wait_timer ?? 0;
+
+        return {
+            id:
+                result.id,
+
+            name:
+                result.name,
+
+            url:
+                result.url,
+
+            html_url:
+                result.html_url,
+
+            protection_rules: {
+                required_reviewers:
+                    requiredReviewers,
+
+                wait_timer:
+                    waitTimer,
+
+                prevent_self_review:
+                    false
+            },
+
+            deployment_branch_policy: {
+                protected_branches:
+                    result.deployment_branch_policy
+                        ?.protected_branches ??
+                    false,
+
+                custom_branch_policies:
+                    result.deployment_branch_policy
+                        ?.custom_branch_policies ??
+                    false
+            },
+
+            custom_branch_policies:
+                result.custom_branch_policies ??
+                [],
+
+            created_at:
+                result.created_at,
+
+            updated_at:
+                result.updated_at
+        };
+    }
+    public async getEnvironmentSummary(
+        owner: string,
+        repository: string
+    ): Promise<GitHubEnvironmentSummary> {
+
+        const result =
+            await this.listEnvironments(
+                owner,
+                repository,
+                1,
+                100
+            );
+
+        const environments =
+            result.environments.map(
+                environment => {
+
+                    const protectedEnvironment =
+                        environment.protection_rules
+                            .required_reviewers > 0 ||
+                        environment.protection_rules
+                            .wait_timer > 0 ||
+                        environment.deployment_branch_policy
+                            .protected_branches ||
+                        environment.deployment_branch_policy
+                            .custom_branch_policies;
+
+                    return {
+                        name:
+                            environment.name,
+
+                        id:
+                            environment.id,
+
+                        protected:
+                            protectedEnvironment,
+
+                        requiredReviewers:
+                            environment.protection_rules
+                                .required_reviewers,
+
+                        waitTimer:
+                            environment.protection_rules
+                                .wait_timer,
+
+                        protectedBranches:
+                            environment
+                                .deployment_branch_policy
+                                .protected_branches,
+
+                        customBranchPolicies:
+                            environment
+                                .deployment_branch_policy
+                                .custom_branch_policies
+                    };
+                }
+            );
+
+        const protectedCount =
+            environments.filter(
+                environment =>
+                    environment.protected
+            ).length;
+
+        return {
+            total:
+                environments.length,
+
+            environments,
+
+            protectedCount,
+
+            unprotectedCount:
+                environments.length -
+                protectedCount
         };
     }
 
