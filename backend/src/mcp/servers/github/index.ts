@@ -12,14 +12,28 @@ import {
     GitHubTools
 } from "./github.tools";
 
+import type {
+    GitHubConfig
+} from "./github.types";
+
+/**
+ * ============================================================
+ * Configuration
+ * ============================================================
+ */
+
+const githubConfig: GitHubConfig = {
+    apiUrl: process.env.GITHUB_API_URL ?? "https://api.github.com",
+    token: process.env.GITHUB_TOKEN,
+};
+
 /**
  * ============================================================
  * Singleton Instances
  * ============================================================
  */
 
-export const githubService =
-    new GitHubService();
+const githubService = new GitHubService(githubConfig);
 
 export const githubTools =
     new GitHubTools(
@@ -72,10 +86,14 @@ export * from "./github.constants";
  * ============================================================
  */
 
-export function createGitHubServer(): GitHubServer {
+export function createGitHubServer(
+    config: GitHubConfig = githubConfig
+): GitHubServer {
 
     const service =
-        new GitHubService();
+        new GitHubService(
+            config
+        );
 
     const tools =
         new GitHubTools(

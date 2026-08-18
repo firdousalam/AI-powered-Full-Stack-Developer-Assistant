@@ -22,7 +22,40 @@ import {
     GITHUB_SERVER
 } from "./github.constants";
 
+/**
+ * ============================================================
+ * GitHub MCP Server
+ * ============================================================
+ *
+ * Responsible for:
+ *
+ * - GitHub MCP server lifecycle
+ * - GitHub tool registration
+ * - Tool discovery
+ * - Tool execution
+ * - Server metadata
+ * - Health monitoring
+ *
+ * Architecture:
+ *
+ * GitHubServer
+ *      ↓
+ * GitHubTools
+ *      ↓
+ * GitHubService
+ *      ↓
+ * GitHub REST API
+ *
+ * ============================================================
+ */
+
 export class GitHubServer implements MCPServer {
+
+    /**
+     * ========================================================
+     * Server Metadata
+     * ========================================================
+     */
 
     /**
      * Unique server identifier.
@@ -55,10 +88,19 @@ export class GitHubServer implements MCPServer {
         ServerStatus.DISCONNECTED;
 
     /**
-     * MCP tools exposed by this server.
+     * ========================================================
+     * Registered MCP Tools
+     * ========================================================
      */
+
     private readonly tools =
         new Map<string, MCPTool>();
+
+    /**
+     * ========================================================
+     * Constructor
+     * ========================================================
+     */
 
     constructor(
         private readonly githubService: GitHubService,
@@ -66,7 +108,12 @@ export class GitHubServer implements MCPServer {
     ) { }
 
     /**
-     * Register all GitHub MCP tools.
+     * ========================================================
+     * Register Tools
+     * ========================================================
+     *
+     * Gets all GitHub tools from GitHubTools and registers
+     * them inside the server tool registry.
      */
     private registerTools(): void {
 
@@ -74,6 +121,19 @@ export class GitHubServer implements MCPServer {
             this.githubTools.getTools();
 
         for (const tool of tools) {
+
+            if (
+                this.tools.has(
+                    tool.name
+                )
+            ) {
+
+                MCPLogger.warn(
+                    `GitHub Tool already registered: ${tool.name}`
+                );
+
+                continue;
+            }
 
             this.tools.set(
                 tool.name,
@@ -87,7 +147,12 @@ export class GitHubServer implements MCPServer {
     }
 
     /**
-     * Connect and initialize the GitHub MCP server.
+     * ========================================================
+     * Connect
+     * ========================================================
+     *
+     * Initializes the GitHub MCP server and registers all
+     * available GitHub tools.
      */
     public async connect(): Promise<void> {
 
@@ -95,6 +160,10 @@ export class GitHubServer implements MCPServer {
             this.status ===
             ServerStatus.CONNECTED
         ) {
+            MCPLogger.info(
+                "GitHub MCP Server is already connected."
+            );
+
             return;
         }
 
@@ -105,24 +174,55 @@ export class GitHubServer implements MCPServer {
             "Connecting GitHub MCP Server..."
         );
 
-        this.registerTools();
+        try {
 
-        this.status =
-            ServerStatus.CONNECTED;
+            this.registerTools();
 
-        MCPLogger.info(
-            "GitHub MCP Server connected."
-        );
+            this.status =
+                ServerStatus.CONNECTED;
 
-        MCPLogger.info(
-            `Registered ${this.tools.size} MCP tools.`
-        );
+            MCPLogger.info(
+                "GitHub MCP Server connected."
+            );
+
+            MCPLogger.info(
+                `Registered ${this.tools.size} MCP tools.`
+            );
+
+        } catch (error) {
+
+            this.status =
+                ServerStatus.DISCONNECTED;
+
+            MCPLogger.error(
+                "Failed to connect GitHub MCP Server.",
+                error
+            );
+
+            throw error;
+        }
     }
 
     /**
-     * Disconnect the GitHub MCP server.
+     * ========================================================
+     * Disconnect
+     * ========================================================
+     *
+     * Clears registered tools and releases GitHub service
+     * resources.
      */
     public async disconnect(): Promise<void> {
+
+        if (
+            this.status ===
+            ServerStatus.DISCONNECTED
+        ) {
+            return;
+        }
+
+        MCPLogger.info(
+            "Disconnecting GitHub MCP Server..."
+        );
 
         this.tools.clear();
 
@@ -137,7 +237,11 @@ export class GitHubServer implements MCPServer {
     }
 
     /**
-     * Execute a registered MCP tool.
+     * ========================================================
+     * Execute Tool
+     * ========================================================
+     *
+     * Executes a registered GitHub MCP tool.
      */
     public async executeTool(
         request: ToolRequest
@@ -160,7 +264,7 @@ export class GitHubServer implements MCPServer {
         try {
 
             MCPLogger.info(
-                `Executing Tool: ${tool.name}`
+                `Executing GitHub Tool: ${tool.name}`
             );
 
             const result =
@@ -176,7 +280,7 @@ export class GitHubServer implements MCPServer {
         } catch (error) {
 
             MCPLogger.error(
-                `Tool ${tool.name} failed`,
+                `GitHub Tool ${tool.name} failed`,
                 error
             );
 
@@ -191,8 +295,11 @@ export class GitHubServer implements MCPServer {
     }
 
     /**
-     * Discover every MCP tool exposed by
-     * this server.
+     * ========================================================
+     * Discover Tools
+     * ========================================================
+     *
+     * Returns every GitHub MCP tool currently registered.
      */
     public discoverTools(): MCPTool[] {
 
@@ -202,7 +309,11 @@ export class GitHubServer implements MCPServer {
     }
 
     /**
-     * Return server metadata.
+     * ========================================================
+     * Metadata
+     * ========================================================
+     *
+     * Returns metadata about the GitHub MCP server.
      */
     public getMetadata() {
 
@@ -219,7 +330,11 @@ export class GitHubServer implements MCPServer {
     }
 
     /**
-     * Health check.
+     * ========================================================
+     * Health Check
+     * ========================================================
+     *
+     * Delegates the health check to GitHubService.
      */
     public async healthCheck() {
 
@@ -227,7 +342,9 @@ export class GitHubServer implements MCPServer {
     }
 
     /**
-     * Whether the server is connected.
+     * ========================================================
+     * Connection Status
+     * ========================================================
      */
     public isConnected(): boolean {
 
@@ -237,3 +354,12 @@ export class GitHubServer implements MCPServer {
         );
     }
 }
+
+/**
+ * Explicit class export.
+ *
+ * This also makes the export visible to index.ts:
+ *
+ * import { GitHubServer } from "./github.server";
+ */
+//export { GitHubServer };
