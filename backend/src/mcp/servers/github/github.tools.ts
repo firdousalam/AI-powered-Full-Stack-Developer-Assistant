@@ -413,6 +413,15 @@ export class GitHubTools {
 
             this.getGetEnvironmentSummaryTool(),
 
+            /*
+ * Repository Projects
+ */
+            this.getListProjectsTool(),
+
+            this.getGetProjectTool(),
+
+            this.getGetProjectSummaryTool(),
+
         ];
     }
 
@@ -5082,4 +5091,136 @@ export class GitHubTools {
         };
     }
 
+    private getListProjectsTool(): MCPTool {
+        return {
+            name: "github_list_projects",
+
+            description:
+                "List projects associated with a GitHub repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                return this.githubService.listProjects(
+                    String(args?.owner ?? ""),
+                    String(args?.repository ?? "")
+                );
+            }
+        };
+    }
+    private getGetProjectTool(): MCPTool {
+        return {
+            name: "github_get_project",
+
+            description:
+                "Get detailed information about a GitHub repository project.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    },
+
+                    projectNumber: {
+                        type: "number",
+                        description:
+                            "GitHub project number."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository",
+                    "projectNumber"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                return this.githubService.getProject(
+                    String(args?.owner ?? ""),
+                    String(args?.repository ?? ""),
+                    Number(args?.projectNumber ?? 0)
+                );
+            }
+        };
+    }
+    private getGetProjectSummaryTool(): MCPTool {
+        return {
+            name: "github_get_project_summary",
+
+            description:
+                "Get an AI-friendly summary of projects associated with a GitHub repository.",
+
+            inputSchema: {
+                type: "object",
+
+                properties: {
+                    owner: {
+                        type: "string",
+                        description:
+                            "GitHub repository owner."
+                    },
+
+                    repository: {
+                        type: "string",
+                        description:
+                            "GitHub repository name."
+                    }
+                },
+
+                required: [
+                    "owner",
+                    "repository"
+                ]
+            },
+
+            execute: async (
+                args?: Record<string, unknown>
+            ): Promise<unknown> => {
+
+                return this.githubService
+                    .getProjectSummary(
+                        String(args?.owner ?? ""),
+                        String(args?.repository ?? "")
+                    );
+            }
+        };
+    }
 }

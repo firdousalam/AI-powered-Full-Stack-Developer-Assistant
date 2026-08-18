@@ -1280,6 +1280,32 @@ export interface GitHubEnvironmentSummary {
     unprotectedCount: number;
 }
 
+export interface GitHubProject {
+    id: number;
+    number: number;
+    title: string;
+    description?: string;
+    url: string;
+    shortDescription?: string;
+    closed: boolean;
+    public: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface GitHubProjectsResponse {
+    total_count: number;
+    projects: GitHubProject[];
+}
+
+export interface GitHubProjectSummary {
+    total: number;
+    open: number;
+    closed: number;
+    public: number;
+    private: number;
+}
+
 export class GitHubService {
     private readonly config: GitHubConfig;
 
@@ -6275,6 +6301,206 @@ export class GitHubService {
             unprotectedCount:
                 environments.length -
                 protectedCount
+        };
+    }
+
+    public async listProjects(
+        owner: string,
+        repository: string
+    ): Promise<GitHubProjectsResponse> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        const result =
+            await this.request<{
+                total_count: number;
+
+                projects: Array<{
+                    id: number;
+                    number: number;
+                    title: string;
+                    body?: string | null;
+                    html_url: string;
+                    short_description?: string | null;
+                    state: string;
+                    created_at?: string;
+                    updated_at?: string;
+                }>;
+            }>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/projects`
+            );
+
+        return {
+            total_count:
+                result.total_count,
+
+            projects:
+                result.projects.map(
+                    project => ({
+                        id:
+                            project.id,
+
+                        number:
+                            project.number,
+
+                        title:
+                            project.title,
+
+                        description:
+                            project.body ?? undefined,
+
+                        url:
+                            project.html_url,
+
+                        shortDescription:
+                            project.short_description ??
+                            undefined,
+
+                        closed:
+                            project.state === "closed",
+
+                        public:
+                            true,
+
+                        createdAt:
+                            project.created_at,
+
+                        updatedAt:
+                            project.updated_at
+                    })
+                )
+        };
+    }
+
+    public async getProject(
+        owner: string,
+        repository: string,
+        projectNumber: number
+    ): Promise<GitHubProject> {
+
+        if (!owner?.trim()) {
+            throw new Error(
+                "GitHub repository owner is required."
+            );
+        }
+
+        if (!repository?.trim()) {
+            throw new Error(
+                "GitHub repository name is required."
+            );
+        }
+
+        if (
+            !Number.isInteger(projectNumber) ||
+            projectNumber < 1
+        ) {
+            throw new Error(
+                "GitHub project number must be a positive integer."
+            );
+        }
+
+        const result =
+            await this.request<{
+                id: number;
+                number: number;
+                title: string;
+                body?: string | null;
+                html_url: string;
+                short_description?: string | null;
+                state: string;
+                created_at?: string;
+                updated_at?: string;
+            }>(
+                `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/projects/${projectNumber}`
+            );
+
+        return {
+            id:
+                result.id,
+
+            number:
+                result.number,
+
+            title:
+                result.title,
+
+            description:
+                result.body ?? undefined,
+
+            url:
+                result.html_url,
+
+            shortDescription:
+                result.short_description ??
+                undefined,
+
+            closed:
+                result.state === "closed",
+
+            public:
+                true,
+
+            createdAt:
+                result.created_at,
+
+            updatedAt:
+                result.updated_at
+        };
+    }
+
+    public async getProjectSummary(
+        owner: string,
+        repository: string
+    ): Promise<GitHubProjectSummary> {
+
+        const result =
+            await this.listProjects(
+                owner,
+                repository
+            );
+
+        const projects =
+            result.projects;
+
+        const open =
+            projects.filter(
+                project => !project.closed
+            ).length;
+
+        const closed =
+            projects.filter(
+                project => project.closed
+            ).length;
+
+        const publicProjects =
+            projects.filter(
+                project => project.public
+            ).length;
+
+        return {
+            total:
+                projects.length,
+
+            open,
+
+            closed,
+
+            public:
+                publicProjects,
+
+            private:
+                projects.length -
+                publicProjects
         };
     }
 
