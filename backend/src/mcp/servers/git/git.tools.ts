@@ -1,6 +1,10 @@
 import { GitService } from './git.service';
-import type { GitStatus } from './git.types';
 
+import type {
+    GitBranch,
+    GitBranchList,
+    GitStatus
+} from './git.types';
 /**
  * Git MCP tool names.
  */
@@ -40,4 +44,59 @@ export function createGitStatusTool(
             );
         },
     };
+}
+
+/**
+ * git_branch_list
+ *
+ * Returns all local Git branches and the current branch.
+ */
+export async function gitBranchList(
+    gitService: GitService,
+    workspacePath: string,
+): Promise<GitBranchList> {
+    const current =
+        await gitService.getCurrentBranch(
+            workspacePath,
+        );
+
+    const branches =
+        await gitService.listBranches(
+            workspacePath,
+        );
+
+    return {
+        current,
+        branches,
+    };
+}
+
+/**
+ * git_branch_current
+ *
+ * Returns the currently checked-out Git branch.
+ */
+export async function gitBranchCurrent(
+    gitService: GitService,
+    workspacePath: string,
+): Promise<string> {
+    return gitService.getCurrentBranch(
+        workspacePath,
+    );
+}
+
+/**
+ * git_branch_info
+ *
+ * Returns information about a specific Git branch.
+ */
+export async function gitBranchInfo(
+    gitService: GitService,
+    workspacePath: string,
+    branchName: string,
+): Promise<GitBranch> {
+    return gitService.getBranchInfo(
+        workspacePath,
+        branchName,
+    );
 }

@@ -333,3 +333,20 @@ export interface GitStatus {
      */
     untracked: string[];
 }
+
+/**
+ * Information about a Git branch.
+ */
+export interface GitBranch {
+    name: string;
+    current: boolean;
+    remote?: string;
+}
+
+/**
+ * Structured list of Git branches.
+ */
+export interface GitBranchList {
+    current: string;
+    branches: string[];
+}

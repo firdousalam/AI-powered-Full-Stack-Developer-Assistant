@@ -10,6 +10,7 @@ import {
 
 
 import type {
+    GitBranch,
     GitCommandOptions,
     GitCommandResult,
     GitConfig,
@@ -419,13 +420,16 @@ export class GitService {
      *
      * @param workspacePath Path inside the repository.
      * @returns Current branch name.
-     *
-     * @throws Error when the workspace is not a Git repository.
      */
-    async getCurrentBranch(workspacePath: string): Promise<string> {
-        const repositoryCheck = await this.isRepository(workspacePath);
 
-        if (!repositoryCheck) {
+    async getCurrentBranch(
+        workspacePath: string,
+    ): Promise<string> {
+        const isRepository = await this.isRepository(
+            workspacePath,
+        );
+
+        if (!isRepository) {
             throw new Error(
                 `The workspace is not a Git repository: ${workspacePath}`,
             );
@@ -446,14 +450,7 @@ export class GitService {
             );
         }
 
-        const branch = result.stdout.trim();
-
-        /*
-         * branch --show-current returns an empty string when HEAD
-         * is detached. Treat that as a valid repository state rather
-         * than incorrectly reporting that the directory is not Git.
-         */
-        return branch;
+        return result.stdout.trim();
     }
 
     /**
@@ -514,5 +511,89 @@ export class GitService {
         };
     }
 
+    /**
+    * Lists local Git branches.
+    *
+    * @param workspacePath Path inside the Git repository.
+    * @returns Branch names.
+    */
+    async listBranches(
+        workspacePath: string,
+    ): Promise<string[]> {
+        const isRepository = await this.isRepository(
+            workspacePath,
+        );
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const result = await this.execute(
+            [
+                'branch',
+                '--format=%(refname:short)',
+            ],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                'Unable to list Git branches.',
+            );
+        }
+
+        return result.stdout
+            .split(/\r?\n/)
+            .map((branch) => branch.trim())
+            .filter(Boolean);
+    }
+
+    /**
+     * Gets information about a Git branch.
+     *
+     * @param workspacePath Path inside the repository.
+     * @param branchName Branch name.
+     */
+    async getBranchInfo(
+        workspacePath: string,
+        branchName: string,
+    ): Promise<GitBranch> {
+        const isRepository = await this.isRepository(
+            workspacePath,
+        );
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const branches = await this.listBranches(
+            workspacePath,
+        );
+
+        if (!branches.includes(branchName)) {
+            throw new Error(
+                `Git branch not found: ${branchName}`,
+            );
+        }
+
+        const currentBranch =
+            await this.getCurrentBranch(
+                workspacePath,
+            );
+
+        return {
+            name: branchName,
+            current: branchName === currentBranch,
+            local: true,
+        };
+    }
 
 }
