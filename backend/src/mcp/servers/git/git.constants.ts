@@ -36,4 +36,15 @@ export const GIT_TOOL_NAMES = {
     TAG_LIST: 'git_tag_list',
     REMOTE_LIST: 'git_remote_list',
     REMOTE_INFO: 'git_remote_info',
+
 } as const;
+
+/**
+ * Minimum allowed Git command timeout.
+ */
+export const MIN_GIT_TIMEOUT = 1_000;
+
+/**
+ * Maximum allowed Git command timeout.
+ */
+export const MAX_GIT_TIMEOUT = 120_000;

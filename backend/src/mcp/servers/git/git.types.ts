@@ -233,3 +233,63 @@ export interface GitBlame {
      */
     date?: string;
 }
+
+/**
+ * Options used when executing a Git command.
+ */
+export interface GitCommandOptions {
+    /**
+     * Working directory in which Git should execute.
+     */
+    cwd: string;
+
+    /**
+     * Maximum execution time in milliseconds.
+     *
+     * If omitted, GitService uses the configured default timeout.
+     */
+    timeout?: number;
+}
+
+/**
+ * Structured result returned by GitService command execution.
+ */
+export interface GitCommandResult {
+    /**
+     * Whether the Git command completed successfully.
+     */
+    success: boolean;
+
+    /**
+     * Git command arguments.
+     */
+    command: string[];
+
+    /**
+     * Standard output produced by Git.
+     */
+    stdout: string;
+
+    /**
+     * Standard error produced by Git.
+     */
+    stderr: string;
+
+    /**
+     * Git process exit code.
+     *
+     * Undefined when the process failed before an exit code
+     * could be obtained.
+     */
+    exitCode?: number;
+
+    /**
+     * Whether the command exceeded its timeout.
+     */
+    timedOut: boolean;
+
+    /**
+     * Error message when command execution failed.
+     */
+    error?: string;
+}
