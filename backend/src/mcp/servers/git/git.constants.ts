@@ -18,6 +18,17 @@ export const DEFAULT_GIT_TIMEOUT = 30_000;
 export const GIT_MCP_SERVER_NAME = 'git';
 
 /**
+ * Default number of commits returned by Git log queries.
+ */
+export const DEFAULT_GIT_LOG_LIMIT = 20;
+
+/**
+ * Maximum number of commits that a single Git log request
+ * can return.
+ */
+export const MAX_GIT_LOG_LIMIT = 100;
+
+/**
  * Git MCP tool names.
  */
 export const GIT_TOOL_NAMES = {

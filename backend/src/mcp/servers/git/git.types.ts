@@ -350,3 +350,54 @@ export interface GitBranchList {
     current: string;
     branches: string[];
 }
+
+/**
+ * Options used when querying Git commit history.
+ */
+export interface GitCommitQueryOptions {
+    /**
+     * Maximum number of commits to return.
+     */
+    limit?: number;
+
+    /**
+     * Filter commits by author.
+     */
+    author?: string;
+
+    /**
+     * Include commits after this date.
+     *
+     * Git-compatible date expression.
+     */
+    since?: string;
+
+    /**
+     * Include commits before this date.
+     *
+     * Git-compatible date expression.
+     */
+    until?: string;
+
+    /**
+     * Branch, tag, or commit reference to search.
+     */
+    branch?: string;
+}
+
+/**
+ * Structured result returned by Git log queries.
+ */
+export interface GitCommitList {
+    commits: GitCommit[];
+
+    /**
+     * Number of commits returned.
+     */
+    count: number;
+
+    /**
+     * Whether more commits may exist beyond the requested limit.
+     */
+    hasMore: boolean;
+}

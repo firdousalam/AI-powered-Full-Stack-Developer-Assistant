@@ -1,9 +1,17 @@
 import { GitService } from './git.service';
 
+import {
+    DEFAULT_GIT_LOG_LIMIT,
+    MAX_GIT_LOG_LIMIT,
+} from './git.constants';
+
 import type {
     GitBranch,
     GitBranchList,
-    GitStatus
+    GitStatus,
+    GitCommit,
+    GitCommitList,
+    GitCommitQueryOptions,
 } from './git.types';
 /**
  * Git MCP tool names.
@@ -100,3 +108,54 @@ export async function gitBranchInfo(
         branchName,
     );
 }
+
+
+/**
+ * git_log
+ *
+ * Returns recent commits from the repository.
+ */
+export async function gitLog(
+    gitService: GitService,
+    workspacePath: string,
+    options: GitCommitQueryOptions = {},
+): Promise<GitCommitList> {
+    return gitService.getLog(
+        workspacePath,
+        options,
+    );
+}
+
+/**
+ * git_commit_show
+ *
+ * Returns information about a specific commit.
+ */
+export async function gitCommitShow(
+    gitService: GitService,
+    workspacePath: string,
+    commitReference: string,
+): Promise<GitCommit> {
+    return gitService.getCommit(
+        workspacePath,
+        commitReference,
+    );
+}
+
+/**
+ * git_commit_search
+ *
+ * Searches commit history using author,
+ * date, branch, and limit filters.
+ */
+export async function gitCommitSearch(
+    gitService: GitService,
+    workspacePath: string,
+    options: GitCommitQueryOptions = {},
+): Promise<GitCommitList> {
+    return gitService.searchCommits(
+        workspacePath,
+        options,
+    );
+}
+
