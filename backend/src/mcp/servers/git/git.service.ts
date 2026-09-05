@@ -8,11 +8,13 @@ import {
     MIN_GIT_TIMEOUT,
 } from './git.constants';
 
+
 import type {
     GitCommandOptions,
     GitCommandResult,
     GitConfig,
     GitRepository,
+    GitStatus,
 } from './git.types';
 
 const execFileAsync = promisify(execFile);
@@ -86,14 +88,168 @@ export class GitService {
     }
 
     /**
-     * Checks whether the supplied directory belongs to a Git repository.
+ * Parses Git porcelain status output.
+ *
+ * Git porcelain v1 format:
+ *
+ * XY filename
+ *
+ * X = index/staged status
+ * Y = working-tree status
+ */
+    private parseStatus(
+        output: string,
+        branch: string,
+    ): Omit<GitStatus, 'ahead' | 'behind'> {
+        const modified: string[] = [];
+        const added: string[] = [];
+        const deleted: string[] = [];
+        const untracked: string[] = [];
+
+        const lines = output
+            .split(/\r?\n/)
+            .filter((line) => line.length > 0);
+
+        for (const line of lines) {
+            if (line.length < 3) {
+                continue;
+            }
+
+            const indexStatus = line[0];
+            const workingTreeStatus = line[1];
+            const filePath = line.slice(3);
+
+            /*
+             * Untracked
+             *
+             * ?? filename
+             */
+            if (
+                indexStatus === '?' &&
+                workingTreeStatus === '?'
+            ) {
+                untracked.push(filePath);
+                continue;
+            }
+
+            /*
+             * Added
+             *
+             * A file added to the index.
+             */
+            if (
+                indexStatus === 'A' ||
+                workingTreeStatus === 'A'
+            ) {
+                added.push(filePath);
+                continue;
+            }
+
+            /*
+             * Deleted
+             */
+            if (
+                indexStatus === 'D' ||
+                workingTreeStatus === 'D'
+            ) {
+                deleted.push(filePath);
+                continue;
+            }
+
+            /*
+             * Modified
+             */
+            if (
+                indexStatus === 'M' ||
+                workingTreeStatus === 'M'
+            ) {
+                modified.push(filePath);
+            }
+        }
+
+        return {
+            branch,
+            modified,
+            added,
+            deleted,
+            untracked,
+        };
+    }
+
+    /**
+ * Gets ahead/behind information relative to the upstream branch.
+ */
+    private async getAheadBehind(
+        workspacePath: string,
+    ): Promise<{
+        ahead: number;
+        behind: number;
+    }> {
+        const result = await this.execute(
+            [
+                'rev-list',
+                '--left-right',
+                '--count',
+                'HEAD...@{upstream}',
+            ],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        /*
+         * A repository may not have an upstream branch.
+         *
+         * In that case there is no meaningful ahead/behind
+         * information, so return zero values.
+         */
+        if (!result.success) {
+            return {
+                ahead: 0,
+                behind: 0,
+            };
+        }
+
+        const values = result.stdout
+            .trim()
+            .split(/\s+/);
+
+        if (values.length !== 2) {
+            return {
+                ahead: 0,
+                behind: 0,
+            };
+        }
+
+        const ahead = Number.parseInt(
+            values[0],
+            10,
+        );
+
+        const behind = Number.parseInt(
+            values[1],
+            10,
+        );
+
+        return {
+            ahead: Number.isNaN(ahead) ? 0 : ahead,
+            behind: Number.isNaN(behind) ? 0 : behind,
+        };
+    }
+
+    /**
+     * Checks whether the supplied workspace path
+     * is inside a Git working tree.
      *
-     * This does not throw when the directory is not a repository.
+     * @param workspacePath Path to the workspace.
+     * @returns true when the path belongs to a Git repository.
      */
-    async isRepository(cwd: string): Promise<boolean> {
+    async isRepository(workspacePath: string): Promise<boolean> {
         const result = await this.execute(
             ['rev-parse', '--is-inside-work-tree'],
-            { cwd },
+            {
+                cwd: workspacePath,
+            },
         );
 
         return (
@@ -102,24 +258,21 @@ export class GitService {
         );
     }
 
+
+
     /**
      * Validates a Git repository and returns basic repository information.
      *
-     * When the supplied directory is not a Git repository,
-     * isRepository is false and root/currentBranch are empty strings.
-     */
+     * @param workspacePath Path to the workspace.
+    */
     async validateRepository(
-        cwd: string,
+        workspacePath: string,
     ): Promise<GitRepository> {
-        const repositoryCheck = await this.execute(
-            ['rev-parse', '--is-inside-work-tree'],
-            { cwd },
+        const isRepository = await this.isRepository(
+            workspacePath,
         );
 
-        if (
-            !repositoryCheck.success ||
-            repositoryCheck.stdout.trim() !== 'true'
-        ) {
+        if (!isRepository) {
             return {
                 isRepository: false,
                 root: '',
@@ -127,47 +280,50 @@ export class GitService {
             };
         }
 
-        const rootResult = await this.execute(
-            ['rev-parse', '--show-toplevel'],
-            { cwd },
+        const root = await this.getRepositoryRoot(
+            workspacePath,
         );
 
-        if (!rootResult.success) {
-            return {
-                isRepository: false,
-                root: '',
-                currentBranch: '',
-            };
-        }
-
-        const branchResult = await this.execute(
-            ['branch', '--show-current'],
-            { cwd },
+        const currentBranch = await this.getCurrentBranch(
+            workspacePath,
         );
 
         return {
             isRepository: true,
-            root: rootResult.stdout.trim(),
-            currentBranch: branchResult.success
-                ? branchResult.stdout.trim()
-                : '',
+            root,
+            currentBranch,
         };
     }
 
     /**
-     * Returns the absolute repository root.
+     * Gets the root directory of the Git repository.
      *
-     * Throws when the supplied directory is not a Git repository.
+     * @param workspacePath Path inside the repository.
+     * @returns Absolute repository root path.
+     *
+     * @throws Error when the workspace is not a Git repository.
      */
-    async getRepositoryRoot(cwd: string): Promise<string> {
+    async getRepositoryRoot(workspacePath: string): Promise<string> {
+        const repositoryCheck = await this.isRepository(workspacePath);
+
+        if (!repositoryCheck) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
         const result = await this.execute(
             ['rev-parse', '--show-toplevel'],
-            { cwd },
+            {
+                cwd: workspacePath,
+            },
         );
 
         if (!result.success) {
             throw new Error(
-                this.createRepositoryError(result),
+                result.stderr.trim() ||
+                result.error ||
+                'Unable to determine Git repository root.',
             );
         }
 
@@ -257,4 +413,106 @@ export class GitService {
 
         return result.error ?? 'Not a Git repository.';
     }
+
+    /**
+     * Gets the current Git branch.
+     *
+     * @param workspacePath Path inside the repository.
+     * @returns Current branch name.
+     *
+     * @throws Error when the workspace is not a Git repository.
+     */
+    async getCurrentBranch(workspacePath: string): Promise<string> {
+        const repositoryCheck = await this.isRepository(workspacePath);
+
+        if (!repositoryCheck) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const result = await this.execute(
+            ['branch', '--show-current'],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                'Unable to determine current Git branch.',
+            );
+        }
+
+        const branch = result.stdout.trim();
+
+        /*
+         * branch --show-current returns an empty string when HEAD
+         * is detached. Treat that as a valid repository state rather
+         * than incorrectly reporting that the directory is not Git.
+         */
+        return branch;
+    }
+
+    /**
+ * Gets the current Git working-tree status.
+ *
+ * @param workspacePath Path inside the Git repository.
+ * @returns Structured Git status.
+ */
+    async getStatus(
+        workspacePath: string,
+    ): Promise<GitStatus> {
+        const isRepository = await this.isRepository(
+            workspacePath,
+        );
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const branch = await this.getCurrentBranch(
+            workspacePath,
+        );
+
+        const statusResult = await this.execute(
+            [
+                'status',
+                '--porcelain=v1',
+                '--untracked-files=all',
+            ],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!statusResult.success) {
+            throw new Error(
+                statusResult.stderr.trim() ||
+                statusResult.error ||
+                'Unable to determine Git status.',
+            );
+        }
+
+        const status = this.parseStatus(
+            statusResult.stdout,
+            branch,
+        );
+
+        const tracking = await this.getAheadBehind(
+            workspacePath,
+        );
+
+        return {
+            ...status,
+            ahead: tracking.ahead,
+            behind: tracking.behind,
+        };
+    }
+
+
 }

@@ -293,3 +293,43 @@ export interface GitCommandResult {
      */
     error?: string;
 }
+
+/**
+ * Structured Git working-tree status.
+ */
+export interface GitStatus {
+    /**
+     * Current branch name.
+     */
+    branch: string;
+
+    /**
+     * Number of commits the local branch is ahead of its upstream.
+     */
+    ahead: number;
+
+    /**
+     * Number of commits the local branch is behind its upstream.
+     */
+    behind: number;
+
+    /**
+     * Modified files.
+     */
+    modified: string[];
+
+    /**
+     * Added/staged files.
+     */
+    added: string[];
+
+    /**
+     * Deleted files.
+     */
+    deleted: string[];
+
+    /**
+     * Untracked files.
+     */
+    untracked: string[];
+}
