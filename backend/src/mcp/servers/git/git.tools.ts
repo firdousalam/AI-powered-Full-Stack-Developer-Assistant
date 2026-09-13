@@ -16,6 +16,7 @@ import type {
     GitDiffOptions,
     GitBlameOptions,
     GitTagOptions,
+    GitRemoteOptions,
 } from './git.types';
 
 const gitService = new GitService();
@@ -287,6 +288,43 @@ export const gitTagList = {
         args: GitTagOptions,
     ) => {
         return gitService.getTags(
+            args,
+        );
+    },
+};
+
+
+export const gitRemoteList = {
+    name: 'git_remote_list',
+
+    description:
+        'Retrieve Git remotes from the repository, including fetch and push URLs.',
+
+    inputSchema: {
+        type: 'object',
+        properties: {
+            workspacePath: {
+                type: 'string',
+                description:
+                    'Absolute path to the Git workspace.',
+            },
+
+            remoteName: {
+                type: 'string',
+                description:
+                    'Optional remote name. When omitted, all Git remotes are returned.',
+            },
+        },
+
+        required: [
+            'workspacePath',
+        ],
+    },
+
+    execute: async (
+        args: GitRemoteOptions,
+    ) => {
+        return gitService.getRemotes(
             args,
         );
     },

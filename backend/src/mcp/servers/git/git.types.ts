@@ -500,3 +500,18 @@ export interface GitTagOptions {
      */
     annotated?: boolean;
 }
+
+/**
+ * Options for Git remote operations.
+ */
+export interface GitRemoteOptions {
+    workspacePath: string;
+
+    /**
+     * Optional remote name.
+     *
+     * When provided, the operation targets
+     * a specific remote.
+     */
+    remoteName?: string;
+}
