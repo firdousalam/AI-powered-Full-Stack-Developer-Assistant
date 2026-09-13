@@ -28,6 +28,14 @@ export const DEFAULT_GIT_LOG_LIMIT = 20;
  */
 export const MAX_GIT_LOG_LIMIT = 100;
 
+export const DEFAULT_GIT_DIFF_FILE_LIMIT = 50;
+
+export const MAX_GIT_DIFF_FILE_LIMIT = 100;
+
+export const DEFAULT_GIT_DIFF_SIZE_LIMIT = 1_000_000;
+
+export const MAX_GIT_DIFF_SIZE_LIMIT = 5_000_000;
+
 /**
  * Git MCP tool names.
  */

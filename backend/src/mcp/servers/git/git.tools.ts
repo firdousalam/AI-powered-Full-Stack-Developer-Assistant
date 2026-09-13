@@ -12,7 +12,11 @@ import type {
     GitCommit,
     GitCommitList,
     GitCommitQueryOptions,
+    GitDiff,
+    GitDiffOptions,
 } from './git.types';
+
+
 /**
  * Git MCP tool names.
  */
@@ -155,6 +159,43 @@ export async function gitCommitSearch(
 ): Promise<GitCommitList> {
     return gitService.searchCommits(
         workspacePath,
+        options,
+    );
+}
+
+export async function gitDiff(
+    gitService: GitService,
+    workspacePath: string,
+    options: GitDiffOptions = {},
+): Promise<GitDiff> {
+    return gitService.getDiff(
+        workspacePath,
+        options,
+    );
+}
+
+export async function gitCommitDiff(
+    gitService: GitService,
+    workspacePath: string,
+    commitReference: string,
+    options: GitDiffOptions = {},
+): Promise<GitDiff> {
+    return gitService.getCommitDiff(
+        workspacePath,
+        commitReference,
+        options,
+    );
+}
+
+export async function gitFileDiff(
+    gitService: GitService,
+    workspacePath: string,
+    filePath: string,
+    options: GitDiffOptions = {},
+): Promise<GitDiff> {
+    return gitService.getFileDiff(
+        workspacePath,
+        filePath,
         options,
     );
 }

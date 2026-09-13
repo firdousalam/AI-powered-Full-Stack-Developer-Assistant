@@ -2,9 +2,13 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 import {
+    DEFAULT_GIT_DIFF_FILE_LIMIT,
+    DEFAULT_GIT_DIFF_SIZE_LIMIT,
     DEFAULT_GIT_LOG_LIMIT,
     DEFAULT_GIT_PATH,
     DEFAULT_GIT_TIMEOUT,
+    MAX_GIT_DIFF_FILE_LIMIT,
+    MAX_GIT_DIFF_SIZE_LIMIT,
     MAX_GIT_LOG_LIMIT,
     MAX_GIT_TIMEOUT,
     MIN_GIT_TIMEOUT,
@@ -19,6 +23,9 @@ import type {
     GitCommitList,
     GitCommitQueryOptions,
     GitConfig,
+    GitDiff,
+    GitDiffFile,
+    GitDiffOptions,
     GitRepository,
     GitStatus,
 } from './git.types';
@@ -834,5 +841,373 @@ export class GitService {
             hasMore,
         };
     }
+
+    async getDiff(
+        workspacePath: string,
+        options: GitDiffOptions = {},
+    ): Promise<GitDiff> {
+        const isRepository =
+            await this.isRepository(workspacePath);
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const fileLimit =
+            this.normalizeDiffFileLimit(options.fileLimit);
+
+        const maxDiffSize =
+            this.normalizeDiffSizeLimit(options.maxDiffSize);
+
+        const result = await this.execute(
+            [
+                'diff',
+                '--no-ext-diff',
+                '--unified=3',
+                '--no-color',
+                '--',
+            ],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                'Unable to retrieve Git diff.',
+            );
+        }
+
+        const output = result.stdout;
+
+        const limitedOutput =
+            output.length > maxDiffSize
+                ? output.slice(0, maxDiffSize)
+                : output;
+
+        const truncated =
+            output.length > maxDiffSize;
+
+        const files =
+            this.parseDiff(limitedOutput, fileLimit);
+
+        return this.buildDiffResult(files, truncated);
+    }
+
+    async getCommitDiff(
+        workspacePath: string,
+        commitReference: string,
+        options: GitDiffOptions = {},
+    ): Promise<GitDiff> {
+        const isRepository =
+            await this.isRepository(workspacePath);
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        if (!commitReference.trim()) {
+            throw new Error('Commit reference is required.');
+        }
+
+        const fileLimit =
+            this.normalizeDiffFileLimit(options.fileLimit);
+
+        const maxDiffSize =
+            this.normalizeDiffSizeLimit(options.maxDiffSize);
+
+        const result = await this.execute(
+            [
+                'show',
+                '--format=',
+                '--no-ext-diff',
+                '--unified=3',
+                '--no-color',
+                commitReference,
+                '--',
+            ],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                `Unable to retrieve diff for commit: ${commitReference}`,
+            );
+        }
+
+        const output = result.stdout;
+
+        const limitedOutput =
+            output.length > maxDiffSize
+                ? output.slice(0, maxDiffSize)
+                : output;
+
+        const truncated =
+            output.length > maxDiffSize;
+
+        const files =
+            this.parseDiff(limitedOutput, fileLimit);
+
+        return this.buildDiffResult(files, truncated);
+    }
+
+    async getFileDiff(
+        workspacePath: string,
+        filePath: string,
+        options: GitDiffOptions = {},
+    ): Promise<GitDiff> {
+        const isRepository =
+            await this.isRepository(workspacePath);
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        if (!filePath.trim()) {
+            throw new Error('File path is required.');
+        }
+
+        const fileLimit =
+            this.normalizeDiffFileLimit(options.fileLimit);
+
+        const maxDiffSize =
+            this.normalizeDiffSizeLimit(options.maxDiffSize);
+
+        const result = await this.execute(
+            [
+                'diff',
+                '--no-ext-diff',
+                '--unified=3',
+                '--no-color',
+                '--',
+                filePath,
+            ],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                `Unable to retrieve diff for file: ${filePath}`,
+            );
+        }
+
+        const output = result.stdout;
+
+        const limitedOutput =
+            output.length > maxDiffSize
+                ? output.slice(0, maxDiffSize)
+                : output;
+
+        const truncated =
+            output.length > maxDiffSize;
+
+        const files =
+            this.parseDiff(
+                limitedOutput,
+                Math.min(fileLimit, 1),
+            );
+
+        return this.buildDiffResult(files, truncated);
+    }
+
+    private parseDiff(
+        output: string,
+        fileLimit: number,
+    ): GitDiffFile[] {
+        if (!output.trim()) {
+            return [];
+        }
+
+        const files: GitDiffFile[] = [];
+
+        const sections =
+            output.split(/^diff --git /m);
+
+        for (const section of sections) {
+            if (!section.trim()) {
+                continue;
+            }
+
+            if (files.length >= fileLimit) {
+                break;
+            }
+
+            const parsed =
+                this.parseDiffSection(section);
+
+            if (parsed) {
+                files.push(parsed);
+            }
+        }
+
+        return files;
+    }
+
+    private parseDiffSection(
+        section: string,
+    ): GitDiffFile | null {
+        const lines =
+            section.split(/\r?\n/);
+
+        if (lines.length === 0) {
+            return null;
+        }
+
+        const header = lines[0];
+
+        const pathMatch =
+            header.match(/^a\/(.+?) b\/(.+)$/);
+
+        if (!pathMatch) {
+            return null;
+        }
+
+        const oldPath = pathMatch[1];
+        const newPath = pathMatch[2];
+
+        let status: GitDiffFile['status'] = 'modified';
+
+        if (section.includes('\nnew file mode ')) {
+            status = 'added';
+        } else if (section.includes('\ndeleted file mode ')) {
+            status = 'deleted';
+        } else if (section.includes('\nrename from ')) {
+            status = 'renamed';
+        } else if (section.includes('\ncopy from ')) {
+            status = 'copied';
+        }
+
+        const additions =
+            this.countDiffLines(lines, 'addition');
+
+        const deletions =
+            this.countDiffLines(lines, 'deletion');
+
+        return {
+            path:
+                status === 'renamed'
+                    ? `${oldPath} -> ${newPath}`
+                    : newPath,
+            status,
+            additions,
+            deletions,
+            diff: `diff --git ${section}`,
+        };
+    }
+
+    private countDiffLines(
+        lines: string[],
+        type: 'addition' | 'deletion',
+    ): number {
+        let count = 0;
+
+        for (const line of lines) {
+            if (
+                line.startsWith('+++') ||
+                line.startsWith('---')
+            ) {
+                continue;
+            }
+
+            if (
+                type === 'addition' &&
+                line.startsWith('+')
+            ) {
+                count++;
+            }
+
+            if (
+                type === 'deletion' &&
+                line.startsWith('-')
+            ) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private buildDiffResult(
+        files: GitDiffFile[],
+        truncated: boolean,
+    ): GitDiff {
+        const additions =
+            files.reduce(
+                (total, file) =>
+                    total + file.additions,
+                0,
+            );
+
+        const deletions =
+            files.reduce(
+                (total, file) =>
+                    total + file.deletions,
+                0,
+            );
+
+        return {
+            files,
+            fileCount: files.length,
+            additions,
+            deletions,
+            truncated,
+        };
+    }
+
+    private normalizeDiffFileLimit(
+        limit?: number,
+    ): number {
+        if (
+            limit === undefined ||
+            !Number.isFinite(limit)
+        ) {
+            return DEFAULT_GIT_DIFF_FILE_LIMIT;
+        }
+
+        return Math.min(
+            Math.max(
+                Math.floor(limit),
+                1,
+            ),
+            MAX_GIT_DIFF_FILE_LIMIT,
+        );
+    }
+
+    private normalizeDiffSizeLimit(
+        size?: number,
+    ): number {
+        if (
+            size === undefined ||
+            !Number.isFinite(size)
+        ) {
+            return DEFAULT_GIT_DIFF_SIZE_LIMIT;
+        }
+
+        return Math.min(
+            Math.max(
+                Math.floor(size),
+                1,
+            ),
+            MAX_GIT_DIFF_SIZE_LIMIT,
+        );
+    }
+
+
 
 }
