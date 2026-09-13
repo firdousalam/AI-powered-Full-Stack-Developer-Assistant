@@ -15,6 +15,7 @@ import type {
     GitDiff,
     GitDiffOptions,
     GitBlameOptions,
+    GitTagOptions,
 } from './git.types';
 
 const gitService = new GitService();
@@ -249,3 +250,44 @@ export const gitBlame = {
     },
 };
 
+/**
+ * git_tag_list
+ *
+ * Returns Git tags from the repository.
+ *
+ * When tagName is provided, returns information
+ * for that specific tag.
+ */
+export const gitTagList = {
+    name: 'git_tag_list',
+
+    description:
+        'Retrieve Git tags from the repository, including lightweight and annotated tags.',
+
+    inputSchema: {
+        type: 'object',
+        properties: {
+            workspacePath: {
+                type: 'string',
+                description:
+                    'Absolute path to the Git workspace.',
+            },
+            tagName: {
+                type: 'string',
+                description:
+                    'Optional tag name. When omitted, all tags are returned.',
+            },
+        },
+        required: [
+            'workspacePath',
+        ],
+    },
+
+    execute: async (
+        args: GitTagOptions,
+    ) => {
+        return gitService.getTags(
+            args,
+        );
+    },
+};
