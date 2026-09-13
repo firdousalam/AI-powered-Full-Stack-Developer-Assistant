@@ -14,9 +14,10 @@ import type {
     GitCommitQueryOptions,
     GitDiff,
     GitDiffOptions,
+    GitBlameOptions,
 } from './git.types';
 
-
+const gitService = new GitService();
 /**
  * Git MCP tool names.
  */
@@ -199,4 +200,52 @@ export async function gitFileDiff(
         options,
     );
 }
+
+export const gitBlame = {
+    name: 'git_blame',
+
+    description:
+        'Show line-by-line Git blame information for a file.',
+
+    inputSchema: {
+        type: 'object',
+        properties: {
+            workspacePath: {
+                type: 'string',
+                description:
+                    'Absolute path to the Git workspace.',
+            },
+            filePath: {
+                type: 'string',
+                description:
+                    'Path to the file relative to the Git workspace.',
+            },
+            startLine: {
+                type: 'number',
+                description:
+                    'Optional starting line number.',
+            },
+            endLine: {
+                type: 'number',
+                description:
+                    'Optional ending line number.',
+            },
+            revision: {
+                type: 'string',
+                description:
+                    'Optional Git revision to blame.',
+            },
+        },
+        required: [
+            'workspacePath',
+            'filePath',
+        ],
+    },
+
+    execute: async (
+        args: GitBlameOptions,
+    ) => {
+        return gitService.blame(args);
+    },
+};
 

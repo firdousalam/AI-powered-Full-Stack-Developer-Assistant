@@ -43,6 +43,7 @@ Milestone	Name	Objective
 5.8.10	Tags & Remote Tools	Inspect tags and remotes
 5.8.11	MCP Integration	Register Git MCP with Gateway
 5.8.12	Validation & E2E	Test complete Git MCP workflow
+
 5.8.1 — Git MCP Architecture
 Goal
 
@@ -1716,3 +1717,354 @@ This is also the sequence specified in the project document.
 After that, we should strictly follow the pattern we've been using in your project:
 
 implement → npx tsc --noEmit → fix all errors → move to next milestone.
+
+There is no error output, so:
+
+✅ TypeScript checkpoint passed
+
+5.8.8 — Git Diff Tools is now structurally complete.
+
+You now have:
+
+5.8.8 — Git Diff Tools
+│
+├── git_diff
+│   └── Current working-tree diff
+│
+├── git_commit_diff
+│   └── Diff introduced by a commit
+│
+├── git_file_diff
+│   └── Diff for a specific file
+│
+├── Diff parsing
+│   ├── added
+│   ├── modified
+│   ├── deleted
+│   ├── renamed
+│   └── copied
+│
+├── Addition/deletion statistics
+├── File limit
+├── Diff size limit
+└── Structured GitDiff response
+
+And the architecture is now correctly:
+
+AI Agent
+   ↓
+MCP Gateway
+   ↓
+GitMcpServer
+   ↓
+git.tools.ts
+   ↓
+GitService
+   ↓
+Git CLI
+   ↓
+Git Repository
+Next milestone
+
+The next logical milestone is:
+
+5.8.9 — Git Blame Tool
+
+5.8.9 — Git Blame
+        ↓
+git_blame
+        ↓
+File + line attribution
+        ↓
+Author
+Commit
+Date
+Line content
+        ↓
+Structured MCP response
+
+Before implementing it, we should first define the exact git_blame response model and service/tool responsibilities, then implement it and again run:
+
+
+5.8.9 — Git Blame Tool
+1. Responsibility split
+
+Keep the same architecture:
+
+AI Agent
+   ↓
+MCP Gateway
+   ↓
+GitMcpServer
+   ↓
+git.tools.ts
+   ↓
+GitService
+   ↓
+Git CLI
+   ↓
+Git Repository
+git.tools.ts
+
+Responsible for:
+
+MCP tool definition
+Input validation
+Calling GitService
+Returning structured MCP output
+
+It should not execute Git commands directly.
+
+GitService
+
+Responsible for:
+
+Repository validation
+Executing git blame
+Timeout handling
+Parsing raw Git output
+Converting it into the structured response model
+Returning predictable errors
+2. git_blame input model
+
+I recommend keeping the first version simple:
+
+export interface GitBlameOptions {
+    workspacePath: string;
+    filePath: string;
+    startLine?: number;
+    endLine?: number;
+    revision?: string;
+}
+
+Meaning:
+
+workspacePath → Git repository
+filePath      → file to inspect
+startLine     → optional starting line
+endLine       → optional ending line
+revision      → optional commit/branch/tag
+
+Examples:
+
+git_blame
+  workspacePath = "/project"
+  filePath = "src/app.ts"
+
+or:
+
+git_blame
+  workspacePath = "/project"
+  filePath = "src/app.ts"
+  startLine = 20
+  endLine = 40
+
+or:
+
+git_blame
+  workspacePath = "/project"
+  filePath = "src/app.ts"
+  revision = "main"
+3. Response model
+
+I recommend a structured response rather than returning raw git blame text.
+
+export interface GitBlameLine {
+    lineNumber: number;
+    commit: string;
+    author: string;
+    authorEmail?: string;
+    date: string;
+    content: string;
+}
+
+Then:
+
+export interface GitBlameResult {
+    filePath: string;
+    revision?: string;
+    startLine?: number;
+    endLine?: number;
+    lines: GitBlameLine[];
+    totalLines: number;
+}
+
+So the AI receives something like:
+
+{
+  "filePath": "src/app.ts",
+  "revision": "HEAD",
+  "startLine": 20,
+  "endLine": 24,
+  "totalLines": 5,
+  "lines": [
+    {
+      "lineNumber": 20,
+      "commit": "a8f3c91",
+      "author": "Firdous Alam",
+      "authorEmail": "f***@example.com",
+      "date": "2026-09-10T14:25:30+05:30",
+      "content": "const app = express();"
+    }
+  ]
+}
+Why structured output matters
+
+The AI agent can now answer questions such as:
+
+Who introduced this line?
+
+Which developer changed this section?
+
+When was this code introduced?
+
+Which commit introduced the problematic line?
+
+without having to parse raw CLI output itself.
+
+4. Git command
+
+The underlying command should be based on:
+
+git blame
+
+For structured parsing, use porcelain-style output rather than trying to parse the human-readable default format.
+
+Conceptually:
+
+git blame --porcelain <file>
+
+For a line range:
+
+git blame --porcelain -L <start>,<end> <file>
+
+For a specific revision:
+
+git blame --porcelain <revision> -- <file>
+
+The exact command construction should remain inside GitService.
+
+5. Important security rules
+
+Because this is an MCP developer agent, don't simply concatenate user input into a shell command.
+
+For example, avoid:
+
+`git blame --porcelain ${filePath}`
+
+Instead, your existing Git service command-execution mechanism should pass arguments separately where possible.
+
+Also validate:
+
+workspacePath
+filePath
+revision
+startLine
+endLine
+
+Especially:
+
+filePath
+
+because the filesystem/MCP security model should prevent escaping the allowed workspace.
+
+6. Recommended file structure
+
+Following your existing Git MCP structure:
+
+src/mcp/servers/git/
+│
+├── git.server.ts
+├── git.service.ts
+├── git.tools.ts
+├── git.types.ts
+│
+└── models/
+    └── git-blame.model.ts
+
+If your project currently keeps models/types in a different location, we should follow the existing project convention rather than introducing a new structure unnecessarily.
+
+7. Implementation order
+
+I recommend doing 5.8.9 in these checkpoints:
+
+5.8.9.1
+GitBlameLine + GitBlameResult models
+        ↓
+5.8.9.2
+GitBlameOptions input model
+        ↓
+5.8.9.3
+GitService blame method
+        ↓
+5.8.9.4
+Porcelain output parser
+        ↓
+5.8.9.5
+git_blame MCP tool
+        ↓
+5.8.9.6
+GitMcpServer registration
+        ↓
+5.8.9.7
+Validation + limits
+        ↓
+5.8.9.8
+TypeScript checkpoint
+        ↓
+npx tsc --noEmit
+One important design decision
+
+I would not create a separate GitBlameService.
+
+Keep:
+
+GitMcpServer
+     ↓
+GitService
+     ↓
+Git CLI
+
+GitService is already your controlled Git execution boundary, so blame belongs there just like diff, status, log, branch, etc.
+
+First coding step
+
+So the immediate next milestone should be:
+
+5.8.9.1 — Git Blame Response Models
+
+Create the models first, without changing GitService or git.tools.ts yet.
+
+Then run:
+
+npx tsc --noEmit
+
+Once that passes, proceed to 5.8.9.2 — Git Blame Input Model and continue one checkpoint at a time.
+
+I recommend doing 5.8.9 in these checkpoints:
+
+5.8.9.1
+GitBlameLine + GitBlameResult models
+        ↓
+5.8.9.2
+GitBlameOptions input model
+        ↓
+5.8.9.3
+GitService blame method
+        ↓
+5.8.9.4
+Porcelain output parser
+        ↓
+5.8.9.5
+git_blame MCP tool
+        ↓
+5.8.9.6
+GitMcpServer registration
+        ↓
+5.8.9.7
+Validation + limits
+        ↓
+5.8.9.8
+TypeScript checkpoint
+        ↓
+npx tsc --noEmit

@@ -14,8 +14,8 @@ import {
     MIN_GIT_TIMEOUT,
 } from './git.constants';
 
-
 import type {
+    GitBlameOptions,
     GitBranch,
     GitCommandOptions,
     GitCommandResult,
@@ -29,6 +29,11 @@ import type {
     GitRepository,
     GitStatus,
 } from './git.types';
+
+import {
+    GitBlameResult,
+    GitBlameLine,
+} from './models/git-blame.model';
 
 const execFileAsync = promisify(execFile);
 
@@ -1208,6 +1213,342 @@ export class GitService {
         );
     }
 
+    /**
+ * Gets Git blame information for a file.
+ *
+ * This method is responsible only for:
+ * - repository validation
+ * - input validation
+ * - Git command construction
+ * - controlled Git command execution
+ *
+ * Parsing of the porcelain blame output is handled
+ * separately in the Git blame parsing milestone.
+ *
+ * @param options Git blame options.
+ * @returns Raw Git command result containing blame output.
+ */
+    /**
+  * Gets Git blame information for a file.
+  *
+  * Performs:
+  * - repository validation
+  * - input validation
+  * - line-range validation
+  * - Git command construction
+  * - controlled Git command execution
+  * - porcelain output parsing
+  *
+  * @param options Git blame options.
+  * @returns Structured Git blame information.
+  */
+    async blame(
+        options: GitBlameOptions,
+    ): Promise<GitBlameResult> {
+        const {
+            workspacePath,
+            filePath,
+            startLine,
+            endLine,
+            revision,
+        } = options;
 
+        if (!workspacePath.trim()) {
+            throw new Error(
+                'Workspace path is required.',
+            );
+        }
+
+        if (!filePath.trim()) {
+            throw new Error(
+                'File path is required.',
+            );
+        }
+
+        if (
+            startLine !== undefined &&
+            (
+                !Number.isInteger(startLine) ||
+                startLine < 1
+            )
+        ) {
+            throw new Error(
+                'Start line must be a positive integer.',
+            );
+        }
+
+        if (
+            endLine !== undefined &&
+            (
+                !Number.isInteger(endLine) ||
+                endLine < 1
+            )
+        ) {
+            throw new Error(
+                'End line must be a positive integer.',
+            );
+        }
+
+        if (
+            startLine !== undefined &&
+            endLine !== undefined &&
+            endLine < startLine
+        ) {
+            throw new Error(
+                'End line must be greater than or equal to start line.',
+            );
+        }
+
+        if (
+            revision !== undefined &&
+            !revision.trim()
+        ) {
+            throw new Error(
+                'Revision cannot be empty.',
+            );
+        }
+
+        const isRepository =
+            await this.isRepository(
+                workspacePath,
+            );
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const args: string[] = [
+            'blame',
+            '--line-porcelain',
+        ];
+
+        /*
+         * Optional line range.
+         *
+         * Both start and end:
+         *   -L start,end
+         *
+         * Only start:
+         *   -L start,start
+         *
+         * Only end:
+         *   -L 1,end
+         */
+        if (
+            startLine !== undefined &&
+            endLine !== undefined
+        ) {
+            args.push(
+                '-L',
+                `${startLine},${endLine}`,
+            );
+        } else if (
+            startLine !== undefined
+        ) {
+            args.push(
+                '-L',
+                `${startLine},${startLine}`,
+            );
+        } else if (
+            endLine !== undefined
+        ) {
+            args.push(
+                '-L',
+                `1,${endLine}`,
+            );
+        }
+
+        if (revision !== undefined) {
+            args.push(revision);
+        }
+
+        args.push(
+            '--',
+            filePath,
+        );
+
+        const result = await this.execute(
+            args,
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                `Unable to retrieve Git blame for file: ${filePath}`,
+            );
+        }
+
+        const lines =
+            this.parseBlame(
+                result.stdout,
+            );
+
+        return {
+            filePath,
+            revision: revision ?? 'HEAD',
+            startLine,
+            endLine,
+            lines,
+            totalLines: lines.length,
+        };
+    }
+
+    /**
+ * Parses Git --line-porcelain blame output.
+ *
+ * @param output Raw Git blame porcelain output.
+ * @returns Structured blame lines.
+ */
+    private parseBlame(
+        output: string,
+    ): GitBlameLine[] {
+        if (!output.trim()) {
+            return [];
+        }
+
+        const lines = output.split(/\r?\n/);
+        const blameLines: GitBlameLine[] = [];
+
+        let index = 0;
+
+        while (index < lines.length) {
+            const header = lines[index];
+
+            if (!header.trim()) {
+                index++;
+                continue;
+            }
+
+            const headerMatch = header.match(
+                /^([0-9a-f]+)\s+(\d+)\s+(\d+)(?:\s+(\d+))?$/,
+            );
+
+            if (!headerMatch) {
+                index++;
+                continue;
+            }
+
+            const commit = headerMatch[1];
+            const finalLine = Number.parseInt(
+                headerMatch[3],
+                10,
+            );
+
+            let author = '';
+            let authorEmail: string | undefined;
+            let authorTime = '';
+            let content = '';
+
+            index++;
+
+            while (index < lines.length) {
+                const metadataLine = lines[index];
+
+                /*
+                 * Source line.
+                 */
+                if (metadataLine.startsWith('\t')) {
+                    content = metadataLine.slice(1);
+                    index++;
+                    break;
+                }
+
+                /*
+                 * Metadata.
+                 */
+                if (
+                    metadataLine.startsWith('author ')
+                ) {
+                    author =
+                        metadataLine.slice(
+                            'author '.length,
+                        );
+                } else if (
+                    metadataLine.startsWith(
+                        'author-mail ',
+                    )
+                ) {
+                    authorEmail =
+                        metadataLine
+                            .slice(
+                                'author-mail '.length,
+                            )
+                            .trim();
+
+                    if (
+                        authorEmail.startsWith('<') &&
+                        authorEmail.endsWith('>')
+                    ) {
+                        authorEmail =
+                            authorEmail.slice(
+                                1,
+                                -1,
+                            );
+                    }
+                } else if (
+                    metadataLine.startsWith(
+                        'author-time ',
+                    )
+                ) {
+                    authorTime =
+                        metadataLine.slice(
+                            'author-time '.length,
+                        );
+                }
+
+                index++;
+            }
+
+            blameLines.push({
+                lineNumber: finalLine,
+                commit,
+                author,
+                ...(authorEmail
+                    ? { authorEmail }
+                    : {}),
+                date:
+                    this.parseBlameTimestamp(
+                        authorTime,
+                    ),
+                content,
+            });
+        }
+
+        return blameLines;
+    }
+
+    /**
+ * Converts a Git author timestamp into an ISO
+ * timestamp.
+ *
+ * @param timestamp Git Unix timestamp.
+ */
+    private parseBlameTimestamp(
+        timestamp: string,
+    ): string {
+        if (!timestamp.trim()) {
+            return '';
+        }
+
+        const seconds =
+            Number.parseInt(
+                timestamp,
+                10,
+            );
+
+        if (Number.isNaN(seconds)) {
+            return '';
+        }
+
+        return new Date(
+            seconds * 1000,
+        ).toISOString();
+    }
 
 }
