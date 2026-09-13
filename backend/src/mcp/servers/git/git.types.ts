@@ -466,3 +466,37 @@ export interface GitBlameOptions {
      */
     revision?: string;
 }
+
+/**
+ * Options for Git tag operations.
+ */
+export interface GitTagOptions {
+    workspacePath: string;
+
+    /**
+     * Optional tag name.
+     *
+     * When provided, operations can target a specific tag.
+     */
+    tagName?: string;
+
+    /**
+     * Optional Git revision.
+     *
+     * Used when creating or resolving a tag against
+     * a specific commit, branch, or revision.
+     */
+    revision?: string;
+
+    /**
+     * Optional annotation message.
+     *
+     * Used for annotated tag creation.
+     */
+    message?: string;
+
+    /**
+     * Whether the tag should be created as an annotated tag.
+     */
+    annotated?: boolean;
+}

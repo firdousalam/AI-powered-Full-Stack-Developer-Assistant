@@ -28,12 +28,20 @@ import type {
     GitDiffOptions,
     GitRepository,
     GitStatus,
+    GitTagOptions,
 } from './git.types';
+
+
 
 import {
     GitBlameResult,
     GitBlameLine,
 } from './models/git-blame.model';
+
+import {
+    GitTag,
+    GitTagResult,
+} from './models/git-tag.model';
 
 const execFileAsync = promisify(execFile);
 
@@ -1549,6 +1557,175 @@ export class GitService {
         return new Date(
             seconds * 1000,
         ).toISOString();
+    }
+
+
+    /**
+ * Retrieves Git tags from the repository.
+ *
+ * Supports both lightweight and annotated tags.
+ * Annotated tags are resolved to the commit they ultimately point to.
+ */
+    async getTags(
+        options: GitTagOptions,
+    ): Promise<GitTagResult> {
+        const {
+            workspacePath,
+            tagName,
+        } = options;
+
+        const normalizedTagName =
+            tagName?.trim();
+
+        if (!workspacePath.trim()) {
+            throw new Error(
+                'Workspace path is required.',
+            );
+        }
+
+        if (
+            normalizedTagName !== undefined &&
+            !normalizedTagName
+        ) {
+            throw new Error(
+                'Tag name cannot be empty.',
+            );
+        }
+
+        const isRepository =
+            await this.isRepository(
+                workspacePath,
+            );
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const args: string[] = [
+            'for-each-ref',
+            '--format=%(refname:short)|%(objectname)|%(subject)|%(objecttype)',
+            'refs/tags',
+        ];
+
+        if (normalizedTagName !== undefined) {
+            args.push(
+                `refs/tags/${normalizedTagName}`,
+            );
+        }
+
+        const result = await this.execute(
+            args,
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                'Unable to retrieve Git tags.',
+            );
+        }
+
+        const tags: GitTag[] = [];
+
+        for (
+            const line of result.stdout.split(/\r?\n/)
+        ) {
+            const trimmedLine =
+                line.trim();
+
+            if (!trimmedLine) {
+                continue;
+            }
+
+            const parts =
+                trimmedLine.split('|');
+
+            if (parts.length < 4) {
+                continue;
+            }
+
+            const [
+                name,
+                objectId,
+                message,
+                objectType,
+            ] = parts;
+
+            if (!name || !objectId) {
+                continue;
+            }
+
+            const annotated =
+                objectType === 'tag';
+
+            let commit = objectId;
+
+            if (annotated) {
+                commit =
+                    await this.resolveTagCommit(
+                        workspacePath,
+                        name,
+                    );
+            }
+
+            tags.push({
+                name,
+                commit,
+                message:
+                    message || undefined,
+                annotated,
+            });
+        }
+
+        return {
+            tags,
+            total: tags.length,
+        };
+    }
+    /**
+ * Resolves a Git tag to the commit it ultimately points to.
+ *
+ * For lightweight tags, this returns the tagged commit.
+ * For annotated tags, this dereferences the tag object
+ * and returns the target commit.
+ */
+    private async resolveTagCommit(
+        workspacePath: string,
+        tagName: string,
+    ): Promise<string> {
+        const result = await this.execute(
+            [
+                'rev-parse',
+                `${tagName}^{}`,
+            ],
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                `Unable to resolve Git tag: ${tagName}`,
+            );
+        }
+
+        const commit =
+            result.stdout.trim();
+
+        if (!commit) {
+            throw new Error(
+                `Git tag resolved to an empty commit: ${tagName}`,
+            );
+        }
+
+        return commit;
     }
 
 }
