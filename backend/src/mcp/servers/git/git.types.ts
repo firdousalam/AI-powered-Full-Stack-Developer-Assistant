@@ -431,3 +431,38 @@ export interface GitFileDiffOptions extends GitDiffOptions {
     filePath: string;
 }
 
+/**
+ * Options for retrieving Git blame information.
+ */
+export interface GitBlameOptions {
+    /**
+     * Absolute path to the Git repository/workspace.
+     */
+    workspacePath: string;
+
+    /**
+     * Repository-relative file path.
+     */
+    filePath: string;
+
+    /**
+     * Optional starting line number.
+     */
+    startLine?: number;
+
+    /**
+     * Optional ending line number.
+     */
+    endLine?: number;
+
+    /**
+     * Optional Git revision.
+     *
+     * Examples:
+     * - HEAD
+     * - main
+     * - v1.0.0
+     * - commit SHA
+     */
+    revision?: string;
+}
