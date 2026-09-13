@@ -26,6 +26,7 @@ import type {
     GitDiff,
     GitDiffFile,
     GitDiffOptions,
+    GitRemoteOptions,
     GitRepository,
     GitStatus,
     GitTagOptions,
@@ -42,6 +43,11 @@ import {
     GitTag,
     GitTagResult,
 } from './models/git-tag.model';
+
+import type {
+    GitRemote,
+    GitRemoteResult,
+} from './models/git-remote.model';
 
 const execFileAsync = promisify(execFile);
 
@@ -1726,6 +1732,149 @@ export class GitService {
         }
 
         return commit;
+    }
+
+    /**
+ * Retrieves Git remotes from the repository.
+ *
+ * When remoteName is provided, only that remote is returned.
+ * Otherwise, all configured remotes are returned.
+ */
+    async getRemotes(
+        options: GitRemoteOptions,
+    ): Promise<GitRemoteResult> {
+        const {
+            workspacePath,
+            remoteName,
+        } = options;
+
+        const normalizedRemoteName =
+            remoteName?.trim();
+
+        if (!workspacePath.trim()) {
+            throw new Error(
+                'Workspace path is required.',
+            );
+        }
+
+        if (
+            normalizedRemoteName !== undefined &&
+            !normalizedRemoteName
+        ) {
+            throw new Error(
+                'Remote name cannot be empty.',
+            );
+        }
+
+        const isRepository =
+            await this.isRepository(
+                workspacePath,
+            );
+
+        if (!isRepository) {
+            throw new Error(
+                `The workspace is not a Git repository: ${workspacePath}`,
+            );
+        }
+
+        const args: string[] = [
+            'remote',
+            '-v',
+        ];
+
+        const result = await this.execute(
+            args,
+            {
+                cwd: workspacePath,
+            },
+        );
+
+        if (!result.success) {
+            throw new Error(
+                result.stderr.trim() ||
+                result.error ||
+                'Unable to retrieve Git remotes.',
+            );
+        }
+
+        const remoteMap =
+            new Map<string, GitRemote>();
+
+        for (
+            const line of result.stdout.split(/\r?\n/)
+        ) {
+            const trimmedLine =
+                line.trim();
+
+            if (!trimmedLine) {
+                continue;
+            }
+
+            const match =
+                trimmedLine.match(
+                    /^(\S+)\s+(.+)\s+\((fetch|push)\)$/,
+                );
+
+            if (!match) {
+                continue;
+            }
+
+            const [
+                ,
+                name,
+                url,
+                type,
+            ] = match;
+
+            if (
+                !name ||
+                !url ||
+                (
+                    normalizedRemoteName !== undefined &&
+                    name !== normalizedRemoteName
+                )
+            ) {
+                continue;
+            }
+
+            const existing =
+                remoteMap.get(name);
+
+            if (existing) {
+                if (type === 'fetch') {
+                    existing.fetchUrl = url;
+                } else {
+                    existing.pushUrl = url;
+                }
+
+                continue;
+            }
+
+            remoteMap.set(
+                name,
+                {
+                    name,
+                    fetchUrl:
+                        type === 'fetch'
+                            ? url
+                            : '',
+                    pushUrl:
+                        type === 'push'
+                            ? url
+                            : '',
+                },
+            );
+        }
+
+        const remotes: GitRemote[] =
+            Array.from(
+                remoteMap.values(),
+            );
+
+        return {
+            remotes,
+            total: remotes.length,
+        };
     }
 
 }
