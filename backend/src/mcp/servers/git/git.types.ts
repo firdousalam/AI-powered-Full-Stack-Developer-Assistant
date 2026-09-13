@@ -135,34 +135,34 @@ export interface GitCommit {
 /**
  * Represents a Git diff.
  */
-export interface GitDiff {
-    /**
-     * Number of files changed.
-     */
-    filesChanged: number;
+// export interface GitDiff {
+//     /**
+//      * Number of files changed.
+//      */
+//     filesChanged: number;
 
-    /**
-     * Number of inserted lines.
-     */
-    insertions: number;
+//     /**
+//      * Number of inserted lines.
+//      */
+//     insertions: number;
 
-    /**
-     * Number of deleted lines.
-     */
-    deletions: number;
+//     /**
+//      * Number of deleted lines.
+//      */
+//     deletions: number;
 
-    /**
-     * Files included in the diff.
-     */
-    files: string[];
+//     /**
+//      * Files included in the diff.
+//      */
+//     files: string[];
 
-    /**
-     * Raw diff content.
-     *
-     * This will be populated by GitService when required.
-     */
-    content?: string;
-}
+//     /**
+//      * Raw diff content.
+//      *
+//      * This will be populated by GitService when required.
+//      */
+//     content?: string;
+// }
 
 /**
  * Represents a Git tag.
@@ -401,3 +401,33 @@ export interface GitCommitList {
      */
     hasMore: boolean;
 }
+
+export interface GitDiffFile {
+    path: string;
+    status: 'added' | 'modified' | 'deleted' | 'renamed' | 'copied' | 'unknown';
+    additions: number;
+    deletions: number;
+    diff: string;
+}
+
+export interface GitDiff {
+    files: GitDiffFile[];
+    fileCount: number;
+    additions: number;
+    deletions: number;
+    truncated: boolean;
+}
+
+export interface GitDiffOptions {
+    fileLimit?: number;
+    maxDiffSize?: number;
+}
+
+export interface GitCommitDiffOptions extends GitDiffOptions {
+    commitReference: string;
+}
+
+export interface GitFileDiffOptions extends GitDiffOptions {
+    filePath: string;
+}
+
